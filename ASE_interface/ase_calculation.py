@@ -85,6 +85,9 @@ class ASE_system:
         self.forces_gp = None
 
     def construct_atoms_object(self):
+        """
+        constructs the ASE atoms object from the element symbols, coordinates, periodic boundary conditions, and cell info.
+        """
 
         atoms = ase.Atoms(self.symbols, self.positions)
         atoms.set_cell(self.cell)
@@ -95,6 +98,25 @@ class ASE_system:
         self.atoms = atoms
 
     def run_calculation(self, run_type='single_point'):
+        """
+        runs the ASE quantum calculation
+
+        Parameters
+        ----------
+        run_type : str, default = 'single_point'
+            options are 'single-point' (no geometry optimization), 'optimization' (runs a geometry optimization),
+            or 'gas_phase' (single-point w/o water)
+
+        sets:
+            self.energies : np.array, quantum energies
+            self.forces : np.array, quantum forces
+            and optionally
+            self.opt_coords (if 'optimization' is chosen)
+            or
+            self.energy_gp
+            self.forces_gp
+            if 'gas_phase' is chosen
+        """
 
         if run_type == 'single_point':
 

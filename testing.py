@@ -13,6 +13,8 @@ input_paths.str_file = 'mp0.str'
 input_paths.str_file_path = '../methylphosphate/force_matching/test/'
 input_paths.traj_file = 'optcoords.xyz'
 input_paths.traj_file_path = '/home/ac127777/Documents/methylphosphate/cp2k_geom_opts/mp0mp0/'
+input_paths.working_dir = '../methylphosphate/force_matching/test/'
+input_paths.project_name = 'mp0mp0'
 input_paths.set()
 
 # set up the openmm system
@@ -50,11 +52,10 @@ trajcoords=get_coords(mdr.universe.atoms)
 
 from ASE_interface.ase_calculation import *
 
-#TODO: write general func to remove water and split molecules
-
 # prepare net force calc
 mdr.molecule1_solv = mdr.delete_one_molecule('not resid 2')
 mdr.molecule2_solv = mdr.delete_one_molecule('not resid 1')
+mdr.molecule_only = mdr.universe.select_atoms('resid 1 or resid 2')
 coords1=get_coords(mdr.molecule1_solv)
 coords2=get_coords(mdr.molecule2_solv)
 
@@ -222,9 +223,17 @@ for frame_nr, frame in enumerate(coords2):
 """
 # grab dft data
 
-#TODO: write general func to do this
 from System.system import *
-molsys = Molecular_system(trajcoords, ase_sys, omm_sys)
+molsys = Molecular_system(mdr.universe, ase_sys, omm_sys)
+# define molecules
+molsys.molecule1 = mdr.molecule1_solv
+molsys.molecule2 = mdr.molecule2_solv
+molsys.naked_molecule = mdr.molecule_only
+molsys.naked_molecule_n_atoms = molsys.naked_molecule.n_atoms
+
+#TODO: write general func to do this
+
+# init arrays
 molsys.qm_forces = np.zeros((len(trajcoords), trajcoords.shape[1], 3))
 molsys.qm_energies = np.zeros((len(trajcoords), 1))
 
@@ -232,7 +241,7 @@ mol1_fqm = np.zeros((len(coords1), coords1.shape[1], 3))
 mol2_fqm = np.zeros((len(coords2), coords2.shape[1], 3))
 mol1_eqm = np.zeros((len(coords1), 1))
 mol2_eqm = np.zeros((len(coords2), 1))
-
+# fill arrays
 for n, frane in enumerate(coords1):
     mol1_fqm[n, :, :] = np.genfromtxt(str(input_paths.traj_file_path)+'/frame'+str(n)+'/forces_energy_mol1_frame'+str(n)+'.txt', skip_header=1)
     f = open(str(input_paths.traj_file_path)+'/frame'+str(n)+'/forces_energy_mol1_frame'+str(n)+'.txt', 'r')
@@ -254,10 +263,10 @@ for n, frane in enumerate(coords2):
             read.append(line)
     f.close()
     mol2_eqm[n] = float(read[0])
-
+# define atom groups
 mol1_only = mdr.universe.select_atoms('resid 1')
 mol2_only = mdr.universe.select_atoms('resid 2')
-
+# init arrays
 fqm_raw = np.zeros((len(trajcoords), trajcoords.shape[1], 3))
 eqm_raw = np.zeros((len(trajcoords), 1))
 fqm_net = np.zeros((len(trajcoords), trajcoords.shape[1], 3))
@@ -270,7 +279,7 @@ emm_net = np.zeros((len(trajcoords), 1))
 
 from pathlib import Path
 import re
-
+# fill arrays
 for n, frame in enumerate(trajcoords):
     p = Path(str(input_paths.traj_file_path)+'frame'+str(n)+'/geom_opt_rst.out')
     if p.exists():
@@ -441,12 +450,12 @@ molsys.qm_energies=eqm_raw
 
 # get qm charges
 from Direct_cp2k_calculation.direct_cp2k import *
-cp2k_dc = Direct_Calculator()
+cp2k_dc = Direct_Calculator(input_paths)
 cp2k_dc.project_path = input_paths.traj_file_path
-
+# create array
 qmcharges = np.zeros((len(trajcoords), trajcoords.shape[1]))
 
-
+# fill array
 for frame_nr, frame in enumerate(trajcoords):
     p = Path(str(input_paths.traj_file_path)+'frame'+str(frame_nr)+'/geom_opt_rst.out')
     if p.exists():
@@ -466,7 +475,7 @@ for frame_nr, frame in enumerate(trajcoords):
                          max_rows=22, usecols=3, dtype=float)
     qmcharges[frame_nr, :22] = charges[:22]
 
-omm_sys.create_force_field_optimizable(opt_lj=True, opt_sc=True)
+omm_sys.create_force_field_optimizable(opt_lj=True)
 
 molsys.generate_weights()
 

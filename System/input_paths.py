@@ -12,7 +12,7 @@ def check_path(path: str):
 
 class Input_Paths:
     """
-    Stores paths and filenames to external input files
+    Stores paths and filenames to external input files. Parameters can also be set manually by the user.
 
     Parameters
     ----------
@@ -29,11 +29,13 @@ class Input_Paths:
     crd_pdb_file_path : str
         path to pdb file
     traj_file : str
-        sampled trajectory filename (any format that MDAnalysis can read)
+        sampled trajectory filename w/ extension (any format that MDAnalysis can read), e.g. 'coords.xyz'
     traj_file_path : str
-        path to trajectory
+        path to trajectory containing sampled coordinates
     working_dir : str
         working directory
+    project_name : str
+        name of the project, e.g. 'arginine'
     """
 
     def __init__(self):
@@ -47,9 +49,13 @@ class Input_Paths:
         self.traj_file = None
         self.traj_file_path = None
         self.working_dir = None
+        self.project_name = None
 
 
     def set(self):
+        """
+        sets the remaining class attributes
+        """
 
         for filepath in [self.mm_top_file_path, self.str_file_path, self.crd_pdb_file_path, self.traj_file_path]:
             if filepath != None:

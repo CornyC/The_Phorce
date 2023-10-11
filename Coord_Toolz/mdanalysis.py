@@ -31,11 +31,22 @@ class MDA_reader:
 
     def __init__(self, universe=None):
         self.universe = universe
+
         self.molecule_only = None
         self.molecule1_solv = None
         self.molecule2_solv = None
 
     def set_traj_input(self, top=None, traj=None):
+        """
+        Calls the MDAnalysis trajectory reader
+
+         Parameters
+         ----------
+         top : str
+            path to topology file, can also be a .pdb
+         traj : str
+            path to trajectory file
+        """
 
         if top == None:
             top = input('enter path to topology file\n')
@@ -50,6 +61,14 @@ class MDA_reader:
         self.universe = u
 
     def set_crd_input(self, crd_input=None):
+        """
+        Calls the MDAnalysis coordinate file reader
+
+        Parameters
+        ----------
+        crd_input : str
+            path to coordinate file
+        """
 
         if crd_input == None:
             u = mda.Universe(str(input('enter path to .pdb file\n')))
@@ -59,6 +78,7 @@ class MDA_reader:
 
     def remove_water_ions(self, atomgroup=None):
         """
+        Removes water molecules and ions from system
         feel free to add entries from your FF here :)
 
         Parameters
@@ -130,6 +150,8 @@ class MDA_reader:
 
     def delete_one_molecule(self, selection: str):
         """
+        Deletes atoms based on the MDAnalysis atom selection algebra
+
         Parameters
         ----------
         selection : str
@@ -239,9 +261,14 @@ def collect_optimized_structures(n_structures:int, directory:str, project_name:s
     poject_name : str
     outputpath : str (path)
     topol: str (path+filename)
+    	(path to) pdb 'topology'
     """
     assert Path(directory).is_dir() is True, 'directory {} does not exist'.format(directory)
+    if directory[-1] != '/':
+        directory += '/'
     assert Path(outputpath).is_dir() is True, 'output directory {} does not exist'.format(outputpath)
+    if outputpath[-1] != '/':
+        outputpath += '/'
     assert Path(topol).exists() is True, 'topology {} does not exist'.format(topol)
 
     top = str(topol)
@@ -256,6 +283,10 @@ def collect_optimized_structures(n_structures:int, directory:str, project_name:s
         optcoords[n] = coords
 
     u.load_new(optcoords, format=MemoryReader)
+    
+    u.dimensions = pdbu.dimensions
 
     for ext in ['dcd', 'xyz', 'pdb']:
         u.atoms.write(str(outputpath) + 'optcoords.' + str(ext), frames=u.trajectory)
+
+

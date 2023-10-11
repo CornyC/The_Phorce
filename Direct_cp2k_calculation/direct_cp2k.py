@@ -10,7 +10,8 @@ from System.input_paths import *
 
 class Direct_Calculator:
     """
-    Get atomic charges from DFT and calculate the basis set superposition error
+    Get atomic charges from DFT and calculate the basis set superposition error directly from cp2k
+    bc ASE does not have this implemented
 
     Parameters
     ----------
@@ -21,10 +22,10 @@ class Direct_Calculator:
     run_type : str
         type of cp2k calculation: Either charges or BSSE
     """
-    def __init__(self, project_path=None, project_name=None, run_type=None):
+    def __init__(self, input_paths, run_type=None):
 
-        self.project_path = project_path
-        self.project_name = project_name
+        self.project_path = input_paths.traj_file_path
+        self.project_name = input_paths.project_name
         self.run_type = run_type
 
         if self.project_path == None:
@@ -46,6 +47,8 @@ class Direct_Calculator:
 
     def generate_cp2k_input_file(self, cp2k_input: str):
         """
+        writes the .inp control file for cp2k
+
         Parameters
         ----------
         cp2k_input : str
@@ -58,6 +61,8 @@ class Direct_Calculator:
 
     def run_cp2k(self, omp_threads: int, cp2k_binary_name: str):
         """
+        starts the cp2k process and feeds the input file
+
         Parameters
         ----------
         omp_threads : int
@@ -123,6 +128,9 @@ class Direct_Calculator:
 
 
     def extract_bsse(self):
+        """
+        reads the basis set superposition error from the .out file
+        """
 
         f = open(self.project_path+self.project_name+self.run_type+'.out', 'r')
         read = []
@@ -138,6 +146,9 @@ class Direct_Calculator:
         self.bsse_free = float(re.findall(r"[-+]?(?:\d*\.*\d+)", read[bsse_free_line])[0])
 
     def extract_energy(self):
+        """
+        reads the energy from the .out file
+        """
 
         f = open(self.project_path+self.project_name+self.run_type+'.out', 'r')
         read = []
@@ -160,6 +171,8 @@ class Direct_Calculator:
     def extract_forces(self, n_atoms: int):
 
         """
+        reads the relevant forces from the .out file
+
         Parameters
         ----------
         n_atoms : int
@@ -176,5 +189,3 @@ class Direct_Calculator:
         forces_start = [index for index, string in enumerate(read) if 'ATOMIC FORCES in [a.u.]' in string]
         self.forces = np.loadtxt(self.project_path+self.project_name+self.run_type+'.out', skiprows=forces_start[0]+3,
                              max_rows=n_atoms, usecols=(3,4,5), dtype=float) * 49614.752589482 # a.u. to kJ/mol/nm
-
-#TODO: use paths from System.input_paths

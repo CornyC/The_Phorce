@@ -54,6 +54,17 @@ class Optimizer:
         """
         see https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html
         BFGS is recommended, L-BFGS-B may be faster but more unreliable
+
+        Parameters
+        ----------
+        self.parameters : parameters that go into the function
+        self.opt_settings
+        self.constraints
+        self.tolerance
+        self.f : input function (wrapped objective function)
+
+        returns:
+            optimized_params : np.array containing the optimized force field params
         """
 
         from scipy.optimize import minimize as scmin
@@ -73,6 +84,19 @@ class Optimizer:
 
         """
         https://www.tensorflow.org/api_docs/python/tf/keras/optimizers/Adam
+
+        Parameters
+        ----------
+        self.parameters : parameters that go into the function
+        self.opt_settings
+        self.constraints
+        self.tolerance
+        self.f : input function (wrapped objective function)
+        self.max_iterations
+
+        returns:
+            optimized_params : np.array containing the optimized force field params
+            value : float value of the input function self.f
         """
 
         import tensorflow as tf
@@ -110,6 +134,19 @@ class Optimizer:
 
         """
         https://pytorch.org/docs/stable/generated/torch.optim.Adam.html#torch.optim.Adam
+
+        Parameters
+        ----------
+        self.parameters : parameters that go into the function
+        self.opt_settings
+        self.constraints
+        self.tolerance
+        self.f : input function (wrapped objective function)
+        self.max_iterations
+
+        returns:
+            optimized_params : np.array containing the optimized force field params
+            value : float value of the input function self.f
         """
 
         import torch
@@ -152,6 +189,19 @@ class Optimizer:
 
         """
         https://pytorch.org/docs/stable/generated/torch.optim.LBFGS.html#torch.optim.LBFGS
+
+        Parameters
+        ----------
+        self.parameters : parameters that go into the function
+        self.opt_settings
+        self.constraints
+        self.tolerance
+        self.f : input function (wrapped objective function)
+        self.max_iterations
+
+        returns:
+            optimized_params : np.array containing the optimized force field params
+            value : float value of the input function self.f
         """
 
         import torch
@@ -206,6 +256,15 @@ class Optimizer:
             Hyperparameters used in particle swarm optimization
         n_particles : int
             number of swarm particles to be generated
+
+        self.parameters : parameters that go into the function
+        self.f : input function (wrapped objective function)
+        self.max_iterations
+        self.tolerance
+
+        returns:
+            optimized_params : np.array containing the optimized force field params
+            value : float value of the input function self.f
         """
 
         import random
@@ -280,6 +339,10 @@ class Optimizer:
             Parameters that are going to be optimized (extracted from ff_optimizable)
         constraints :
             Optimization constraints, default = None
+
+        returns:
+            optimized_params : np.array containing the optimized force field params
+            value : float value of self.f
         """
 
         self.f = f

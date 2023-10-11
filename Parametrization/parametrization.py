@@ -22,8 +22,6 @@ class Parametrization:
     regularization : bool
         whether a penalty term is used or not
 
-    _properties : dict
-        Numpy arrays containing variance and covariance of energies/forces
     parameters : dict
         contains parameters from OMM_Interface.openmm.OpenMM_system.ff_optimizable, their
         scaling constants, and the scaled parameters
@@ -68,7 +66,7 @@ class Parametrization:
 
     def recalculate_mm_properties(self):
 
-        #TODO set Params in openmm according to ff_optimizable
+        #TODO: set Params in openmm according to ff_optimizable
         for force_key in self.ff_optimizable.keys():
             self.molecular_system.openmm_sys.set_parameters(force_key)
 
@@ -79,6 +77,24 @@ class Parametrization:
         self.fmm = self.molecular_system.mm_forces
 
     def calculate_obj_func_energy(self):
+        """
+         Calculates the "difference" between QM and MM energies
+
+         Parameters
+         ----------
+         method : str
+             mathematical method to calculate objective function. Default is None, covariance does not work.
+
+         self-Params:
+         self.weights : np.array, determines importance or influence of conformations
+         self.optimizer.opt_method : how to handle optimization. SciPy-based methods and PSO use numpy,
+                                     TensorFlow and PyTorch have their own math functions.
+         self.fmm : np.array, classical energies on atoms of conformations
+         self.fqm : np.array, quantum energies on atoms of conformations
+         self.n_atoms : int, number of atoms of interest
+
+         Returns "difference" between QM and MM energies as float
+        """
 
         if self.optimizer.opt_method == ("scipy" or "pso"):
 
@@ -139,6 +155,24 @@ class Parametrization:
         return obj_f_e
 
     def calculate_obj_func_force(self, method=None):
+        """
+        Calculates the "difference" between QM and MM forces
+
+        Parameters
+        ----------
+        method : str
+            mathematical method to calculate objective function. Default is None, covariance does not work.
+
+        self-Params:
+        self.weights : np.array, determines importance or influence of conformations
+        self.optimizer.opt_method : how to handle optimization. SciPy-based methods and PSO use numpy,
+                                    TensorFlow and PyTorch have their own math functions.
+        self.fmm : np.array, classical forces on atoms of conformations
+        self.fqm : np.array, quantum forces on atoms of conformations
+        self.n_atoms : int, number of atoms of interest
+
+        Returns "difference" between QM and MM forces as float
+        """
 
         assert method in [None, "variance", "covariance"], \
             "Force property term for method {} is not implemented.".format(method)
@@ -250,6 +284,10 @@ class Parametrization:
 
     def calc_scaling_constants(self):
 
+        """
+        This is supposed to bring the parameters to the same magnitude but idk
+        """
+
         if len(self.parameters["original_parameters"]) is 0:
             for forcekey in self.ff_optimizable.keys():
                 if forcekey is not 'NBException':
@@ -341,6 +379,9 @@ class Parametrization:
     """
 
     def wrap_objective_function(self):
+        """
+        This is the actual "function" that is passed to the optimizer.
+        """
         # has to loop over configs, set coords & unscaled params in omm, calc mm energies/forces (repeatedly),
         # read qm energies/forces (once for each config)
         # calc obj fun: params as scaled array in, force diff out

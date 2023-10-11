@@ -109,6 +109,24 @@ class OpenMM_system:
         self.charges = None
 
     def import_molecular_system(self):
+        """
+        reads in coords and topology
+
+        Parameters
+        ----------
+        self.topology_format : str
+            type of topology file, each MD software has its own :(
+        self.top_file : str
+            path to the topol file
+        self.pbc : bool
+            whether to use periodic boundary conditions
+        self.crd_format : str
+            .pdb is kind of a standard, nonetheless GROMACS also has .gro and CHARMM and AMBER have .crd
+
+        sets:
+            self.topology which is an OpenMM topology object
+            self.crd which is the OpenMM coordinates object
+        """
 
         if self.topology_format.upper() == "AMBER":
             if self.topology is None:
@@ -163,16 +181,35 @@ class OpenMM_system:
             self.crd = crd
 
     def set_integrator(self):
+        """
+        sets the OpenMM MD integrator object
+
+        Parameters
+        ----------
+        self.integrator_params
+            "settings" to be used with the integrator
+        """
 
         self.integrator = self.integrator(self.integrator_params['temperature'],
                                           self.integrator_params["frictionCoeff"],
                                           self.integrator_params["stepSize"])
 
     def set_platform(self):
+        """
+        sets the computational platform for OpenMM, GPU is preferred (muuuuch faster)
+        """
 
         self.platform = openmm.Platform.getPlatformByName(self.platform_name)
 
     def create_openmm_system(self):
+        """
+        creates the OpenMM system object
+
+        Parameters
+        ----------
+        self.topology_format :
+            necessary bc OpenMM calls different functions to build the system based on the input formats
+        """
 
         if self.topology_format.upper() == "CHARMM":
             assert self.top_params != None, 'please run import_molecular_system method first'
@@ -192,6 +229,18 @@ class OpenMM_system:
 
 
     def set_openmm_context(self):
+        """
+        sets the OpenMM context object by checking constraints, reading the initial coordinates and bundling it all
+        up w/ the integrator and platform (a.k.a. prepares the mdrun/classical calculation)
+
+        Parameters
+        ---------
+        self.system
+        self.integrator
+        self.platform
+        self.platform_properties
+        self.crd
+        """
 
         print('Number of constraints: '+str(self.system.getNumConstraints())+'\nconstraints settings: '
               +str(self.create_system_params['constraints'])+'\nmake sure these are correct before setting context')
@@ -233,8 +282,20 @@ class OpenMM_system:
             self.context.setPositions(self.crd.positions)
 
     def run_calculation(self, positions):
+        """
+        calculates classical energies and forces
 
-        assert self.context is not None, "please run OpenMM_sysstem.set_opnemm_context first."
+        Parameters
+        ----------
+        positions : OpenMM coordinates object (part of OpenMM system)
+
+        self.context : OpenMM system context object
+
+        sets:
+            self.energies and self.forces (both numpy arrays)
+        """
+
+        assert self.context is not None, "please run OpenMM_system.set_opnemm_context first."
 
         self.context.setPositions(positions)
 
@@ -253,6 +314,19 @@ class OpenMM_system:
         self.forces = forces
 
     def extract_forcefield(self):
+        """
+        extracts all the force field params from the OpenMM system
+
+        Parameters
+        ----------
+        self.system : OpenMM system object
+
+        sets:
+            self.force_group_idx_omm : list
+                stores openmm force group number
+            self.forces_indices : dict
+                force group dict that lists the omm force groups and indices
+        """
 
         assert self.system is not None, 'OpenMM system not set.'
 
@@ -413,6 +487,8 @@ class OpenMM_system:
 
     def write_extracted_ff(self, output_path=None):
         """
+        writes the extracted force field parameters from the OpenMM system to file
+
         Parameters
         ----------
         output_path : str, optional, default=None
@@ -586,6 +662,16 @@ class OpenMM_system:
                 self.read_in_ff[group].append(array)
 
     def get_charges(self):
+        """
+        extracts the classical charges from the OpenMM system
+
+        Parameters
+        ----------
+        self.extracted_ff
+
+        sets:
+            self.charges
+        """
 
         if len(self.extracted_ff['NonbondedForce']) != 0:
 
@@ -643,6 +729,8 @@ class OpenMM_system:
                                        opt_lj=False):
 
         """
+        creates a writable dictionary to store the parameters that are to be optimized
+
         Parameters
         ----------
         opt_bonds : bool
@@ -739,6 +827,18 @@ class OpenMM_system:
 
 
     def set_parameters(self, force_key: str):
+        """
+        writes the optimized parameters to the OpenMM system
+
+        Parameters
+        ----------
+        force_key : str
+            type of force field parameter
+
+        self.ff_optimizable : dictionary containing the optimizable force field parameters
+        self.system : OpenMM system object
+
+        """
 
         assert len(self.ff_optimizable) != 0, 'ff_optimizable does not exist, please create it first.'
 
