@@ -27,7 +27,8 @@ class Parametrization:
         scaling constants, and the scaled parameters
 
     """
-    # TODO: how to set self.n_atoms smoothly???
+    # TODO1: how to set self.n_atoms smoothly???
+    self.n_atoms = self.molecular_system.get_number_of_atoms()
 
     def __init__(self, molecular_system=None, term_type=None, optimizer=None, regularization=False):
 
@@ -66,7 +67,17 @@ class Parametrization:
 
     def recalculate_mm_properties(self):
 
-        #TODO: set Params in openmm according to ff_optimizable
+        #TODO2: set Params in openmm according to ff_optimizable
+
+        for force_key, parameters in self.ff_optimizable.items():
+            if force_key != 'NBException':
+                force = self.molecular_system.openmm_sys.getForce(force_key)  # Get the specific OpenMM force
+                for param_name, values in parameters.items():
+                    if param_name not in ['atom1', 'atom2', 'atom3', 'atom4', 'periodicity']:
+                # Assuming you want to set a parameter for this specific force
+                          for atom_index, value in enumerate(values):
+                                force.setParameterByIndex(atom_index, param_name, value)
+
         for force_key in self.ff_optimizable.keys():
             self.molecular_system.openmm_sys.set_parameters(force_key)
 
@@ -386,9 +397,9 @@ class Parametrization:
         # read qm energies/forces (once for each config)
         # calc obj fun: params as scaled array in, force diff out
 
-        #TODO: unscale params???
+        #TODO3: unscale params???
 
-        #TODO: loop over confs (should be function on its own)
+        #TODO4: loop over confs (should be function on its own)
         for frame_nr, frame in enumerate(coords1):
 
             # feed frame coords and new params into omm sys
@@ -414,28 +425,27 @@ class Parametrization:
 
         return obj_f # returns value
 
-    def parametrize(self):
+    def parametrize(self, regularization_type='L2', scaling_factor=1.0, hyperbolic_beta=0.01):
+    assert self.optimizer is not None, 'optimizer not set'
+    assert self.term_type is not None, 'term_type not set'
+    assert self.term_type in self.term_types, 'pls choose a valid term_type'
 
-        assert self.optimizer is not None, 'optimizer not set'
-        assert self.term_type is not None, 'term_type not set'
-        assert self.term_type in self.term_types, 'pls choose a valid term_type'
+    self.calc_scaling_constants()
 
-        self.calc_scaling_constants()
+    # TODO5: Implement regularization term
+    if self.regularization:
+        regularization_term = self.calculate_regularization_term(regularization_type, scaling_factor, hyperbolic_beta)
+    else:
+        regularization_term = 0.0  
 
-        #TODO: this down below does not work, add 'term' to obj_f instead!
-        """ 
-        if self.regularization is True:
-            self.calc_regularization()
-            parameters = self.parameters['reg_cur_sc_parm']
+    parameters = self.parameters['scaled_parameters']
 
-        else:
-            parameters = self.parameters['current_scaled_parameters']
-            
-        """
-        parameters = self.parameters['scaled_parameters']
+    optimized_params, obj_f_value = self.optimizer.run_optimizer(self.wrap_objective_function, parameters)
+    self.parameters['current_scaled_parameters'] = optimized_params
 
-        optimized_params, obj_f_value = self.optimizer.run_optimizer(self.wrap_objective_function, parameters)
-        self.parameters['current_scaled_parameters'] = optimized_params
+    obj_f_value += regularization_term 
+
+   
 
 
 
