@@ -2,6 +2,23 @@ import importlib
 from System.input_paths import *
 from OMM_interface.openmm import *
 import os
+import shutil
+from VMD import VMD
+import importlib
+import os
+import numpy as np
+from pathlib import Path
+import re
+from ASE_interface.ase_calculation import CP2K
+from Coord_Toolz.mdanalysis import MDA_reader
+from Direct_cp2k_calculation.direct_cp2k import Direct_Calculator
+from System.input_paths import Input_Paths
+from System.system import Molecular_system
+from ASE_interface.ase_calculation import ASE_system
+from Parametrization.parametrization import Parametrization
+from Parametrization.optimizers import Optimizer
+from System.system import write_single_pdb
+from OMM_interface.openmm import OpenMM_system
 
 # set paths
 input_paths = Input_Paths()
@@ -231,7 +248,46 @@ molsys.molecule2 = mdr.molecule2_solv
 molsys.naked_molecule = mdr.molecule_only
 molsys.naked_molecule_n_atoms = molsys.naked_molecule.n_atoms
 
-#TODO: write general func to do this
+#TODO1: write general func to do this
+
+
+# Define a function to copy a file
+def perform_ase_calculation(input_paths, coords, frame_nr, molecule_solv, basis_set, inp):
+    ase_sys = ASE_system(molecule_solv.elements, coords)
+    ase_sys.cell = ([16.0, 16.0, 16.0])
+    ase_sys.pbc = ([True, True, True])
+    ase_sys.construct_atoms_object()
+
+    calc = CP2K(
+        basis_set=basis_set,
+        inp=inp,
+        print_level='MEDIUM'
+    )
+
+    CP2K.command = 'env OMP_NUM_THREADS=6 cp2k_shell.ssmp'
+    ase_sys.atoms.calc = calc
+    ase_sys.run_calculation(run_type='single_point')
+
+    np.savetxt(f'forces_energy_mol{frame_nr}.txt', ase_sys.forces, header=f'E: {ase_sys.energy}')
+    outstr = f'cp cp2k.out mol{frame_nr}.out'
+    os.system(outstr)
+    os.system('rm cp2k.out')
+    os.system('pkill cp2k_shell.ssmp')
+    os.system('touch cp2k.out')
+
+    return ase_sys
+# def copy_file(source_path, destination_path):
+#    try:
+#        shutil.copy(source_path, destination_path)
+#        print(f"File copied from {source_path} to {destination_path}.")
+#    except Exception as e:
+#        print(f"Error copying file: {e}")
+
+# Temp example:
+# source_file = 'source.txt'
+# destination_file = 'destination.txt'
+# copy_file(source_file, destination_file)
+
 
 # init arrays
 molsys.qm_forces = np.zeros((len(trajcoords), trajcoords.shape[1], 3))
@@ -318,10 +374,76 @@ mol2_fmm = np.zeros((len(coords2), coords2.shape[1], 3))
 mol1_emm = np.zeros((len(coords1), 1))
 mol2_emm = np.zeros((len(coords2), 1))
 
-# generate a .psf for mol1_solv and mol2_solv -.-
+#TODO2 generate a .psf for mol1_solv and mol2_solv -.-
 
-#TODO: write general function to do this
-#TODO: write function to update str file w/ DFT data if/as soon as DFT data is present
+# Tried using VMD but this is complex process to generate a .psf file as it involves multiple softwares
+# Can also be done using CHARMM (trying to find a easy way for this)
+# Path to VMD executable
+vmd_path = '/path/to/vmd'
+
+# Path to the molecule's PDB file
+pdb_file = '/path/to/molecule.pdb'
+
+# Path to the output .psf file
+psf_file = '/path/to/output.psf'
+
+# Create a VMD instance
+vmd = VMD(vmd_path)
+
+# Load the PDB file
+vmd.load_molecule(pdb_file)
+
+# Save the molecule as a PSF file
+vmd.save_psf(psf_file)
+vmd.exit()
+
+# or
+    # define a function to create a .psf file
+    # def create_psf_file(molecule, output_file_path):
+    #try:
+        # trying to find a way to extract atom and connectivity information from the molecule
+        # and then we write it to the .psf file format.
+        # Example: molecule_to_psf(molecule, output_file_path)
+    #    print(f".psf file created: {output_file_path}")
+    #    except Exception as e:
+    #    print(f"Error creating .psf file: {e}")
+
+# Temp example:
+#psf_output_path = 'mol1_solv.psf'
+#new_varnew_var = create_psf_file(mol1_solv, psf_output_path)
+
+
+
+#TODO3: write general function to do this
+
+def update_file_with_data(file_path, data_to_append):
+    try:
+        with open(file_path, 'a') as file:
+            file.write(data_to_append)
+        print("Data appended to the file successfully.")
+    except Exception as e:
+        print(f"An error occurred: {str(e)}")
+
+# Temp example:
+file_path = "/path/to/your/file.txt"  # need to replace with the actual file path
+data_to_append = "Your data to append"
+update_file_with_data(file_path, data_to_append)
+
+#TODO4: write function to update str file w/ DFT data if/as soon as DFT data is present
+# Define a function to update a file with DFT data
+def update_str_with_dft_data(str_file_path, dft_data):
+    try:
+        with open(str_file_path, 'a') as str_file:
+            str_file.write(dft_data)
+        print("STR file updated with DFT data.")
+    except Exception as e:
+        print(f"Error updating STR file: {e}")
+
+# Temp example:
+str_file_path = 'input.str'
+dft_data = 'DFT data...'
+update_str_with_dft_data(str_file_path, dft_data)
+
 for frame_nr, frame in enumerate(coords1):
     mdr.molecule1_solv.atoms.positions = frame
     write_single_pdb(mdr.molecule1_solv.atoms, pdb_filename='optpos_phos1.pdb', pdb_path=input_paths.traj_file_path+'frame'+str(frame_nr))
@@ -540,4 +662,4 @@ molsys.mm_charges_gp = molsys.openmm_sys.charges[:molsys.naked_molecule_n_atoms]
 
 """
 
-#TODO do the params go into the optimizers? Do they work?
+#TODO5 do the params go into the optimizers? Do they work?
