@@ -1,0 +1,156 @@
+&GLOBAL
+  PROJECT mp0mp0_opt
+  RUN_TYPE GEO_OPT
+  PRINT_LEVEL MEDIUM
+&END GLOBAL
+
+&FORCE_EVAL
+  METHOD Quickstep              ! Electronic structure method (DFT,...)
+  &DFT
+    BASIS_SET_FILE_NAME  ../BASIS_MOLOPT_UZH
+    POTENTIAL_FILE_NAME  ../POTENTIAL_UZH
+    CHARGE 0
+    &MGRID
+      NGRIDS 5
+      CUTOFF 550
+      REL_CUTOFF 80
+    &END MGRID
+    &QS
+      METHOD GPW
+      EPS_DEFAULT 1.0E-12
+    &END QS
+    &POISSON                    ! Solver requested for non periodic calculations
+      PERIODIC XYZ
+      PSOLVER  PERIODIC          ! Type of solver
+    &END POISSON
+    &SCF                        ! Parameters controlling the convergence of the scf. This section should not be changed. 
+      SCF_GUESS ATOMIC
+      EPS_SCF 1.0E-5
+      MAX_SCF 300
+      &MIXING
+        ALPHA 0.4
+      &END MIXING
+      &OT
+        MINIMIZER CG
+      &END OT
+      &PRINT
+        &RESTART LOW
+          ADD_LAST NUMERIC
+          FILENAME SCF_RESTART
+        &END RESTART
+      &END PRINT
+    &END SCF
+    &XC                        ! Parameters needed to compute the electronic exchange potential 
+      &VDW_POTENTIAL
+        DISPERSION_FUNCTIONAL PAIR_POTENTIAL
+        &PAIR_POTENTIAL
+          TYPE DFTD3
+          PARAMETER_FILE_NAME  ../dftd3.dat
+          REFERENCE_FUNCTIONAL PBE
+          CALCULATE_C9_TERM TRUE
+          REFERENCE_C9_TERM TRUE
+        &END PAIR_POTENTIAL
+      &END VDW_POTENTIAL
+      &XC_FUNCTIONAL PBE
+      &END XC_FUNCTIONAL
+    &END XC
+  &END DFT
+
+  &SUBSYS
+    &CELL
+      SYMMETRY CUBIC
+      ABC 16.0 16.0 16.0
+      ALPHA_BETA_GAMMA  90.0 90.0 90.0
+      PERIODIC XYZ
+    &END CELL
+    &TOPOLOGY                    ! Section used to center the atomic coordinates in the given box. Useful for big molecules
+      &CENTER_COORDINATES
+      &END
+      COORD_FILE_FORMAT pdb
+      COORD_FILE_NAME  smallbox.pdb
+      CONN_FILE_FORMAT upsf
+      CONN_FILE_NAME  smallbox.psf
+    &END
+    &KIND H
+      ELEMENT H
+      BASIS_SET TZV2P-MOLOPT-PBE-GTH-q1
+      POTENTIAL GTH-PBE-q1
+    &END KIND
+    &KIND C
+      ELEMENT C
+      BASIS_SET TZV2P-MOLOPT-PBE-GTH-q4
+      POTENTIAL GTH-PBE-q4
+    &END KIND
+    &KIND P
+      ELEMENT P
+      BASIS_SET TZV2P-MOLOPT-PBE-GTH-q5
+      POTENTIAL GTH-PBE-q5
+    &END KIND
+    &KIND O
+      ELEMENT O
+      BASIS_SET TZV2P-MOLOPT-PBE-GTH-q6
+      POTENTIAL GTH-PBE-q6
+    &END KIND
+    &PRINT
+      &ATOMIC_COORDINATES LOW
+      &END ATOMIC_COORDINATES
+      &INTERATOMIC_DISTANCES LOW
+      &END INTERATOMIC_DISTANCES
+      &KINDS 
+        POTENTIAL
+      &END KINDS
+      &TOPOLOGY_INFO
+        PSF_INFO
+      &END TOPOLOGY_INFO
+    &END PRINT
+  &END SUBSYS
+  
+  &PROPERTIES
+    &RESP    
+      &SPHERE_SAMPLING
+            AUTO_VDW_RADII_TABLE CAMBRIDGE
+            AUTO_RMIN_SCALE 1.0
+            AUTO_RMAX_SCALE 3.0
+      &END
+      &PRINT
+        &COORD_FIT_POINTS
+        &END
+        &V_RESP_CUBE
+        &END
+      &END
+    &END RESP
+  &END PROPERTIES
+  
+  &PRINT
+    &FORCES ON
+    &END FORCES
+  &END PRINT
+  
+&END FORCE_EVAL
+
+&MOTION
+  &GEO_OPT
+    OPTIMIZER LBFGS
+    MAX_DR    3.0E-03
+    MAX_FORCE 4.5E-04
+    RMS_DR    1.5E-03
+    RMS_FORCE 3.0E-04   
+  &END
+  &CONSTRAINT
+    &FIXED_ATOMS
+      COMPONENTS_TO_FIX XYZ
+      LIST 23..352 
+    &END
+  &END CONSTRAINT  
+  &PRINT
+    &FORCES
+      UNIT N
+      FORMAT  XYZ
+      FILENAME  geom_opt_forces
+    &END FORCES
+    &RESTART LOW
+      ADD_LAST NUMERIC
+      FILENAME MOTION_RESTART
+    &END RESTART
+  &END PRINT
+&END MOTION

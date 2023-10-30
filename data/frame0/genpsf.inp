@@ -1,0 +1,59 @@
+prnlev 5 node 0
+bomlev -1
+
+!************************************************************
+!
+! Read the parameter files
+!
+!************************************************************
+
+read rtf card name top_all36_cgenff.rtf
+
+read para card flex name par_all36_cgenff.prm
+
+stream toppar_water_ions.str
+
+stream mp0.str
+!************************************************************
+!
+! Read the PDB file (sequence first, then coordinates)
+!
+!************************************************************
+OPEN UNIT 10 CARD READ NAME optpos_phos2.pdb
+READ SEQU PDB UNIT 10
+
+GENErate A SETUp
+
+REWind UNIT 10
+
+READ COOR PDB UNIT 10
+CLOSE UNIT 10
+
+!************************************************************
+!
+! Insert missing coordinates and Hydorgens
+!
+!************************************************************
+IC FILL
+IC PARAmeters
+IC BUILd
+
+!************************************************************
+!
+! Check for other missing atoms
+!
+!************************************************************
+PRINt COOR SELEct .NOT. INITialized END
+
+!************************************************************
+!
+! Write to files
+!
+!************************************************************
+OPEN UNIT 20 WRITE CARD NAME optpos_phos2.psf
+WRITE PSF CARD UNIT 20
+*PSF File
+*
+CLOSE UNIT 20
+
+STOP
