@@ -62,7 +62,7 @@ class Molecular_system:
         self.n_conformations = len(self.ini_coords)
         self.n_atoms = self.ini_coords.shape[1]
         self.ase_sys = ase_sys
-        self.openmm_sys = openmm_sys
+        self.openmm_sys = openmm_sys #TODO: extend to hold more than 1 sys for net force calc
         self.naked_molecule = naked_molecule
         self.molecule1 = molecule1
         self.molecule2 = molecule2
