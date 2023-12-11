@@ -58,9 +58,9 @@ class Parametrization:
 
         self.step = 0
 
-    def calculate_net_forces(self, system_type):
+    def calculate_net_forces(self):
 
-        if system_type =
+        if self.molecular_system.system_type == '2_gas_phase':
             net_forces = self.molecular_system.
     def recalculate_mm_properties(self):
         #implementing this method to update molecular system properties
