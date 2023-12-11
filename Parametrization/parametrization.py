@@ -58,6 +58,10 @@ class Parametrization:
 
         self.step = 0
 
+    def calculate_net_forces(self, system_type):
+
+        if system_type =
+            net_forces = self.molecular_system.
     def recalculate_mm_properties(self):
         #implementing this method to update molecular system properties
         for force_key, parameters in self.ff_optimizable.items():
