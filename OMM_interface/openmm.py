@@ -7,7 +7,6 @@ import simtk.openmm.app as app
 from simtk.openmm.app import forcefield as ff
 import copy, os
 import fnmatch
-from pathlib import Path
 from System.input_paths import *
 
 #### Setting up the OpenMM System ####
@@ -163,7 +162,7 @@ class OpenMM_system:
                 self.top = app.ForceField(*self.xml_files)
 
         else:
-            raise NotImplementedError("Topology format {} is not currently supported.".format(self.topology_format))
+            raise NotImplementedError("Topology format {} is currently not supported.".format(self.topology_format))
 
         # Read coordinate file
         if self.crd_format.upper() == "AMBER":
@@ -175,7 +174,7 @@ class OpenMM_system:
         elif self.crd_format.upper() == "PDB":
             crd = app.PDBFile(self.crd_file)
         else:
-            raise NotImplementedError("Coordinate format {} is not currently supported.".format(self.crd_format))
+            raise NotImplementedError("Coordinate format {} is currently not supported.".format(self.crd_format))
 
         if crd != None:
             self.crd = crd

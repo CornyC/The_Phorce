@@ -15,6 +15,14 @@ class Molecular_system:
 
     Parameters
     ----------
+    system_type : str
+        Choice of ['1_gas_phase', '2_gas_phase', '1_solvent', '2_solvent']: the number denotes the amount of molecules
+        to parametrize, the string specifies whether the molecule(s) is/are in gas phase or in solution (e.g. water).
+    parametrization_type : str
+        Choice of ('all_forces', 'net_forces'): The first takes all forces in the system as-is, the 2nd choice allows
+        the computation of net forces (intramolecular forces of a molecule solved in water, intermolecular forces
+        between two molecules, intermolecular forces between two solvated molecules)
+
     mdr_univere : Coord_Toolz.mdanalysis.MDA_reader.universe object
         MDAnalysis Universe
     n_conformations : int
@@ -55,14 +63,28 @@ class Molecular_system:
         belongs to molecule2
     """
 
-    def __init__(self, mdr_universe, ase_sys, openmm_sys, naked_molecule=None, molecule1=None, molecule2=None):
+    def __init__(self, system_type: str, parametrization_type: str):
+
+        self.system_types = ['1_gas_phase', '2_gas_phase', '1_solvent', '2_solvent']
+        self.parametrization_types = ('all_forces', 'net_forces')
 
         # read-in params
-        self.ini_coords = ct.get_coords(mdr_universe.atoms)
+        self.system_type = system_type
+        self.parametrization_type = parametrization_type
+
+        assert self.system_type in [systype for systype in self.system_types], "System of type {} is" \
+                                                                                " not implemented.".format(system_type)
+        assert self.parametrization_type in [ptype for ptype in self.parametrization_types], "Parametrization" \
+                                                        " of type {} is not implemented.".format(parametrization_type)
+
+        #TODO: init mda_reader
+
         self.n_conformations = len(self.ini_coords)
+
+        self.ini_coords = ct.get_coords(mdr_universe.atoms)
         self.n_atoms = self.ini_coords.shape[1]
         self.ase_sys = ase_sys
-        self.openmm_sys = openmm_sys
+        self.openmm_sys = openmm_sys #TODO: extend to hold more than 1 sys for net force calc
         self.naked_molecule = naked_molecule
         self.molecule1 = molecule1
         self.molecule2 = molecule2

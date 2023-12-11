@@ -32,10 +32,6 @@ class MDA_reader:
     def __init__(self, universe=None):
         self.universe = universe
 
-        self.molecule_only = None
-        self.molecule1_solv = None
-        self.molecule2_solv = None
-
     def set_traj_input(self, top=None, traj=None):
         """
         Calls the MDAnalysis trajectory reader
