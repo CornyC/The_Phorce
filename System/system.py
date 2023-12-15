@@ -2,7 +2,7 @@
 import copy
 import numpy as np
 import Coord_Toolz.mdanalysis as ct
-from .input_paths import *
+from .paths import *
 import MDAnalysis as mda
 import os, re
 from ASE_interface.ase_calculation import *
@@ -63,68 +63,127 @@ class Molecular_system:
         belongs to molecule2
     """
 
-    def __init__(self, system_type: str, parametrization_type: str):
+    def __init__(self, system_type: str, parametrization_type: str, parametrization_method: str):
 
         self.system_types = ['1_gas_phase', '2_gas_phase', '1_solvent', '2_solvent']
-        self.parametrization_types = ('all_forces', 'net_forces')
+        self.parametrization_types = ('total_properties', 'net_properties')
+        self.parametrization_methods = ('energy', 'forces', 'energy&forces')
+
+        base_dict = {'all': None}
+        base_dict_net2 = {'all': None,
+                            'mol1': None,
+                            'mol2': None}
+        base_dict_solv1 = {'all': None,
+                           'nosol': None}
+        
 
         # read-in params
         self.system_type = system_type
         self.parametrization_type = parametrization_type
+        self.parametrization_method = parametrization_method
 
         assert self.system_type in [systype for systype in self.system_types], "System of type {} is" \
                                                                                 " not implemented.".format(system_type)
         assert self.parametrization_type in [ptype for ptype in self.parametrization_types], "Parametrization" \
                                                         " of type {} is not implemented.".format(parametrization_type)
+        assert self.parametrization_method in [pmeth for pmeth in self.parametrization_methods], "Parametrization" \
+                                                        " method {} is not implemented.".format(parametrization_method)
+        
+        # init data storage for different cases
+        if self.parametrization_type == 'net properties':
 
-        #TODO: init mda_reader
+            if self.system_type.find('2', [0]) != -1:
 
-        self.n_conformations = len(self.ini_coords)
+                self.ini_coords = copy.deepcopy(base_dict_net2)
+                self.ase_sys = copy.deepcopy(base_dict_net2)
+                self.openmm_sys = copy.deepcopy(base_dict_net2)
+                self.opt_coords = copy.deepcopy(base_dict_net2)
+                self.mm_charges = copy.deepcopy(base_dict_net2)
+                self.qm_charges = copy.deepcopy(base_dict_net2)
+
+                if self.parametrization_method.find('energy') != -1:
+
+                    self.mm_energies = copy.deepcopy(base_dict_net2)
+                    self.qm_energies = copy.deepcopy(base_dict_net2)
+                    self.eqm_bsse = copy.deepcopy(base_dict_net2)
+                    
+                if self.parametrization_method.find('forces') != -1:
+
+                    self.mm_forces = copy.deepcopy(base_dict_net2)
+                    self.qm_forces = copy.deepcopy(base_dict_net2)
+            
+            elif self.system_type.find('1_solvent'):
+
+                self.ini_coords = copy.deepcopy(base_dict_solv1)
+                self.ase_sys = copy.deepcopy(base_dict_solv1)
+                self.openmm_sys = copy.deepcopy(base_dict_solv1)
+                self.opt_coords = copy.deepcopy(base_dict_solv1)
+                self.mm_charges = copy.deepcopy(base_dict_solv1)
+                self.qm_charges = copy.deepcopy(base_dict_solv1)
+
+                if self.parametrization_method.find('energy') != -1:
+
+                    self.mm_energies = copy.deepcopy(base_dict_solv1)
+                    self.qm_energies = copy.deepcopy(base_dict_solv1)
+                    self.eqm_bsse = copy.deepcopy(base_dict_solv1)
+                    
+                if self.parametrization_method.find('forces') != -1:
+
+                    self.mm_forces = copy.deepcopy(base_dict_solv1)
+                    self.qm_forces = copy.deepcopy(base_dict_solv1)
+
+            elif self.system_type.find('1_gas_phase'):
+
+                self.ini_coords = copy.deepcopy(base_dict)
+                self.ase_sys = copy.deepcopy(base_dict)
+                self.openmm_sys = copy.deepcopy(base_dict)
+                self.opt_coords = copy.deepcopy(base_dict)
+                self.mm_charges = copy.deepcopy(base_dict)
+                self.qm_charges = copy.deepcopy(base_dict)
+
+                if self.parametrization_method.find('energy') != -1:
+
+                    self.mm_energies = copy.deepcopy(base_dict)
+                    self.qm_energies = copy.deepcopy(base_dict)
+                    self.eqm_bsse = copy.deepcopy(base_dict)
+                    
+                if self.parametrization_method.find('forces') != -1:
+
+                    self.mm_forces = copy.deepcopy(base_dict)
+                    self.qm_forces = copy.deepcopy(base_dict)
+
+        else:
+
+            self.ini_coords = copy.deepcopy(base_dict)
+            self.ase_sys = copy.deepcopy(base_dict)
+            self.openmm_sys = copy.deepcopy(base_dict)
+            self.opt_coords = copy.deepcopy(base_dict)
+            self.mm_charges = copy.deepcopy(base_dict)
+            self.qm_charges = copy.deepcopy(base_dict)
+
+            if self.parametrization_method.find('energy') != -1:
+
+                self.mm_energies = copy.deepcopy(base_dict)
+                self.qm_energies = copy.deepcopy(base_dict)
+                self.eqm_bsse = copy.deepcopy(base_dict)
+                
+            if self.parametrization_method.find('forces') != -1:
+
+                self.mm_forces = copy.deepcopy(base_dict)
+                self.qm_forces = copy.deepcopy(base_dict)
+
+        print('...Now set up the MDAnalysis Universe...')
+
+    def callmda(self):
 
         self.ini_coords = ct.get_coords(mdr_universe.atoms)
+        self.n_conformations = len(self.ini_coords) # do this externally ---> def callmda
         self.n_atoms = self.ini_coords.shape[1]
-        self.ase_sys = ase_sys
-        self.openmm_sys = openmm_sys #TODO: extend to hold more than 1 sys for net force calc
         self.naked_molecule = naked_molecule
         self.molecule1 = molecule1
         self.molecule2 = molecule2
-
-        ### other system params ###
         self.naked_molecule_n_atoms = None
         self.weights = None
-
-        # from md/ff #
-        self.mm_energies = None
-        self.mm_energies_gp = None
-        self.mm_energies_m1 = None
-        self.mm_energies_m2 = None
-        self.mm_forces = None
-        self.mm_forces_gp = None
-        self.mm_forces_m1 = None
-        self.mm_forces_m2 = None
-        self.mm_charges = None
-        self.mm_charges_gp = None
-        self.ini_dihed = None
-
-        # from dft #
-
-        self.qm_energies = None
-        self.qm_energies_gp = None
-        self.qm_energies_m1 = None
-        self.qm_energies_m2 = None
-        self.qm_forces = None
-        self.qm_forces_gp = None
-        self.qm_forces_m1 = None
-        self.qm_forces_m2 = None
-        self.qm_charges = None
-        self.qm_charges_gp = None
-        self.eqm_bsse = None
-
-        self.opt_coords = None
-        self.opt_charges = None
-        self.opt_dihed = None
-
-
 
     def generate_qm_energies_forcesraw_optcoords(self, run_type='single_point', coords=None):
         """
@@ -190,7 +249,7 @@ class Molecular_system:
             self.qm_energies_gp = eqm
             self.qm_forces_gp = fqm
 
-    def generate_qm_charges_energies_forcesraw_optcoords(self, input_paths, cp2k_input: str, omp_threads: int,
+    def generate_qm_charges_energies_forcesraw_optcoords(self, paths, cp2k_input: str, omp_threads: int,
                                                       cp2k_binary_name: str, charge_type: str):
 
         """
@@ -198,7 +257,7 @@ class Molecular_system:
 
         Parameters
         ----------
-        input_paths : input_paths.Input_Paths object
+        paths : paths.Paths object
             contains paths and filenames etc
         cp2k_input : str
             all the commands and strings that go into a cp2k .inp file (see cp2k doc). It is recommended to load the
@@ -224,7 +283,7 @@ class Molecular_system:
         #### construct charge calculator object ####
         from ..Direct_cp2k_calculation.direct_cp2k import Direct_Calculator as cc
         run_type = 'charges'
-        charge_calc = cc(input_paths, run_type)
+        charge_calc = cc(paths, run_type)
 
         #### initialize arrays (for unsolvated molecule) ####
         cmm_gp = np.zeros((self.n_conformations, self.naked_molecule_n_atoms))
@@ -345,7 +404,7 @@ class Molecular_system:
             coords = ct.get_coords(u.atoms)[-1]
             self.opt_coords[n, :, :] = coords
 
-    def generate_qm_energies_forces(self, atomgroup, atomgroup_name, input_paths, cp2k_inp):
+    def generate_qm_energies_forces(self, atomgroup, atomgroup_name, paths, cp2k_inp):
 
         """
         calculates QM energies and forces needed for net forces (raw sys forces - mol1 with water forces -
@@ -357,7 +416,7 @@ class Molecular_system:
             e.g. molecule1
         atomgroup_name : str
             e.g. 'molecule1', needed for output files
-        input_paths : input_paths.Input_Paths object
+        paths : paths.paths object
             contains working dir n stuff
         cp2k_inp : str
             input for the inp parameter of the ASE cp2k calculator w/ all the necessary cp2k control parameters
@@ -367,7 +426,7 @@ class Molecular_system:
             eqm : quantum energies of atomgroup
         """
 
-        os.chdir(input_paths.working_dir + input_paths.project_name)
+        os.chdir(paths.working_dir + paths.project_name)
 
         coords = ct.get_coords(atomgroup)
 
@@ -420,7 +479,7 @@ class Molecular_system:
 
         return fqm, eqm
 
-    def calculate_qm_net_forces(self, molnames, input_paths, cp2k_input):
+    def calculate_qm_net_forces(self, molnames, paths, cp2k_input):
 
         """
         Computes the net forces between 2 molecules by subtracting the forces caused by interaction w/ surrounding
@@ -431,7 +490,7 @@ class Molecular_system:
         molnames : dict
             names of molecules whose interaction forces w/ water have to be subtracted and their atom groups:
             'mol1' : mol1
-        input_paths : input_paths.Input_Paths object
+        paths : paths.paths object
             contains working dir n stuff
         cp2k_inp : str
             input for the inp parameter of the ASE cp2k calculator w/ all the necessary cp2k control parameters
@@ -440,7 +499,7 @@ class Molecular_system:
 
         for molname in molnames.keys(): # aaaahhhhhh need another dict to store shit :(
 
-            self.generate_qm_energies_forces(molnames[molname], molname, input_paths, cp2k_input)
+            self.generate_qm_energies_forces(molnames[molname], molname, paths, cp2k_input)
 
         #TODO: make sense of this shit
 
@@ -482,7 +541,7 @@ class Molecular_system:
         self.mm_forces = fmm
 
 
-    def get_bsse(self, input_paths, cp2k_input: str, omp_threads: int, cp2k_binary_name: str):
+    def get_bsse(self, paths, cp2k_input: str, omp_threads: int, cp2k_binary_name: str):
 
         """
         calculate the basis set superposition error (BSSE) using native cp2k
@@ -508,7 +567,7 @@ class Molecular_system:
         #### construct charge calculator object ####
         from ..Direct_cp2k_calculation.direct_cp2k import Direct_Calculator as cc
         run_type = 'BSSE'
-        bsse_calc = cc(input_paths, run_type)
+        bsse_calc = cc(paths, run_type)
 
         #### run calc ####
         bsse_calc.generate_cp2k_input_file(cp2k_input)

@@ -10,7 +10,7 @@ def check_path(path: str):
 
 #### instance to store input file paths and names ####
 
-class Input_Paths:
+class Paths:
     """
     Stores paths and filenames to external input files. Parameters can also be set manually by the user.
 
