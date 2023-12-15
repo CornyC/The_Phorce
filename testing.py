@@ -1,5 +1,5 @@
 import importlib
-from System.input_paths import *
+from System.paths import *
 from OMM_interface.openmm import *
 import os
 import shutil
@@ -12,7 +12,7 @@ import re
 from ASE_interface.ase_calculation import CP2K
 from Coord_Toolz.mdanalysis import MDA_reader
 from Direct_cp2k_calculation.direct_cp2k import Direct_Calculator
-from System.input_paths import Input_Paths
+from System.paths import Paths
 from System.system import Molecular_system
 from ASE_interface.ase_calculation import ASE_system
 from Parametrization.parametrization import Parametrization
@@ -21,22 +21,22 @@ from System.system import write_single_pdb
 from OMM_interface.openmm import OpenMM_system
 
 # set paths
-input_paths = Input_Paths()
-input_paths.mm_top_file = 'smallbox.psf'
-input_paths.mm_top_file_path = '/home/ac127777/Documents/methylphosphate/cp2k_geom_opts/mp0mp0/frame0/'
-input_paths.crd_pdb_file = 'smallbox.pdb'
-input_paths.crd_pdb_file_path = input_paths.mm_top_file_path
-input_paths.str_file = 'mp0.str'
-input_paths.str_file_path = '../methylphosphate/force_matching/test/'
-input_paths.traj_file = 'optcoords.xyz'
-input_paths.traj_file_path = '/home/ac127777/Documents/methylphosphate/cp2k_geom_opts/mp0mp0/'
-input_paths.working_dir = '../methylphosphate/force_matching/test/'
-input_paths.project_name = 'mp0mp0'
-input_paths.set()
+paths = Paths()
+paths.mm_top_file = 'smallbox.psf'
+paths.mm_top_file_path = '/home/ac127777/Documents/methylphosphate/cp2k_geom_opts/mp0mp0/frame0/'
+paths.crd_pdb_file = 'smallbox.pdb'
+paths.crd_pdb_file_path = paths.mm_top_file_path
+paths.str_file = 'mp0.str'
+paths.str_file_path = '../methylphosphate/force_matching/test/'
+paths.traj_file = 'optcoords.xyz'
+paths.traj_file_path = '/home/ac127777/Documents/methylphosphate/cp2k_geom_opts/mp0mp0/'
+paths.working_dir = '../methylphosphate/force_matching/test/'
+paths.project_name = 'mp0mp0'
+paths.set()
 
 # set up the openmm system
-omm_sys = OpenMM_system(topology_format='CHARMM', top_file=input_paths.mm_top, crd_format='PDB',
-                        crd_file=input_paths.crd_pdb, charmm_param_file=input_paths.stream, pbc=True,
+omm_sys = OpenMM_system(topology_format='CHARMM', top_file=paths.mm_top, crd_format='PDB',
+                        crd_file=paths.crd_pdb, charmm_param_file=paths.stream, pbc=True,
                         cell=[1.6, 1.6, 1.6], angles=[90, 90, 90])
 
 omm_sys.create_system_params['nonbondedCutoff'] = 0.8 * unit.nanometer
@@ -63,7 +63,7 @@ from Coord_Toolz.mdanalysis import *
 
 mdr = MDA_reader()
 
-mdr.set_traj_input(input_paths.crd_pdb, input_paths.traj)
+mdr.set_traj_input(paths.crd_pdb, paths.traj)
 
 trajcoords=get_coords(mdr.universe.atoms)
 
@@ -252,7 +252,7 @@ molsys.naked_molecule_n_atoms = molsys.naked_molecule.n_atoms
 
 
 # Define a function to copy a file
-def perform_ase_calculation(input_paths, coords, frame_nr, molecule_solv, basis_set, inp):
+def perform_ase_calculation(paths, coords, frame_nr, molecule_solv, basis_set, inp):
     ase_sys = ASE_system(molecule_solv.elements, coords)
     ase_sys.cell = ([16.0, 16.0, 16.0])
     ase_sys.pbc = ([True, True, True])
@@ -299,8 +299,8 @@ mol1_eqm = np.zeros((len(coords1), 1))
 mol2_eqm = np.zeros((len(coords2), 1))
 # fill arrays
 for n, frane in enumerate(coords1):
-    mol1_fqm[n, :, :] = np.genfromtxt(str(input_paths.traj_file_path)+'/frame'+str(n)+'/forces_energy_mol1_frame'+str(n)+'.txt', skip_header=1)
-    f = open(str(input_paths.traj_file_path)+'/frame'+str(n)+'/forces_energy_mol1_frame'+str(n)+'.txt', 'r')
+    mol1_fqm[n, :, :] = np.genfromtxt(str(paths.traj_file_path)+'/frame'+str(n)+'/forces_energy_mol1_frame'+str(n)+'.txt', skip_header=1)
+    f = open(str(paths.traj_file_path)+'/frame'+str(n)+'/forces_energy_mol1_frame'+str(n)+'.txt', 'r')
     read=[]
     for i, line in enumerate(f.readlines()):
         line = line.strip('# E:\n')
@@ -310,8 +310,8 @@ for n, frane in enumerate(coords1):
     mol1_eqm[n] = float(read[0])
 
 for n, frane in enumerate(coords2):
-    mol2_fqm[n, :, :] = np.genfromtxt(str(input_paths.traj_file_path)+'/frame'+str(n)+'/forces_energy_mol2_frame'+str(n)+'.txt', skip_header=1)
-    f = open(str(input_paths.traj_file_path)+'/frame'+str(n)+'/forces_energy_mol2_frame'+str(n)+'.txt', 'r')
+    mol2_fqm[n, :, :] = np.genfromtxt(str(paths.traj_file_path)+'/frame'+str(n)+'/forces_energy_mol2_frame'+str(n)+'.txt', skip_header=1)
+    f = open(str(paths.traj_file_path)+'/frame'+str(n)+'/forces_energy_mol2_frame'+str(n)+'.txt', 'r')
     read=[]
     for i, line in enumerate(f.readlines()):
         line = line.strip('# E:\n')
@@ -337,11 +337,11 @@ from pathlib import Path
 import re
 # fill arrays
 for n, frame in enumerate(trajcoords):
-    p = Path(str(input_paths.traj_file_path)+'frame'+str(n)+'/geom_opt_rst.out')
+    p = Path(str(paths.traj_file_path)+'frame'+str(n)+'/geom_opt_rst.out')
     if p.exists():
-        filepath = str(input_paths.traj_file_path)+'frame'+str(n)+'/geom_opt_rst.out'
+        filepath = str(paths.traj_file_path)+'frame'+str(n)+'/geom_opt_rst.out'
     else:
-        filepath = str(input_paths.traj_file_path)+'frame'+str(n)+'/geom_opt.out'
+        filepath = str(paths.traj_file_path)+'frame'+str(n)+'/geom_opt.out'
     f = open(filepath, 'r')
     read = []
     for index, line in enumerate(f.readlines()):
@@ -446,11 +446,11 @@ update_str_with_dft_data(str_file_path, dft_data)
 
 for frame_nr, frame in enumerate(coords1):
     mdr.molecule1_solv.atoms.positions = frame
-    write_single_pdb(mdr.molecule1_solv.atoms, pdb_filename='optpos_phos1.pdb', pdb_path=input_paths.traj_file_path+'frame'+str(frame_nr))
+    write_single_pdb(mdr.molecule1_solv.atoms, pdb_filename='optpos_phos1.pdb', pdb_path=paths.traj_file_path+'frame'+str(frame_nr))
 
     oms_p1_h2o = OpenMM_system(topology_format='CHARMM',
-    top_file = input_paths.traj_file_path + 'frame0/optpos_phos1.psf', crd_format = 'PDB',
-    crd_file = input_paths.traj_file_path + 'frame' + str(frame_nr) + '/optpos_phos1.pdb',
+    top_file = paths.traj_file_path + 'frame0/optpos_phos1.psf', crd_format = 'PDB',
+    crd_file = paths.traj_file_path + 'frame' + str(frame_nr) + '/optpos_phos1.pdb',
     charmm_param_file = '../methylphosphate/force_matching/test/mp0.str',
     pbc = True, cell = [1.6, 1.6, 1.6], angles = [90, 90, 90])
 
@@ -483,11 +483,11 @@ for frame_nr, frame in enumerate(coords1):
 
 for frame_nr, frame in enumerate(coords2):
     mdr.molecule2_solv.atoms.positions = frame
-    write_single_pdb(mdr.molecule2_solv.atoms, pdb_filename='optpos_phos2.pdb', pdb_path=input_paths.traj_file_path+'frame'+str(frame_nr))
+    write_single_pdb(mdr.molecule2_solv.atoms, pdb_filename='optpos_phos2.pdb', pdb_path=paths.traj_file_path+'frame'+str(frame_nr))
 
     oms_p2_h2o = OpenMM_system(topology_format='CHARMM',
-    top_file = input_paths.traj_file_path + 'frame0/optpos_phos2.psf', crd_format = 'PDB',
-    crd_file = input_paths.traj_file_path + 'frame' + str(frame_nr) + '/optpos_phos2.pdb',
+    top_file = paths.traj_file_path + 'frame0/optpos_phos2.psf', crd_format = 'PDB',
+    crd_file = paths.traj_file_path + 'frame' + str(frame_nr) + '/optpos_phos2.pdb',
     charmm_param_file = '../methylphosphate/force_matching/test/mp0.str',
     pbc = True, cell = [1.6, 1.6, 1.6], angles = [90, 90, 90])
 
@@ -521,11 +521,11 @@ for frame_nr, frame in enumerate(coords2):
 
 for frame_nr, frame in enumerate(trajcoords):
     mdr.universe.atoms.positions = frame
-    write_single_pdb(mdr.universe.atoms, pdb_filename='optpos.pdb', pdb_path=input_paths.traj_file_path+'frame'+str(frame_nr))
+    write_single_pdb(mdr.universe.atoms, pdb_filename='optpos.pdb', pdb_path=paths.traj_file_path+'frame'+str(frame_nr))
 
     omm_sys = OpenMM_system(topology_format='CHARMM',
-    top_file = input_paths.traj_file_path + 'frame0/smallbox.psf', crd_format = 'PDB',
-    crd_file = input_paths.traj_file_path + 'frame' + str(frame_nr) + '/optpos.pdb',
+    top_file = paths.traj_file_path + 'frame0/smallbox.psf', crd_format = 'PDB',
+    crd_file = paths.traj_file_path + 'frame' + str(frame_nr) + '/optpos.pdb',
     charmm_param_file = '../methylphosphate/force_matching/test/mp0.str',
     pbc = True, cell = [1.6, 1.6, 1.6], angles = [90, 90, 90])
 
@@ -572,18 +572,18 @@ molsys.qm_energies=eqm_raw
 
 # get qm charges
 from Direct_cp2k_calculation.direct_cp2k import *
-cp2k_dc = Direct_Calculator(input_paths)
-cp2k_dc.project_path = input_paths.traj_file_path
+cp2k_dc = Direct_Calculator(paths)
+cp2k_dc.project_path = paths.traj_file_path
 # create array
 qmcharges = np.zeros((len(trajcoords), trajcoords.shape[1]))
 
 # fill array
 for frame_nr, frame in enumerate(trajcoords):
-    p = Path(str(input_paths.traj_file_path)+'frame'+str(frame_nr)+'/geom_opt_rst.out')
+    p = Path(str(paths.traj_file_path)+'frame'+str(frame_nr)+'/geom_opt_rst.out')
     if p.exists():
-        filepath = str(input_paths.traj_file_path)+'frame'+str(frame_nr)+'/geom_opt_rst.out'
+        filepath = str(paths.traj_file_path)+'frame'+str(frame_nr)+'/geom_opt_rst.out'
     else:
-        filepath = str(input_paths.traj_file_path)+'frame'+str(frame_nr)+'/geom_opt.out'
+        filepath = str(paths.traj_file_path)+'frame'+str(frame_nr)+'/geom_opt.out'
     f = open(filepath, 'r')
     read = []
     for index, line in enumerate(f.readlines()):

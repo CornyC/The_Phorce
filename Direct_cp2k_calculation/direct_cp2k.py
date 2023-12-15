@@ -4,7 +4,7 @@ import fnmatch
 from pathlib import Path
 import numpy as np
 import re
-from System.input_paths import *
+from System.paths import *
 
 #### Calculate Mulliken, Hirshfeld, RESP charges, and BSSE using cp2k ####
 

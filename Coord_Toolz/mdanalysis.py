@@ -19,20 +19,24 @@ class MDA_reader:
 
     Parameters
     ----------
-    universe : MDAnalysis.core.universe.Universe object
-        Contains atoms and their names & identifiers, positions, forces...(check MDAnalysis doc)
-    molecule_only : MDAnalysis.core.groups.AtomGroup
-        Contains atom selection of universe that represents the molecule to parametrize w/o waters or ions
-    molecule1_solv : MDAnalysis.core.groups.AtomGroup
-        Contains atom selection of universe that represents molecule1 without molecule2. Enables calculation of forces
-        between molecules.
-    molecule2_solv : MDAnalysis.core.groups.AtomGroup
-        Contains atom selection of universe that represents molecule2 without molecule1. Enables calculation of forces
-        between molecules.
+    all : MDAnalysis.core.universe.Universe object
+        Contains all atoms and their names & identifiers, positions, forces...(check MDAnalysis doc)
+    nosol : MDAnalysis.core.groups.AtomGroup
+        Contains atom selection of universe that represents the molecule to parametrize w/o solvent or ions. Enables 
+        calculation of forces between molecule and solvent. 
+    mol1 : MDAnalysis.core.groups.AtomGroup
+        Contains atom selection of universe that represents molecule1 (w/ solvent if solvent in 'all') without molecule2. 
+        Enables calculation of net forces between molecules.
+    mol2 : MDAnalysis.core.groups.AtomGroup
+        Contains atom selection of universe that represents molecule2 (w/ solvent if solvent in 'all') without molecule1. 
+        Enables calculation of net forces between molecules.
     """
 
     def __init__(self, universe=None):
-        self.universe = universe
+        self.all = universe
+        self.nosol = None
+        self.mol1 = None
+        self.mol2 = None
 
     def set_traj_input(self, top=None, traj=None):
         """
@@ -56,7 +60,7 @@ class MDA_reader:
 
         u = mda.Universe(top, traj, in_memory=True)
         assert len(u.atoms) > 0, 'No element symbols found in topology and ASE needs them :('
-        self.universe = u
+        self.all = u
 
     def set_crd_input(self, crd_input=None):
         """
@@ -72,7 +76,7 @@ class MDA_reader:
             u = mda.Universe(str(input('enter path to .pdb file\n')))
             assert len(u.atoms.elements) > 0, 'Edit your .pdb file so that the last column has element symbols'\
                                      '(Avogadro does it automatically for you) bc ASE needs them'
-        self.universe = u
+        self.all = u
 
     def remove_water_ions(self, atomgroup=None):
         """
@@ -89,7 +93,9 @@ class MDA_reader:
                         'TIP3P': False,
                         'TP3M': False,
                         'SOL': False,
-                        'HOH': False}
+                        'HOH': False,
+                        'TIP4': False,
+                        'TIP4P': False}
 
         ion_resnames={'SOD': False,
                       'NA': False,
@@ -102,7 +108,7 @@ class MDA_reader:
                       'CLA': False}
 
         if atomgroup is None:
-            atomgroup = self.universe.atoms
+            atomgroup = self.all.atoms
 
         for water_resname in water_resnames:
             if water_resname in atomgroup.resnames:
@@ -140,11 +146,11 @@ class MDA_reader:
 
         if ions_present == False:
 
-            self.molecule_only = atomgroup.select_atoms('not resname '+str(water_id))
+            self.nosol = atomgroup.select_atoms('not resname '+str(water_id))
 
         elif ions_present == True:
 
-            self.molecule_only = atomgroup.select_atoms('not resname '+str(water_id)+' and not resname '+str(ion_id))
+            self.nosol = atomgroup.select_atoms('not resname '+str(water_id)+' and not resname '+str(ion_id))
 
     def delete_one_molecule(self, selection: str):
         """
@@ -156,7 +162,7 @@ class MDA_reader:
             e.g. 'resname not MP0' or 'resid not 2' (inverse selection to remove in these examples residue MP0/2)
         """
 
-        remaining_molecules = self.universe.select_atoms(selection)
+        remaining_molecules = self.all.select_atoms(selection)
 
         return remaining_molecules
 

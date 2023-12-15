@@ -22,25 +22,20 @@ class Molecular_system:
         Choice of ('all_forces', 'net_forces'): The first takes all forces in the system as-is, the 2nd choice allows
         the computation of net forces (intramolecular forces of a molecule solved in water, intermolecular forces
         between two molecules, intermolecular forces between two solvated molecules)
+    parametrization_methods : str
+        Choice of ['energy', 'forces', 'energy&forces']: Which property is compared in the objective function
 
-    n_conformations : int
-        number of conformations aka sampled structures
-    n_atoms : int
-        number of atoms
+    ini_coords: numpy array of shape (n_conformations, n_atoms, 3)
+        coordinates of the sampled structures in Angström
     ase_sys : ASE_interface.ase_calculation object
         ASE calculation instance
     openmm_sys : OMM_interface.openmm object
         OpenMM system instance
-    naked_molecule : Coord_Toolz.mdanalysis.MDA_reader.molecule_only object
-        water and ions removed from .pdb for gas phase/charge calculation
-    molecule1 : Coord_Toolz.mdanalysis.MDA_reader.molecule1 object (MDA AtomGroup)
-        if interaction forces between two molecules are supposed to be optimized, this is molecule 1
-    molecule2 : Coord_Toolz.mdanalysis.MDA_reader.molecule2 object (MDA AtomGroup)
-        if interaction forces between two molecules are supposed to be optimized, this is molecule 2
-    naked_molecule_n_atoms : int
-        number of atoms of molecule w/o water to be parametrized
-    ini_coords: numpy array of shape (n_conformations, n_atoms, 3)
-        coordinates of the sampled structures in Angström
+    n_conformations : int
+        number of conformations aka sampled structures
+    n_atoms : int
+        number of atoms
+
     qm_forces: numpy array
         forces on each atom of the ini_coords evaluated by the quantum chemical method for each sampled structure
     qm_energies: numpy array
@@ -51,14 +46,14 @@ class Molecular_system:
         potential energies of each sampled structure evaluated by the classical MD method
     eqm_bsse: numpy array
         Basis set superposition error
-    ..._gp:
-        gas phase (no water)
     opt_...:
         optimized
-    ..._m1:
+    ..._mol1:
         belongs two moleecule1
-    ..._m2:
+    ..._mol2:
         belongs to molecule2
+    weights: numpy array w/ len = n_conformations
+        weights that are applied to the conformations
     """
 
     def __init__(self, system_type: str, parametrization_type: str, parametrization_method: str):
@@ -68,7 +63,7 @@ class Molecular_system:
 
         self.system_types = ['1_gas_phase', '2_gas_phase', '1_solvent', '2_solvent']
         self.parametrization_types = ('total_properties', 'net_properties')
-        self.parametrization_methods = ('energy', 'forces', 'energy&forces')
+        self.parametrization_methods = ['energy', 'forces', 'energy&forces']
 
         base_dict = {'all': None}
         base_dict_net2 = {'all': None,
@@ -93,9 +88,10 @@ class Molecular_system:
         # init data storage for different cases
         if self.parametrization_type == 'net properties':
 
-            if self.system_type.find('2', [0]) != -1:
+            if self.system_type.find('2') != -1:
 
                 self.ini_coords = copy.deepcopy(base_dict_net2)
+                self.n_atoms = copy.deepcopy(base_dict_net2)
                 self.ase_sys = copy.deepcopy(base_dict_net2)
                 self.openmm_sys = copy.deepcopy(base_dict_net2)
                 self.opt_coords = copy.deepcopy(base_dict_net2)
@@ -113,9 +109,15 @@ class Molecular_system:
                     self.mm_forces = copy.deepcopy(base_dict_net2)
                     self.qm_forces = copy.deepcopy(base_dict_net2)
             
+                print("...Now set up the MDA_reader...")
+                print("...define mol1 & mol2...")
+                print("MDA_reader.mol1 = MDA_reader.delete_one_molecule('not resid 2')")
+                print("MDA_reader.mol2 = MDA_reader.delete_one_molecule('not resid 1')")
+
             elif self.system_type.find('1_solvent'):
 
                 self.ini_coords = copy.deepcopy(base_dict_solv1)
+                self.n_atoms = copy.deepcopy(base_dict_solv1)
                 self.ase_sys = copy.deepcopy(base_dict_solv1)
                 self.openmm_sys = copy.deepcopy(base_dict_solv1)
                 self.opt_coords = copy.deepcopy(base_dict_solv1)
@@ -133,29 +135,14 @@ class Molecular_system:
                     self.mm_forces = copy.deepcopy(base_dict_solv1)
                     self.qm_forces = copy.deepcopy(base_dict_solv1)
 
-            elif self.system_type.find('1_gas_phase'):
-
-                self.ini_coords = copy.deepcopy(base_dict)
-                self.ase_sys = copy.deepcopy(base_dict)
-                self.openmm_sys = copy.deepcopy(base_dict)
-                self.opt_coords = copy.deepcopy(base_dict)
-                self.mm_charges = copy.deepcopy(base_dict)
-                self.qm_charges = copy.deepcopy(base_dict)
-
-                if self.parametrization_method.find('energy') != -1:
-
-                    self.mm_energies = copy.deepcopy(base_dict)
-                    self.qm_energies = copy.deepcopy(base_dict)
-                    self.eqm_bsse = copy.deepcopy(base_dict)
-                    
-                if self.parametrization_method.find('forces') != -1:
-
-                    self.mm_forces = copy.deepcopy(base_dict)
-                    self.qm_forces = copy.deepcopy(base_dict)
+                print('...Now set up the MDA_reader...')
+                print('...define the molecule...')
+                print('MDA_reader.nosol = MDA_reader.remove_water_ions()')
 
         else:
 
             self.ini_coords = copy.deepcopy(base_dict)
+            self.n_atoms = copy.deepcopy(base_dict)
             self.ase_sys = copy.deepcopy(base_dict)
             self.openmm_sys = copy.deepcopy(base_dict)
             self.opt_coords = copy.deepcopy(base_dict)
@@ -173,29 +160,38 @@ class Molecular_system:
                 self.mm_forces = copy.deepcopy(base_dict)
                 self.qm_forces = copy.deepcopy(base_dict)
 
-        print('...Now set up the MDAnalysis Universe...')
+        self.weights = None
 
-    def set_ini_coords(self, MDA_reader_object, ):
+    def set_ini_coords(self, MDA_reader_object):
         """
         reads in the initial atoms & coordinates from file(s) using the MDA_reader, stores them in Molecular_system,
         and acquires properties derived from them based on the settings in Molecular_system.  
 
         Parameters
         ----------
-        MDA_reader_object: Coord_Toolz.mdanalysis.MDA_reader.universe object
-            MDAnalysis Universe
+        MDA_reader_object: Coord_Toolz.mdanalysis.MDA_reader object
+            Contains MDA Universe and atomgroups
         """
         #TODO: pass shit to correct system storage
-        coords = ct.get_coords(MDA_reader_object.atoms)
 
+        coords = ct.get_coords(MDA_reader_object.all.atoms)
+        self.n_conformations = len(coords) 
+        self.n_atoms['all'] = len(MDA_reader_object.all.atoms)
 
-        self.n_conformations = len(self.ini_coords) 
-        self.n_atoms = self.ini_coords.shape[1]
-        self.naked_molecule = naked_molecule
-        self.molecule1 = molecule1
-        self.molecule2 = molecule2
-        self.naked_molecule_n_atoms = None
-        self.weights = None
+        self.ini_coords['all'] = coords
+
+        if MDA_reader_object.nosol is not None:
+            nosol_coords = ct.get_coords(MDA_reader_object.nosol)
+            self.ini_coords['nosol'] = nosol_coords
+            self.n_atoms['nosol'] = len(MDA_reader_object.nosol)
+
+        elif MDA_reader_object.mol1 is not None:
+            mol1_coords = ct.get_coords(MDA_reader_object.mol1)
+            self.ini_coords['mol1'] = mol1_coords
+            self.n_atoms['mol1'] = len(MDA_reader_object.mol1)
+            mol2_coords = ct.get_coords(MDA_reader_object.mol2)          
+            self.ini_coords['mol2'] = mol2_coords
+            self.n_atoms['mol2'] = len(MDA_reader_object.mol2)
 
     def generate_qm_energies_forcesraw_optcoords(self, run_type='single_point', coords=None):
         """

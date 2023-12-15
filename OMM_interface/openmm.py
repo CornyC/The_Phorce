@@ -7,7 +7,7 @@ import simtk.openmm.app as app
 from simtk.openmm.app import forcefield as ff
 import copy, os
 import fnmatch
-from System.input_paths import *
+from System.paths import *
 
 #### Setting up the OpenMM System ####
 
