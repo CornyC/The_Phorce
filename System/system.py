@@ -23,8 +23,6 @@ class Molecular_system:
         the computation of net forces (intramolecular forces of a molecule solved in water, intermolecular forces
         between two molecules, intermolecular forces between two solvated molecules)
 
-    mdr_univere : Coord_Toolz.mdanalysis.MDA_reader.universe object
-        MDAnalysis Universe
     n_conformations : int
         number of conformations aka sampled structures
     n_atoms : int
@@ -64,6 +62,9 @@ class Molecular_system:
     """
 
     def __init__(self, system_type: str, parametrization_type: str, parametrization_method: str):
+        """
+        Initialize object with desired settings.
+        """
 
         self.system_types = ['1_gas_phase', '2_gas_phase', '1_solvent', '2_solvent']
         self.parametrization_types = ('total_properties', 'net_properties')
@@ -174,10 +175,21 @@ class Molecular_system:
 
         print('...Now set up the MDAnalysis Universe...')
 
-    def callmda(self):
+    def set_ini_coords(self, MDA_reader_object, ):
+        """
+        reads in the initial atoms & coordinates from file(s) using the MDA_reader, stores them in Molecular_system,
+        and acquires properties derived from them based on the settings in Molecular_system.  
 
-        self.ini_coords = ct.get_coords(mdr_universe.atoms)
-        self.n_conformations = len(self.ini_coords) # do this externally ---> def callmda
+        Parameters
+        ----------
+        MDA_reader_object: Coord_Toolz.mdanalysis.MDA_reader.universe object
+            MDAnalysis Universe
+        """
+        #TODO: pass shit to correct system storage
+        coords = ct.get_coords(MDA_reader_object.atoms)
+
+
+        self.n_conformations = len(self.ini_coords) 
         self.n_atoms = self.ini_coords.shape[1]
         self.naked_molecule = naked_molecule
         self.molecule1 = molecule1

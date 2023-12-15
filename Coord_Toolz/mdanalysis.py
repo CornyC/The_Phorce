@@ -7,13 +7,15 @@ from MDAnalysis.coordinates.memory import MemoryReader #faster processing for sm
 import os
 from pathlib import Path
 import numpy as np
-from System.input_paths import *
+from System.paths import *
 
 #### import sampled structures and manipulate them ####
 
 class MDA_reader:
     """
     Reads in sampled structures trajectory and topology. Coordinates in Angström. Allows for manipulations of atoms.
+    Input upon initialization can be empty or a predefined MDAnalysis Universe: 
+    Example: MDR = MDA_reader(MDAnalysis.core.universe.Universe) or MDR = MDA_reader()
 
     Parameters
     ----------
