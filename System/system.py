@@ -10,6 +10,7 @@ from ASE_interface.ase_calculation import *
 #### define initial parameters of molecular system that go into the objective function ####
 
 class Molecular_system:
+    os.environ['OMP_NUM_THREADS'] = '6'
     """
     Contains properties of molecular system that is to be parametrized.
 
@@ -24,6 +25,9 @@ class Molecular_system:
         between two molecules, intermolecular forces between two solvated molecules)
     parametrization_methods : str
         Choice of ['energy', 'forces', 'energy&forces']: Which property is compared in the objective function
+
+    paths : System.paths.Paths object
+        Stores all relevant paths to files and folders
 
     ini_coords: numpy array of shape (n_conformations, n_atoms, 3)
         coordinates of the sampled structures in Angström
@@ -60,6 +64,7 @@ class Molecular_system:
         """
         Initialize object with desired settings.
         """
+        self.paths = None
 
         self.system_types = ['1_gas_phase', '2_gas_phase', '1_solvent', '2_solvent']
         self.parametrization_types = ('total_properties', 'net_properties')
@@ -172,7 +177,6 @@ class Molecular_system:
         MDA_reader_object: Coord_Toolz.mdanalysis.MDA_reader object
             Contains MDA Universe and atomgroups
         """
-        #TODO: pass shit to correct system storage
 
         coords = ct.get_coords(MDA_reader_object.all.atoms)
         self.n_conformations = len(coords) 
@@ -180,18 +184,51 @@ class Molecular_system:
 
         self.ini_coords['all'] = coords
 
+        assert self.paths is not None, 'Molecular_system.paths not set'
+
+        assert self.paths.mm_traj is not None, 'Cnformations trajectory not found.'
+
+        assert self.paths.mm_crd is not None, 'Coordinate file not found.'
+
+        assert self.paths.mm_top is not None, 'Topology fiel not found.'
+
         if MDA_reader_object.nosol is not None:
+
             nosol_coords = ct.get_coords(MDA_reader_object.nosol)
             self.ini_coords['nosol'] = nosol_coords
             self.n_atoms['nosol'] = len(MDA_reader_object.nosol)
 
+            assert self.paths.mm_nosol_crd is not None, 'Coordinate file for molecule '\
+                                                        'w/o solvent not found.'
+            assert self.paths.mm_nosol_top is not None, 'Topology file for molecule '\
+                                                        'w/o solvent not found.'
+            
+            print('...now set up the 2 OpenMM systems...')
+
+
         elif MDA_reader_object.mol1 is not None:
+
             mol1_coords = ct.get_coords(MDA_reader_object.mol1)
             self.ini_coords['mol1'] = mol1_coords
             self.n_atoms['mol1'] = len(MDA_reader_object.mol1)
             mol2_coords = ct.get_coords(MDA_reader_object.mol2)          
             self.ini_coords['mol2'] = mol2_coords
             self.n_atoms['mol2'] = len(MDA_reader_object.mol2)
+
+            assert self.paths.mm_mol1_crd is not None, 'Coordinate file for molecule 1 '\
+                                                        'w/o molecule 2 not found.'
+            assert self.paths.mm_mol1_top is not None, 'Topology file for molecule '\
+                                                        'w/o molecule 2 not found.'
+            assert self.paths.mm_mol2_crd is not None, 'Cordinate file for molecule 2 '\
+                                                        'w/o molecule 1 not found'
+            assert self.paths.mm_mol2_top is not None, 'Topology file for molecule 2 '\
+                                                        'w/o molecule 1 not found.'
+            
+            print('...now set up the 3 OpenMM systems...')
+
+        else:
+
+            print('...now set up the OpenMM system...')
 
     def generate_qm_energies_forcesraw_optcoords(self, run_type='single_point', coords=None):
         """
@@ -506,10 +543,20 @@ class Molecular_system:
         """
 
         for molname in molnames.keys(): # aaaahhhhhh need another dict to store shit :(
+            self.generate_qm_energies_forces(atomgroup, molname, paths, cp2k_input)
+            net_forces_results[molname] = {
+            'net_forces': net_forces,
+            'qm_energies': self.qm_energies,  
+            'qm_forces': self.qm_forces  # not sure if I missed any other results here
+            }
 
             self.generate_qm_energies_forces(molnames[molname], molname, paths, cp2k_input)
+            self.generate_qm_charges_energies_forcesraw_optcoords(molname, paths, cp2k_inp, omp_threads, cp2k_binary, charge_type)
+            for mdanalysis in paths:
+                return
 
-        #TODO: make sense of this shit
+
+        #TODO: make sense of this shit (in the above for loop?)
 
     def generate_mm_energies_forcesraw(self, coords=None):
         """

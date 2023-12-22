@@ -16,52 +16,87 @@ class Paths:
 
     Parameters
     ----------
-    mm_top_file : str
-        e.g. charmm psf file name
-    mm_top_file_path : str
-        path to the psf file
-    str_file : str
-        charmm parameter stream file name
-    str_file_path : str
-        path to parameter stream file
-    crd_pdb_file : str
-        pdb file name
-    crd_pdb_file_path : str
-        path to pdb file
-    traj_file : str
-        sampled trajectory filename w/ extension (any format that MDAnalysis can read), e.g. 'coords.xyz'
-    traj_file_path : str
-        path to trajectory containing sampled coordinates
-    working_dir : str
+    working_dir : str (path)
         working directory
     project_name : str
         name of the project, e.g. 'arginine'
+
+    mm_traj_file : str
+        sampled trajectory filename w/ extension (any format that MDAnalysis can read), e.g. 'coords.xyz'
+    mm_traj_file_path : str (path)
+        path to trajectory containing sampled coordinates
+    mm_crd_file : str
+        coordinate file name
+    mm_crd_file_path : str (path)
+        path to coordinate file
+    mm_top_file : str
+        e.g. charmm psf file name
+    mm_top_file_path : str (path)
+        path to the psf file
+    mm_str_file : str
+        charmm parameter stream file name
+    mm_str_file_path : str (path)
+        path to parameter stream file
+    -"-nosol-"-
+        if System.system.Molecular_system.system_type == '1_solvent': The molecule w/o the sol-
+        vent  
+    -"-mol1-"-  
+        if System.system.Molecular_system.system_type == '2_...': The first molecule (w/o sol-
+        vent)
+    -"-mol2-"-  
+        if System.system.Molecular_system.system_type == '2_...': The 2nd molecule (w/o solvent)
+
     """
 
     def __init__(self):
 
-        self.mm_top_file = None
-        self.mm_top_file_path = None
-        self.str_file = None
-        self.str_file_path = None
-        self.crd_pdb_file = None
-        self.crd_pdb_file_path = None
-        self.traj_file = None
-        self.traj_file_path = None
+        # general
         self.working_dir = None
         self.project_name = None
 
+        # md-specific
+        self.mm_traj_file = None
+        self.mm_traj_file_path = None
+        self.mm_crd_file = None
+        self.mm_crd_file_path = None
+        self.mm_top_file = None
+        self.mm_top_file_path = None
+        self.mm_str_file = None
+        self.mm_str_file_path = None
+
+        # optional
+        self.mm_nosol_crd_file = None
+        self.mm_nosol_crd_file_path = None
+        self.mm_nosol_top_file = None
+        self.mm_nosol_top_file_path = None
+        self.mm_mol1_crd_file = None
+        self.mm_mol1_crd_file_path = None
+        self.mm_mol1_top_file = None
+        self.mm_mol1_top_file_path = None
+        self.mm_mol2_crd_file = None
+        self.mm_mol2_crd_file_path = None
+        self.mm_mol2_top_file = None
+        self.mm_mol2_top_file_path = None
 
     def set(self):
         """
         sets the remaining class attributes
         """
 
-        for filepath in [self.mm_top_file_path, self.str_file_path, self.crd_pdb_file_path, self.traj_file_path]:
+        for filepath in [self.mm_top_file_path, self.mm_str_file_path, self.mm_crd_file_path, 
+                         self.mm_traj_file_path, self.mm_nosol_crd_file_path, self.mm_nosol_top_file_path,
+                         self.mm_mol1_crd_file_path, self.mm_mol1_top_file_path, 
+                         self.mm_mol2_crd_file_path, self.mm_mol2_top_file_path]:
             if filepath != None:
                 check_path(filepath)
 
         self.mm_top = self.mm_top_file_path + self.mm_top_file
-        self.stream = self.str_file_path + self.str_file
-        self.crd_pdb = self.crd_pdb_file_path + self.crd_pdb_file
-        self.traj = self.traj_file_path + self.traj_file
+        self.mm_stream = self.mm_str_file_path + self.mm_str_file
+        self.mm_crd = self.mm_crd_file_path + self.mm_crd_file
+        self.mm_traj = self.mm_traj_file_path + self.mm_traj_file
+        self.mm_nosol_crd = self.mm_nosol_crd_file_path + self.mm_nosol_crd_file
+        self.mm_nosol_top = self.mm_nosol_top_file_path + self.mm_nosol_top_file
+        self.mm_mol1_crd = self.mm_mol1_crd_file_path + self.mm_mol1_crd_file
+        self.mm_mol1_top = self.mm_mol1_top_file_path + self.mm_mol1_top_file
+        self.mm_mol2_crd = self.mm_mol2_crd_file_path + self.mm_mol2_crd_file
+        self.mm_mol2_top = self.mm_mol2_top_file_path + self.mm_mol2_top_file
