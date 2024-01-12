@@ -78,6 +78,28 @@ class Paths:
         self.mm_mol2_top_file = None
         self.mm_mol2_top_file_path = None
 
+    def decide_on_reference_data(self, decision):
+        if decision == 'read-in all':
+            self.read_in_all_data()
+        elif decision == 'compute all':
+            self.compute_all_data()
+        elif decision == 'hybrid':
+            self.hybrid_approach()
+        else:
+            raise ValueError("Invalid decision. Please choose 'read-in all', 'compute all', or 'hybrid'.")
+
+    def read_in_all_data(self):
+        # logic check
+        self.mm_traj_file_path = 'path/to/traj/'
+
+    def compute_all_data(self):
+        self.mm_crd_file_path = 'path/to/crd/'
+
+    def hybrid_approach(self):
+        # some other approach to compute, maybe?
+        self.mm_nosol_crd_file_path = 'path/to/nosol_crd/'
+        self.compute_all_data()
+
     def set(self):
         """
         sets the remaining class attributes
