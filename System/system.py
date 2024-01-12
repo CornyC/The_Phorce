@@ -557,6 +557,21 @@ class Molecular_system:
 
 
         #TODO: make sense of this shit (in the above for loop?)
+    def extract_ff_parameters(self):
+        """
+        Extract force field parameters from the ff_optimizable attribute.
+
+        Returns
+        -------
+        ff_parameters : dict
+            A dictionary containing force field parameters.
+        """
+        ff_parameters = {'NonbondedForce': {'charge': None}}  # can add more force field terms if there are more to it
+
+        if 'NonbondedForce' in self.ff_optimizable:
+            ff_parameters['NonbondedForce']['charge'] = copy.deepcopy(self.ff_optimizable['NonbondedForce'][0]['charge'])
+        
+        return ff_parameters
 
     def generate_mm_energies_forcesraw(self, coords=None):
         """
