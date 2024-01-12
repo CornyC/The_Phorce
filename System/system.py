@@ -566,7 +566,7 @@ class Molecular_system:
         ff_parameters : dict
             A dictionary containing force field parameters.
         """
-        ff_parameters = {'NonbondedForce': {'charge': None}}  # can add more force field terms if there are more to it
+        ff_parameters = {'NonbondedForce': {'charge': None}}  # can add more force field terms if there are more
 
         if 'NonbondedForce' in self.ff_optimizable:
             ff_parameters['NonbondedForce']['charge'] = copy.deepcopy(self.ff_optimizable['NonbondedForce'][0]['charge'])
