@@ -189,6 +189,44 @@ class Parametrization:
                     self.parameters["current_scaling_constants"].append(current_scaling_constants)
                     self.parameters["current_scaled_parameters"].append(current_scaled_params)
 
+    def decide_reference_data(self, reference_option):
+        assert reference_option in ['force matching', 'energy matching', 'both'], "Invalid reference option"
+        
+        if reference_option == 'force matching':
+            self.force_matching()
+        elif reference_option == 'energy matching':
+            self.energy_matching()
+        elif reference_option == 'both':
+            self.force_matching()
+            self.energy_matching()
+
+    def force_matching(self):
+        for force_key, parameters in self.ff_optimizable.items():
+            if force_key != 'NBException':
+                updated_data = self.perform_force_matching(parameters)
+                self.store_in_sys(updated_data)
+
+    def energy_matching(self):
+        updated_data = self.perform_energy_matching()
+        self.store_in_sys(updated_data)
+
+    def store_in_sys(self, updated_data):
+        self.sys.update(updated_data)
+
+    def perform_force_matching(self, parameters):
+       
+        for param_name, values in parameters.items():
+            if param_name not in parameters:
+                values = [v * 2 for v in values]
+        return parameters
+
+    def perform_energy_matching(self):
+        updated_data = {
+            'new_energy_data': self.emm * 1.5,
+            'new_force_data': self.fmm * 0.8
+        }
+
+        return updated_data
     def calc_force_std_dev(self):
         #to calculate the standard deviation of forces
         delta_F = self.fmm - self.fqm
@@ -196,7 +234,7 @@ class Parametrization:
         return force_std_dev
     def wrap_objective_function(self):
         #to create the objective function for optimization
-        
+    
         for frame_nr, frame in enumerate(coords1=0):
             #set the coordinates for this frame
             self.molecular_system.set_coordinates(frame)  # You need to adjust this based on your code
