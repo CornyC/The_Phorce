@@ -699,6 +699,26 @@ class Molecular_system:
         self.weights = np.ones((self.n_conformations))
         self.weights = self.weights / np.sum(self.weights)
 
+class System:
+    
+    def __init__(self, system_type: str, parametrization_type: str, parametrization_method: str):
+        assert opt_method.lower() in self.optimizers, 'optimizer of type {} not implemented'.format(opt_method.lower())
+
+        self.opt_method = opt_method
+        self.opt_settings = opt_settings
+        self.max_iterations = max_iterations
+        self.tolerance = tolerance
+        self.f = None
+        self.parameters = None
+        self.constraints = None
+       
+        self.optimizer = None
+
+    def init_optimizer(self, optimizer):
+        self.optimizer = optimizer
+        self.optimizer.system = self
+
+
 
 
 
