@@ -1,0 +1,20 @@
+# sample script 
+
+from system import System
+from parametrization import Parametrization
+from optimizer import Optimizer
+
+my_system = System()
+my_parametrization = Parametrization()
+my_optimizer = Optimizer("scipy", {}, max_iterations=10000, tolerance=1e-8)
+
+# linking optimizer to system
+my_system.init_optimizer(my_optimizer)
+
+# running the optimization
+optimized_params, value = my_optimizer.run_optimizer(my_parametrization.wrap_objective_function, my_parametrization.parameters['scaled_parameters'])
+
+# updating the system
+my_system.update(optimized_params)
+
+
