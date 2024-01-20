@@ -711,12 +711,29 @@ class System:
         self.f = None
         self.parameters = None
         self.constraints = None
-       
         self.optimizer = None
+        self.ff_optimizable = {'NonbondedForce': {'charge': None}}
 
     def init_optimizer(self, optimizer):
         self.optimizer = optimizer
         self.optimizer.system = self
+
+    def extend_ff_optimizable(self, new_params):
+        """
+        Extend ff_optimizable by the current parameters (deep copy).
+
+        Parameters
+        ----------
+        new_params : dict
+            Dictionary containing the current parameters.
+
+        Sets
+        ----
+        self.ff_optimizable : dict
+            Updated force field parameters.
+        """
+        self.ff_optimizable = copy.deepcopy(new_params)
+
 
 
 
