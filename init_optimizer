@@ -14,7 +14,11 @@ my_system.init_optimizer(my_optimizer)
 # running the optimization
 optimized_params, value = my_optimizer.run_optimizer(my_parametrization.wrap_objective_function, my_parametrization.parameters['scaled_parameters'])
 
+# extend ff_optimizable by optimized parameters 
+my_system.extend_ff_optimizable(optimized_params)
+
 # updating the system
 my_system.update(optimized_params)
+
 
 
