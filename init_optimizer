@@ -4,21 +4,76 @@ from system import System
 from parametrization import Parametrization
 from optimizer import Optimizer
 
-my_system = System()
-my_parametrization = Parametrization()
-my_optimizer = Optimizer("scipy", {}, max_iterations=10000, tolerance=1e-8)
+class System:
+    def __init__(self, system_type: str, parametrization_type: str, parametrization_method: str):
+        # existing initialization code...
+        self.ff_optimizable = {'NonbondedForce': {'charge': None}}  
+        self.optimizer = None  
+
+    def update(self, optimized_params):
+        my_system.update(optimized_params)
+
+    def extend_ff_optimizable(self, new_params):
+        """
+        Extend ff_optimizable by the current parameters (deep copy).
+
+        Parameters
+        ----------
+        new_params : dict
+            Dictionary containing the current parameters.
+
+        Sets
+        ----
+        self.ff_optimizable : dict
+            Updated force field parameters.
+        """
+        self.ff_optimizable = copy.deepcopy(new_params)
+
+    @classmethod
+    def init_optimizer(cls, optimizer_type, optimizer_options, max_iterations, tolerance):
+        """
+        Initialize optimizer and link it to the system.
+
+        Parameters
+        ----------
+        optimizer_type : str
+            Type of optimizer (e.g., "scipy").
+        optimizer_options : dict
+            Options specific to the optimizer.
+        max_iterations : int
+            Maximum number of iterations for the optimizer.
+        tolerance : float
+            Tolerance for convergence.
+
+        Returns
+        -------
+        Optimizer
+            Initialized optimizer linked to the system.
+        """
+        optimizer = Optimizer(optimizer_type, optimizer_options, max_iterations, tolerance)
+        system = cls.__new__(cls)
+        system.optimizer = optimizer
+        optimizer.system = system
+        return optimizer
+    
+    
+#my_system = System()
+#my_parametrization = Parametrization()
+#my_optimizer = Optimizer("scipy", {}, max_iterations=10000, tolerance=1e-8)
 
 # linking optimizer to system
-my_system.init_optimizer(my_optimizer)
+#my_system.init_optimizer(my_optimizer)
 
 # running the optimization
-optimized_params, value = my_optimizer.run_optimizer(my_parametrization.wrap_objective_function, my_parametrization.parameters['scaled_parameters'])
+#optimized_params, value = my_optimizer.run_optimizer(my_parametrization.wrap_objective_function, my_parametrization.parameters['scaled_parameters'])
 
 # extend ff_optimizable by optimized parameters 
-my_system.extend_ff_optimizable(optimized_params)
+#my_system.extend_ff_optimizable(optimized_params)
 
 # updating the system
-my_system.update(optimized_params)
+#my_system.update(optimized_params)
+
+
 
 
 
