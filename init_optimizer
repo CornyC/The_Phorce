@@ -51,9 +51,7 @@ class System:
             Initialized optimizer linked to the system.
         """
         optimizer = Optimizer(optimizer_type, optimizer_options, max_iterations, tolerance)
-        system = cls.__new__(cls)
-        system.optimizer = optimizer
-        optimizer.system = system
+        optimizer.system = cls()
         return optimizer
     
     
