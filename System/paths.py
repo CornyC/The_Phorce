@@ -1,12 +1,22 @@
 from pathlib import Path
 
 def check_path(path: str):
-    if path != None:
+    """
+    Check if the given path is a valid directory.
 
-        assert Path(path).is_dir() is True, 'path {} does not exist'.format(path)
+    Parameters
+    ----------
+    path : str
+        Path to be checked.
 
-        if path[-1] != '/':
-            path += '/'
+    Raises
+    ------
+    AssertionError
+        If the path is not a valid directory.
+    """
+    if path is not None:
+        path = Path(path)
+        assert path.is_dir(), f'Path {path} does not exist or is not a directory.'
 
 #### instance to store input file paths and names ####
 
@@ -104,7 +114,23 @@ class Paths:
         """
         sets the remaining class attributes
         """
+        file_attributes = [
+            'mm_top', 'mm_stream', 'mm_crd', 'mm_traj',
+            'mm_nosol_crd', 'mm_nosol_top', 'mm_mol1_crd', 'mm_mol1_top',
+            'mm_mol2_crd', 'mm_mol2_top'
+        ]
 
+        # iterate over file attributes, set paths, and check them
+        for attribute in file_attributes:
+            file_path_attribute = f'{attribute}_file_path'
+            file_attribute = f'{attribute}_file'
+
+            # combine paths and filenames
+            setattr(self, attribute, getattr(self, file_path_attribute) + getattr(self, file_attribute))
+
+            # check the path
+            check_path(getattr(self, file_path_attribute))
+            
         for filepath in [self.mm_top_file_path, self.mm_str_file_path, self.mm_crd_file_path, 
                          self.mm_traj_file_path, self.mm_nosol_crd_file_path, self.mm_nosol_top_file_path,
                          self.mm_mol1_crd_file_path, self.mm_mol1_top_file_path, 
