@@ -96,6 +96,38 @@ class ASE_system:
         atoms.center()
 
         self.atoms = atoms
+        
+    def apply_constraints(self):
+        """
+        Apply constraints to atoms if they exist.
+        """
+        if self.ase_constraints:
+            constraints_list = []
+            for constraint in self.ase_constraints:
+                constraints_list.append(constraint)
+            if constraints_list:
+                self.atoms.set_constraint(constraints_list)
+
+    def remove_constraints(self):
+        """
+        Remove constraints from atoms if they were previously applied.
+        """
+        if self.dihedral_freeze:
+            del self.atoms.constraints
+
+    def run_optimization(self):
+        """
+        Run optimization on atoms.
+        """
+        # Apply constraints
+        self.apply_constraints()
+
+        # Run optimization
+        opt = BFGS(self.atoms, trajectory=self._opt_traj_prefix + ".traj", logfile=self._opt_logfile)
+        opt.run(fmax=self._opt_fmax)
+
+        # Remove constraints
+        self.remove_constraints()
 
     def run_calculation(self, run_type='single_point'):
         """
@@ -151,6 +183,7 @@ class ASE_system:
 
             # Apply any ASE constraints
             # More information: https://wiki.fysik.dtu.dk/ase/ase/constraints.html
+    
             if self.ase_constraints is not None:
                 for constraint in self.ase_constraints:
                     constraints_list.append(constraint)
@@ -163,7 +196,7 @@ class ASE_system:
 
             if self.dihedral_freeze is not None:
                 del self.atoms.constraints
-
+    
             # Get data
 
             self.energy = self.atoms.get_potential_energy() * 96.48530749925794  # eV to kJ/mol
