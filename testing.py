@@ -430,7 +430,7 @@ data_to_append = "Your data to append"
 update_file_with_data(file_path, data_to_append)
 
 #TODO4: write function to update str file w/ DFT data if/as soon as DFT data is present
-# Define a function to update a file with DFT data
+# define a function to update a file with DFT data
 def update_str_with_dft_data(str_file_path, dft_data):
     try:
         with open(str_file_path, 'a') as str_file:

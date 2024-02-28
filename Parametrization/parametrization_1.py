@@ -248,3 +248,69 @@ class Parametrization:
         self.parameters['current_scaled_parameters'] = optimized_params
 
         obj_f_value += regularization_term
+
+
+# need to change obj function based on prev scenario 
+        def calc_force_std_dev(self):
+        #to calculate the standard deviation of forces
+        delta_F = self.fmm - self.fqm
+        force_std_dev = np.std(delta_F)
+        return force_std_dev
+    def wrap_objective_function(self):
+        #to create the objective function for optimization
+        
+        for frame_nr, frame in enumerate(coords1=0):
+            #set the coordinates for this frame
+            self.molecular_system.set_coordinates(frame)  # You need to adjust this based on your code
+            
+            #unscale the parameters
+            unscaled_params = self.unscale_parameters(self.parameters['current_scaled_parameters'])
+            
+            #set the unscaled parameters in the OpenMM system and recalculate properties
+            self.recalculate_mm_properties(unscaled_params)  # might need to modify this part based on the necessary parameters
+            
+        if self.term_type == 'energy':
+            obj_f = self.calculate_obj_func_energy()
+
+        elif self.term_type == 'force':
+            obj_f = self.calculate_obj_func_force()
+
+        elif self.term_type == 'force & energy':
+            obj_f_f = self.calculate_obj_func_force()
+            obj_f_e = self.calculate_obj_func_energy()
+            obj_f = obj_f_f + obj_f_e
+
+        #add regularization term if needed
+        if self.regularization:
+            regularization_term = self.calculate_regularization_term()
+            obj_f += regularization_term
+
+        return obj_f
+
+    def unscale_parameters(self, scaled_params):
+        
+        unscaled_params = []
+        for scaled_param, scaling_constant in zip(scaled_params, self.parameters["current_scaling_constants"]):
+            unscaled_param = scaled_param / scaling_constant
+            unscaled_params.append(unscaled_param)
+        return unscaled_params
+
+    def parametrize(self, regularization_type='L2', scaling_factor=1.0, hyperbolic_beta=0.01):
+        assert self.optimizer is not None, 'optimizer not set'
+        assert self.term_type is not None, 'term_type not set'
+        assert self.term_type in self.term_types, 'please choose a valid term_type'
+
+        self.calc_scaling_constants()
+
+        #implement regularization term if needed
+        if self.regularization:
+            regularization_term = self.calculate_regularization_term(regularization_type, scaling_factor, hyperbolic_beta)
+        else:
+            regularization_term = 0.0
+
+        parameters = self.parameters['scaled_parameters']
+
+        optimized_params, obj_f_value = self.optimizer.run_optimizer(self.wrap_objective_function, parameters)
+        self.parameters['current_scaled_parameters'] = optimized_params
+
+        obj_f_value += regularization_term
