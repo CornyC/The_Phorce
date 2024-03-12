@@ -733,8 +733,19 @@ class System:
             Updated force field parameters.
         """
         self.ff_optimizable = copy.deepcopy(new_params)
-
-
+    
+    def scale_classical_forces(self, omm_sys, ff_optimizable):
+        integrator = openmm.LangevinIntegrator(300, 1.0, 2.0)
+        context = openmm.Context(omm_sys, integrator)
+        context.setPositions()  # need to set positions here 
+        state = context.getState(getForces=True)
+        forces = state.getForces()
+        scaled_forces = self.scale_forces(forces, ff_optimizable)
+        return scaled_forces
+    
+    def scale_forces(self, forces, ff_optimizable):
+        scaled_forces = forces * ff_optimizable['scaling_factor']
+        return scaled_forces
 
 
 
