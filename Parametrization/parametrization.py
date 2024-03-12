@@ -58,6 +58,9 @@ class Parametrization:
 
         self.step = 0
 
+    def scale_method(self):
+        scaled_forces = self.system.scale_classical_forces(self.omm_sys, self.ff_optimizable)
+
     def calculate_net_forces(self):
 
         if self.molecular_system.system_type == '2_gas_phase':
