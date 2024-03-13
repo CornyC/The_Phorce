@@ -283,9 +283,9 @@ class Parametrization:
             obj_f = self.calculate_obj_func_force()
 
         elif self.term_type == 'force & energy':
-            obj_f_f = self.calculate_obj_func_force()
-            obj_f_e = self.calculate_obj_func_energy()
-            obj_f = obj_f_f + obj_f_e
+             obj_f_f = self.calculate_obj_func_force()
+             obj_f_e = self.calculate_obj_func_energy()
+             obj_f = obj_f_f + obj_f_e
 
         #add regularization term if needed
         if self.regularization:
