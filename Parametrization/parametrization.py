@@ -112,6 +112,34 @@ class Parametrization:
         else:
             print('optimizer of type {} not implemented'.format(Optimizer.opt_method.lower()))
         return obj_f_e
+    
+    def calc_obj_func(self, md_forces, reference_forces, para_type):
+        """
+        Calculate the objective function value based on forces.
+
+        Parameters
+        ----------
+        md_forces : numpy array
+            MD net forces.
+        reference_forces : numpy array
+            Reference forces.
+        para_type : str
+            Type of parameterization.
+
+        Returns
+        -------
+        float
+            Objective function value.
+        """
+        if para_type == 'scaling_factor':
+            # between scaled and reference forces
+            scaled_forces = self.system.scale_forces(md_forces, {'scaling_factor': self.optimizer.parameters['scaled_parameters'][0]})
+            obj_func_value = np.sum((scaled_forces - reference_forces) ** 2)
+        else:
+            # parameterization types as needed
+            obj_func_value = 0.0
+
+        return obj_func_value
 
     def calculate_obj_func_force(self, method=None):
         assert method in [None, "variance", "covariance"], "Force property term for method {} is not implemented.".format(method)
