@@ -1,14 +1,14 @@
 #### package imports ####
 
 import numpy as np
-import simtk.unit as unit
-import simtk.openmm as openmm
-import simtk.openmm.app as app
-from simtk.openmm.app import forcefield as ff
+import openmm.unit as unit
+import openmm
+import openmm.app as app
+from openmm.app import forcefield as ff
 import copy, os
 import fnmatch
 from pathlib import Path
-from System.input_paths import *
+from System.paths import *
 
 #### Setting up the OpenMM System ####
 
@@ -96,7 +96,6 @@ class OpenMM_system:
                                   'HarmonicAngleForce': [],
                                   'PeriodicTorsionForce': [],
                                   'NonbondedForce': [],
-                                  'CMMotionRemover': [],
                                   'CustomBondForce': [],
                                   'CustomAngleForce': [],
                                   'CustomTorsionForce': [],
@@ -235,11 +234,11 @@ class OpenMM_system:
 
         Parameters
         ---------
-        self.system
-        self.integrator
-        self.platform
-        self.platform_properties
-        self.crd
+        self.system : openmm.openmm.System object
+        self.integrator : openmm.openmm.Integrator object
+        self.platform : openmm.openmm.Platform object
+        self.platform_properties : openmm.openmm.Platform settings of type dict
+        self.crd : OpenMM coordinates object
         """
 
         print('Number of constraints: '+str(self.system.getNumConstraints())+'\nconstraints settings: '
@@ -287,31 +286,38 @@ class OpenMM_system:
 
         Parameters
         ----------
-        positions : OpenMM coordinates object (part of OpenMM system)
+        positions : OpenMM coordinates object (OMM <Vec3> format) or numpy array, in nanometers
 
         self.context : OpenMM system context object
 
-        sets:
-            self.energies and self.forces (both numpy arrays)
+        returns:
+            potential energies and forces (both numpy arrays)
         """
 
         assert self.context is not None, "please run OpenMM_system.set_opnemm_context first."
 
         self.context.setPositions(positions)
 
+        """
+
         print('#############################################################')
         print('#       Calculating classical Energies & Forces             #')
         print('#############################################################')
 
+        """
+
         epot = self.context.getState(getEnergy=True).getPotentialEnergy()._value
         forces = self.context.getState(getForces=True).getForces(asNumpy=True)._value # in kJ/(mol*nm)
+
+        """
 
         print('#############################################################')
         print('#                Calculation successful                     #')
         print('#############################################################')
 
-        self.energies = epot
-        self.forces = forces
+        """
+
+        return epot, forces
 
     def extract_forcefield(self):
         """
@@ -369,8 +375,8 @@ class OpenMM_system:
             self.extracted_ff[force_key] = []
 
             # loop needed in case of tuple index for force group
-            for force_ics in self.force_groups[force_key]:
-                ff_params = self.system.getForce(force_ics)
+            for force_indices in self.force_groups[force_key]:
+                ff_params = self.system.getForce(force_indices)
 
                 if force_key == 'HarmonicBondForce':
 
@@ -380,17 +386,17 @@ class OpenMM_system:
                                                     names=['atom1', 'atom2', 'bond_length', 'force_constant'])
 
                     # do for every bond
-                    for bond_idx in range(ff_params.getNumBonds()):
+                    for bond_index in range(ff_params.getNumBonds()):
 
                         # extract atom indices, bond length /nm, and force constant /kJ/mol/nm^2
                         # & put 'em into the storage array
-                        for i, value in enumerate(ff_params.getBondParameters(bond_idx)):
+                        for i, value in enumerate(ff_params.getBondParameters(bond_index)):
                             # omm returns value directly
                             if i in [0, 1]:
-                                sub_force_field[bond_idx][i] = value
+                                sub_force_field[bond_index][i] = value
                             # omm returns value via _value method
                             elif i in [2, 3]:
-                                sub_force_field[bond_idx][i] = value._value
+                                sub_force_field[bond_index][i] = value._value
 
                     # Append sub_force_field to extracted_ff[force_key]
                     self.extracted_ff[force_key].append(sub_force_field)
@@ -403,17 +409,17 @@ class OpenMM_system:
                                                     names=['atom1', 'atom2', 'atom3', 'angle', 'force_constant'])
 
                     # do for every angle
-                    for angle_idx in range(ff_params.getNumAngles()):
+                    for angle_index in range(ff_params.getNumAngles()):
 
                         # extract atom indices, angle /rad, and force constant /kJ/mol/rad^2
                         # & put 'em into the storage array
-                        for i, value in enumerate(ff_params.getAngleParameters(angle_idx)):
+                        for i, value in enumerate(ff_params.getAngleParameters(angle_index)):
                             # omm returns value directly
                             if i in [0, 1, 2]:
-                                sub_force_field[angle_idx][i] = value
+                                sub_force_field[angle_index][i] = value
                             # omm returns value via _value method
                             elif i in [3, 4]:
-                                sub_force_field[angle_idx][i] = value._value
+                                sub_force_field[angle_index][i] = value._value
 
                     # Append sub_force_field to extracted_ff[force_key]
                     self.extracted_ff[force_key].append(sub_force_field)
@@ -427,17 +433,17 @@ class OpenMM_system:
                                                              'force_constant'])
 
                     # do for every torsion
-                    for torsion_idx in range(ff_params.getNumTorsions()):
+                    for torsion_index in range(ff_params.getNumTorsions()):
 
                         # extract atom indices, periodicity, phase /rad, and force constant /kJ/mol/rad^2
                         # & put 'em into the storage array
-                        for i, value in enumerate(ff_params.getTorsionParameters(torsion_idx)):
+                        for i, value in enumerate(ff_params.getTorsionParameters(torsion_index)):
                             # omm returns value directly
                             if i in [0, 1, 2, 3, 4]:
-                                sub_force_field[torsion_idx][i] = value
+                                sub_force_field[torsion_index][i] = value
                             # omm returns value via _value method
                             elif i in [5, 6]:
-                                sub_force_field[torsion_idx][i] = value._value
+                                sub_force_field[torsion_index][i] = value._value
 
                     # Append sub_force_field to extracted_ff[force_key]
                     self.extracted_ff[force_key].append(sub_force_field)
@@ -450,14 +456,14 @@ class OpenMM_system:
                                                     names=['charge', 'lj_sigma', 'lj_eps'])
 
                     # do for every particle
-                    for particle_idx in range(ff_params.getNumParticles()):
+                    for particle_index in range(ff_params.getNumParticles()):
 
                         # extract charge, LJ sigma /nm, and LJ epsilon /kJ/mol
                         # & put 'em into the storage array
-                        for i, value in enumerate(ff_params.getParticleParameters(particle_idx)):
+                        for i, value in enumerate(ff_params.getParticleParameters(particle_index)):
 
                             # omm returns value via _value method
-                            sub_force_field[particle_idx][i] = value._value
+                            sub_force_field[particle_index][i] = value._value
 
                     # Append sub_force_field to extracted_ff[force_key]
                     self.extracted_ff[force_key].append(sub_force_field)
