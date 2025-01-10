@@ -4,8 +4,7 @@ import numpy as np
 import tensorflow as tf
 import torch
 from Parametrization.optimizers import Optimizer
-
-#### parametrizes your system ####
+from System.system import *
 
 class Parametrization:
     """
@@ -14,7 +13,7 @@ class Parametrization:
     Parameters
     ----------
     molecular_system : Molecular_system object
-        Contains properties of molecular system that is to be parametrized
+        Contains properties of the molecular system that is to be parametrized
     term_type : str
         'energy' or 'force' or 'force & energy'; determines which terms go into the objective function
     optimizer : Parametrization.optimiizers.Optimizer object
@@ -23,191 +22,150 @@ class Parametrization:
         whether a penalty term is used or not
 
     parameters : dict
-        contains parameters from OMM_Interface.openmm.OpenMM_system.ff_optimizable, their
-        scaling constants, and the scaled parameters
-
+        contains parameters from OMM_Interface.openmm.OpenMM_system.vectorized_scaled_reduced_ff_optimizable_values
     """
-    # TODO: how to set self.n_atoms smoothly???
-
     def __init__(self, molecular_system=None, term_type=None, optimizer=None, regularization=False):
 
         assert molecular_system is not None, 'no molecular system selected'
 
         self.molecular_system = molecular_system
-        self.emm = self.molecular_system.mm_energies
-        self.fmm = self.molecular_system.mm_forces
-        self.eqm = self.molecular_system.qm_energies
-        self.fqm = self.molecular_system.qm_forces
+        self.emm = self.molecular_system.mm_energies['all']
+        self.fmm = self.molecular_system.mm_net_forces
+        self.eqm = self.molecular_system.qm_energies['all']
+        self.fqm = self.molecular_system.qm_net_forces
         self.weights = self.molecular_system.weights
         self.n_atoms = self.molecular_system.n_atoms
-        self.ff_optimizable = self.molecular_system.openmm_sys.ff_optimizable
+        self.parameters = self.molecular_system.openmm_systems['all'].vectorized_scaled_reduced_ff_optimizable_values
 
         self.optimizer = optimizer
-
         self.regularization = regularization
-
-
 
         self.energy_properties = None
         self.force_properties = None
-
-        self.parameters = { 'original_parameters': [],
-                            'scaling_constants': [],
-                            'scaled_parameters': [],
-                            'current_params': [],
-                            'current_scaling_constants': [],
-                            'current_scaled_parameters': []
-        }
 
         self.term_types = ['energy', 'force', 'force&energy']
         self.term_type = term_type
 
         self.step = 0
 
-    def recalculate_mm_properties(self):
-
-        #TODO: set Params in openmm according to ff_optimizable
-        for force_key in self.ff_optimizable.keys():
-            self.molecular_system.openmm_sys.set_parameters(force_key)
-
-        self.molecular_system.get_mm_energies_forces()
-
-        #update instances
-        self.emm = self.molecular_system.mm_energies
-        self.fmm = self.molecular_system.mm_forces
-
-    def calculate_obj_func_energy(self):
+    def calculate_classical_energies_forces(self):
         """
-         Calculates the "difference" between QM and MM energies
+        calculates all classical energies and forces using OpenMM for the molecular_system
 
-         Parameters
-         ----------
-         method : str
-             mathematical method to calculate objective function. Default is None, covariance does not work.
-
-         self-Params:
-         self.weights : np.array, determines importance or influence of conformations
-         self.optimizer.opt_method : how to handle optimization. SciPy-based methods and PSO use numpy,
-                                     TensorFlow and PyTorch have their own math functions.
-         self.fmm : np.array, classical energies on atoms of conformations
-         self.fqm : np.array, quantum energies on atoms of conformations
-         self.n_atoms : int, number of atoms of interest
-
-         Returns "difference" between QM and MM energies as float
+        sets :
+            self.emm
         """
+
+        for omm_system_name in self.molecular_system.openmm_systems.keys():
+            if self.molecular_system.openmm_systems[omm_system_name] != None:
+                self.molecular_system.generate_mm_energies_forces(omm_system_name)
+
+        self.emm = self.molecular_system.mm_energies['all']
+
+    def calculate_classical_net_forces(self):
+        """
+        calculates classical net forces (if more than one molecule/ molecule is solvated)
+
+        sets :
+            self.fmm
+        """
+
+        self.molecular_system.calculate_mm_net_forces()
+
+        self.fmm = self.molecular_system.mm_net_forces
+
+    def evaluate_obj_func_energy(self): 
+        """
+        calculates the value of the objective function using the format required by the selected optimizer
+            n_conf        (ΔE - <ΔE>)²
+        O =   Σ  ω_{conf} ------------
+             conf         Var(E^{QM})
+
+        returns :
+            value of the objective function in the format of the selected optimizer
+        """
+
+        self.calculate_classical_energies_forces()
 
         if self.optimizer.opt_method == ("scipy" or "pso"):
 
-            # E^{MM} - E^{QM} = ΔE
             delta_E = self.emm - self.eqm
-            # (ΔE - <ΔE>)²
             enumerator = np.power((delta_E - np.mean(delta_E)), 2)
-            # Var(E^{QM})
             denominator = np.var(self.eqm)
-            # (ΔE - <ΔE>)² / Var(E^{QM})
             frac = enumerator / denominator
+            obj_f_e = np.sum(self.weights * frac)
             # n_conf        (ΔE - <ΔE>)²
             #   Σ  ω_{conf} ------------
             #  conf         Var(E^{QM})
-            obj_f_e = np.sum(self.weights * frac)
 
         elif self.optimizer.opt_method == "tf_adam":
 
             tf_emm = tf.Variable(self.emm, dtype=float)
             tf_eqm = tf.Variable(self.eqm, dtype=float)
             tf_weights = tf.constant(self.weights, dtype=float)
-
-            # E^{MM} - E^{QM} = ΔE
             delta_E = tf.math.subtract(tf_emm, tf_eqm)
-            # (ΔE - <ΔE>)²
-            enumerator = tf.math.pow((tf.math.subtract(delta_E, tf.math.reduce_mean(delta_E))), 2)
-            # Var(E^{QM})
+            enumerator = tf.math.pow((tf.math.subtract(delta_E, tf.math.reduce_mean(delta_E)), 2))
             denominator = tf.math.reduce_variance(tf_eqm)
-            # (ΔE - <ΔE>)² / Var(E^{QM})
             frac = tf.math.divide(enumerator, denominator)
+            obj_f_e = tf.math.reduce_sum(tf.math.multiply(tf_weights, frac))
             # n_conf        (ΔE - <ΔE>)²
             #   Σ  ω_{conf} ------------
             #  conf         Var(E^{QM})
-            obj_f_e = tf.math.reduce_sum(tf.math.multiply(tf_weights, frac))
 
         elif self.optimizer.opt_method == ("pt_adam" or "pt_lbfgs"):
 
             pt_emm = torch.tensor(self.emm, dtype=torch.float64, requires_grad=True)
             pt_eqm = torch.tensor(self.eqm, dtype=torch.float64, requires_grad=True)
             pt_weights = torch.tensor(self.weights, dtype=torch.float64, requires_grad=False)
-
-            # E^{MM} - E^{QM} = ΔE
             delta_E = pt_emm - pt_eqm
-            # (ΔE - <ΔE>)²
             enumerator = torch.pow((delta_E - torch.mean(delta_E)), 2)
-            # Var(E^{QM})
             denominator = torch.var(pt_eqm)
-            # (ΔE - <ΔE>)² / Var(E^{QM})
             frac = torch.div(enumerator, denominator)
+            obj_f_e = torch.sum(torch.mul(pt_weights, frac))
             # n_conf        (ΔE - <ΔE>)²
             #   Σ  ω_{conf} ------------
             #  conf         Var(E^{QM})
-            obj_f_e = torch.sum(torch.mul(pt_weights, frac))
 
         else:
             print('optimizer of type {} not implemented'.format(Optimizer.opt_method.lower()))
 
         return obj_f_e
 
-    def calculate_obj_func_force(self, method=None):
+    def evaluate_obj_func_force(self, method=None): #TODO: how to sum over confs?
         """
-        Calculates the "difference" between QM and MM forces
+        calculates the value of the objective function using the format required by the selected optimizer
+                 1            n_atoms n_conf              |ΔF|²
+        O = ----------------     Σ     Σ     ω_{conf} ------------
+            3n_atoms n_confs   atom   conf             Var(F^{QM})
 
-        Parameters
-        ----------
-        method : str
-            mathematical method to calculate objective function. Default is None, covariance does not work.
-
-        self-Params:
-        self.weights : np.array, determines importance or influence of conformations
-        self.optimizer.opt_method : how to handle optimization. SciPy-based methods and PSO use numpy,
-                                    TensorFlow and PyTorch have their own math functions.
-        self.fmm : np.array, classical forces on atoms of conformations
-        self.fqm : np.array, quantum forces on atoms of conformations
-        self.n_atoms : int, number of atoms of interest
-
-        Returns "difference" between QM and MM forces as float
+        returns :
+            value of the objective function in the format of the selected optimizer
         """
 
-        assert method in [None, "variance", "covariance"], \
-            "Force property term for method {} is not implemented.".format(method)
+        assert method in [None, "variance", "covariance"], "Force property term for method {} is not implemented.".format(method)
 
         weights = np.atleast_2d(self.weights)
         weights = np.atleast_3d(weights.T)
 
+        self.calculate_classical_energies_forces
+        self.calculate_classical_net_forces
+
         if self.optimizer.opt_method == ("scipy" or "pso"):
 
-            # F^{MM} - F^{QM} = ΔF
             delta_F = self.fmm - self.fqm
 
             if method is None:
                 method = "variance"
 
-            # version 1 using variance
             if method == "variance":
 
-                # |ΔF|²
                 enumerator = np.power(np.abs(delta_F), 2)
-                # Var(F^{QM})
                 denominator = np.var(np.linalg.norm(self.fqm, axis=2))
-                #             |ΔF|²
-                # ω_{conf} ------------
-                #          Var(F^{QM})
                 frac_weighted = weights * (enumerator / denominator)
-                #     1      n_atoms,n_conf              |ΔF|²
-                # --------         Σ        ω_{conf} ------------
-                # 3n_atoms     atom,conf              Var(F^{QM})
                 obj_f_f = np.sum(frac_weighted) / (3 * self.n_atoms)
-
-            # version 2 using covariance
-
-            elif method == "covariance":
-                print('too fat to fly')
+                #     1            n_atoms n_conf              |ΔF|²
+                # ----------------     Σ     Σ     ω_{conf} ------------
+                # 3n_atoms n_confs   atom   conf             Var(F^{QM})
 
         elif self.optimizer.opt_method == "tf_adam":
 
@@ -215,227 +173,113 @@ class Parametrization:
             tf_fqm = tf.Variable(self.fqm, dtype=float)
             tf_weights = tf.constant(weights, dtype=float)
             tf_n_atoms = tf.constant(self.n_atoms, dtype=int)
-
-            # F^{MM} - F^{QM} = ΔF
             delta_F = tf.math.subtract(tf_fmm, tf_fqm)
 
             if method is None:
                 method = "variance"
 
-            # version 1 using variance
             if method == "variance":
 
-                # |ΔF|²
                 enumerator = tf.math.pow(tf.math.abs(delta_F), 2)
-                # Var(F^{QM})
                 denominator = tf.math.reduce_variance(tf.linalg.normalize(tf_fqm, axis=2))
-                #             |ΔF|²
-                # ω_{conf} ------------
-                #          Var(F^{QM})
                 frac_weighted = tf.math.multiply(tf_weights, (tf.math.divide(enumerator, denominator)))
-                #     1      n_atoms,n_conf              |ΔF|²
-                # --------         Σ        ω_{conf} ------------
-                # 3n_atoms     atom,conf              Var(F^{QM})
                 obj_f_f = tf.math.divide(tf.math.reduce_sum(frac_weighted), tf.math.multiply(3, tf_n_atoms))
-
-            # version 2 using covariance
-
-            elif method == "covariance":
-                print('too fat to fly')
+                #     1            n_atoms n_conf              |ΔF|²
+                # ----------------     Σ     Σ     ω_{conf} ------------
+                # 3n_atoms n_confs   atom   conf             Var(F^{QM})
 
         elif self.optimizer.opt_method == ("pt_adam" or "pt_lbfgs"):
-
+              
             pt_fmm = torch.tensor(self.fmm, dtype=torch.float64, requires_grad=True)
             pt_fqm = torch.tensor(self.fqm, dtype=torch.float64, requires_grad=True)
             pt_weights = torch.tensor(weights, dtype=torch.float64, requires_grad=False)
             pt_n_atoms = torch.tensor(self.n_atoms, dtype=torch.int64, requires_grad=False)
-
-            # F^{MM} - F^{QM} = ΔF
+            pt_f = tf_weights ("obj_f_f")
+            delta_F = pt_fmm - pt_f
             delta_F = pt_fmm - pt_fqm
 
             if method is None:
                 method = "variance"
 
-            # version 1 using variance
             if method == "variance":
-
-                # |ΔF|²
+                  
                 enumerator = torch.pow(torch.abs(delta_F), 2)
-                # Var(F^{QM})
                 denominator = torch.var(torch.linalg.norm(pt_fqm, axis=2))
-                #             |ΔF|²
-                # ω_{conf} ------------
-                #          Var(F^{QM})
                 frac_weighted = torch.mul(pt_weights, torch.div(enumerator, denominator))
-                #     1      n_atoms,n_conf              |ΔF|²
-                # --------         Σ        ω_{conf} ------------
-                # 3n_atoms     atom,conf              Var(F^{QM})
                 obj_f_f = torch.sum(torch.div(frac_weighted, torch.mul(3, pt_n_atoms)))
-
-            # version 2 using covariance
-
-            elif method == "covariance":
-                print('too fat to fly')
+                #     1            n_atoms n_conf              |ΔF|²
+                # ----------------     Σ     Σ     ω_{conf} ------------
+                # 3n_atoms n_confs   atom   conf             Var(F^{QM})
 
         else:
             print('optimizer of type {} not implemented'.format(Optimizer.opt_method.lower()))
-
+        
         return obj_f_f
-
-    def calc_scaling_constants(self):
-
-        """
-        This is supposed to bring the parameters to the same magnitude but idk
-        """
-
-        if len(self.parameters["original_parameters"]) is 0:
-            for forcekey in self.ff_optimizable.keys():
-                if forcekey is not 'NBException':
-                    for param_name in self.ff_optimizable[forcekey][0].dtype.names:
-                        if param_name not in ['atom1', 'atom2', 'atom3', 'atom4', 'periodicity']:
-                            print(param_name)
-                            scaling_constant = 1/(np.mean(self.ff_optimizable[forcekey][0][param_name][:self.n_atoms]))
-                            scaling_constants = np.full(self.n_atoms, scaling_constant)
-                            scaled_parameters = self.ff_optimizable[forcekey][0][param_name][:self.n_atoms] * scaling_constants
-                            print(scaled_parameters)
-
-                            self.parameters["original_parameters"].append(
-                                self.ff_optimizable[forcekey][0][param_name][:self.n_atoms])
-                            self.parameters["scaling_constants"].append(scaling_constants)
-                            self.parameters["scaled_parameters"].append(scaled_parameters)
-
-                            self.parameters["current_params"].append(self.ff_optimizable[forcekey][0][param_name][:self.n_atoms])
-                            self.parameters["current_scaling_constants"].append(scaling_constants)
-                            self.parameters["current_scaled_parameters"].append(scaled_parameters)
-
-        else:
-            for forcekey in self.ff_optimizable.keys():
-                for param_type_no in range(len(self.ff_optimizable[forcekey][0].dtype.names)):
-                    current_scaling_constant = 1/(np.mean(
-                        self.parameters["current_params"][:(self.n_atoms * param_type_no)]))
-                    current_scaling_constants = np.full(self.n_atoms, current_scaling_constant)
-                    current_scaled_params = self.parameters["current_params"][:(self.n_atoms * param_type_no)] \
-                                            * current_scaling_constants
-
-                    self.parameters["current_scaling_constants"].append(current_scaling_constants)
-                    self.parameters["current_scaled_parameters"].append(current_scaled_params)
+    
 
     def calc_force_std_dev(self):
+        """
+        calculates the standard deviation of forces
 
-        # calc force difference
+        """
         delta_F = self.fmm - self.fqm
-
         force_std_dev = np.std(delta_F)
 
         return force_std_dev
-
-    """
-    def calc_regularization(self, regularization_type='L2', scaling_factor=1.0, hyperbolic_beta=0.01):
-
-        
-        #Penalty term that avoids overfitting. Scaling factor sets strength of regularization, use hyperbolic for charge
-        #fitting. Uses mean as width of prior distribution of parameters.
-        
-
-        assert len(self.parameters["original_parameters"]) is not 0, 'No parameters stored in Parametrization. ' \
-                                                                     'Run calc_scaling_constants method first.'
-        assert type(regularization_type) == str, "No valid regularization method. Use L1, L2, or hyperbolic"
-        assert regularization_type in ["L1", "L2", "hyperbolic"], "Regularization type {} is not implemented." \
-            .format(regularization_type)
-
-        no_of_parameter_types = self.parameters["original_parameters"] / self.n_atoms
-        self.parameters['regularization'] = []
-
-        if regularization_type is not "hyperbolic":
-
-            change = (self.parameters['current_scaled_parameters'] - self.parameters['scaled_parameters']) \
-                     / self.parameters['current_scaled_parameters']
-
-            if regularization_type == "L1":
-                # Lasso Regression
-                regularization = np.abs(change)
-
-            elif regularization_type == "L2":
-                # Ridge Regression
-                regularization = np.power(change, 2)
-
-            for parameter_type_no in range(no_of_parameter_types):
-                l_scaled_value = scaling_factor * np.sum(regularization[:(self.n_atoms * parameter_type_no)])
-                l_scaled = np.full(self.n_atoms, l_scaled_value)
-                self.parameters['regularization'].append(l_scaled)
-
-
-        else:
-            change = np.sqrt(np.power(self.parameters['current_scaled_parameters'], 2) + np.power(hyperbolic_beta, 2)) \
-                     - hyperbolic_beta
-            for parameter_type_no in range(no_of_parameter_types):
-                regularization = np.sum(change[:(self.n_atoms * parameter_type_no)])
-                hyp_scaled = scaling_factor * regularization
-                self.parameters['regularization'].append(hyp_scaled)
-
-        self.parameters['reg_cur_sc_parm'] = self.parameters['current_parameters_scaled'] \
-                                             + self.parameters['regularization']
-
-    """
-
-    def wrap_objective_function(self):
+    
+    
+    def wrap_objective_function(self, parameters): #TODO: has to be abstract function of parameters
         """
-        This is the actual "function" that is passed to the optimizer.
+        Abstract function that calculates the value of the objective function based on the parameters
+
+        Parameters
+        ----------
+        parameters : 1d array
+            Selected scaled and vectorized parameters from molecular_system.vectorized_scaled_reduced_ff_optimizable_values
+
+        other (internal) parameters:
+            self.term_type
+
+        returns :
+            value of objective funtion as float
         """
-        # has to loop over configs, set coords & unscaled params in omm, calc mm energies/forces (repeatedly),
-        # read qm energies/forces (once for each config)
-        # calc obj fun: params as scaled array in, force diff out
-
-        #TODO: unscale params???
-
-        #TODO: loop over confs (should be function on its own)
-        for frame_nr, frame in enumerate(coords1):
-
-            # feed frame coords and new params into omm sys
-            #self.molecular_system.openmm_sys # coords in
-            self.recalculate_mm_properties() # params in, energies/forces out
-
+    
+            
         if self.term_type == 'energy':
-            obj_f = self.calculate_obj_func_energy()
+            obj_f = self.evaluate_obj_func_energy()
 
         elif self.term_type == 'force':
-            obj_f = self.calculate_obj_func_force()
+            obj_f = self.evaluate_obj_func_force()
 
         elif self.term_type == 'force & energy':
-            obj_f_f = self.calculate_obj_func_force()
-            obj_f_e = self.calculate_obj_func_energy()
+            obj_f_f = self.evaluate_obj_func_force()
+            obj_f_e = self.evaluate_obj_func_energy()
             obj_f = obj_f_f + obj_f_e
 
-        # regularization term?
-        """
-        if regularization == True:
+        #TODO: add regularization term if needed
+        if self.regularization:
+
+            regularization_term = self.calculate_regularization_term()
             obj_f += regularization_term
-        """
 
-        return obj_f # returns value
+        return obj_f
 
-    def parametrize(self):
+
+    def parametrize(self, regularization_type='L2', scaling_factor=1.0, hyperbolic_beta=0.01):
 
         assert self.optimizer is not None, 'optimizer not set'
         assert self.term_type is not None, 'term_type not set'
-        assert self.term_type in self.term_types, 'pls choose a valid term_type'
+        assert self.term_type in self.term_types, 'please choose a valid term_type'
 
-        self.calc_scaling_constants()
-
-        #TODO: this down below does not work, add 'term' to obj_f instead!
-        """ 
-        if self.regularization is True:
-            self.calc_regularization()
-            parameters = self.parameters['reg_cur_sc_parm']
-
+        #implement regularization term if needed
+        if self.regularization:
+            regularization_term = self.calculate_regularization_term(regularization_type, scaling_factor, hyperbolic_beta)
         else:
-            parameters = self.parameters['current_scaled_parameters']
-            
-        """
+            regularization_term = 0.0
+
         parameters = self.parameters['scaled_parameters']
 
         optimized_params, obj_f_value = self.optimizer.run_optimizer(self.wrap_objective_function, parameters)
         self.parameters['current_scaled_parameters'] = optimized_params
 
-
-
+        obj_f_value += regularization_term
