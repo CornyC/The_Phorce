@@ -3,8 +3,6 @@ import numpy as np
 import copy
 
 
-### wrapper for optimization methods ###
-
 class Optimizer:
     """
     Creates the optimizer for the parametrization problem.
@@ -55,13 +53,18 @@ class Optimizer:
         see https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html
         BFGS is recommended, L-BFGS-B may be faster but more unreliable
 
-        Parameters
-        ----------
-        self.parameters : parameters that go into the function
-        self.opt_settings
-        self.constraints
-        self.tolerance
-        self.f : input function (wrapped objective function)
+        (internal) parameters :
+
+        self.parameters : np.array
+            parameters that go into the function
+        self.opt_settings : list
+            list of arguments that is extracted and passed to the minimizer
+        self.constraints : np.array
+            idk yet
+        self.tolerance : float
+            optimizer tolerance
+        self.f : parametrization.Parametrization.wrap_objective_function
+            Objective function wrapper
 
         returns:
             optimized_params : np.array containing the optimized force field params
@@ -69,18 +72,19 @@ class Optimizer:
 
         from scipy.optimize import minimize as scmin
 
-        self.opt_settings.append('maxiter=self.max_iterations')
+        self.opt_settings = {'tol': self.tolerance}
+        self.opt_settings.update({'options' : { 'maxiter': self.max_iterations}})
 
-        if self.constraints is None:
-            optimization = scmin(fun=self.f, x0=self.parameters, args=self.opt_settings, tol=self.tolerance)
-        elif self.constraints is not None:
-            optimization = scmin(fun=self.f, x0=self.parameters, constraints=self.constraints, args=self.opt_settings,
-                                 tol=self.tolerance)
+        if self.constraints is not None:
+            self.opt_settings.update({'constraints': self.constraints})
+
+        optimization = scmin(lambda x : self.f(x), x0=self.parameters, **self.opt_settings)
         optimized_params = optimization.x
+        value = optimization.fun
 
-        return optimized_params
+        return optimized_params, value
 
-    def optimize_with_tf_adam(self):
+    def optimize_with_tf_adam(self): #TODO: fix self argument problem in self.f
 
         """
         https://www.tensorflow.org/api_docs/python/tf/keras/optimizers/Adam
@@ -103,7 +107,7 @@ class Optimizer:
 
         tf_params = tf.Variable(self.parameters)
         i = 0
-        opt = tf.keras.optimizers.Adam(self.opt_settings)
+        opt = tf.keras.optimizers.Adam(*self.opt_settings)
         steps = []
         change = tf.Variable(np.array(1.))
 
@@ -130,7 +134,7 @@ class Optimizer:
 
         return optimized_params, value
 
-    def optimize_with_pt_adam(self):
+    def optimize_with_pt_adam(self): #TODO: fix self argument problem in self.f
 
         """
         https://pytorch.org/docs/stable/generated/torch.optim.Adam.html#torch.optim.Adam
@@ -185,7 +189,7 @@ class Optimizer:
 
         return optimized_params, value
 
-    def optimize_with_pt_lbfgs(self):
+    def optimize_with_pt_lbfgs(self): #TODO: fix self argument problem in self.f
 
         """
         https://pytorch.org/docs/stable/generated/torch.optim.LBFGS.html#torch.optim.LBFGS
@@ -248,7 +252,7 @@ class Optimizer:
 
         return optimized_params, value
 
-    def optimize_with_pso(self, c1=0.1, c2=0.1, w=0.4, n_particles=100):
+    def optimize_with_pso(self, c1=0.1, c2=0.1, w=0.4, n_particles=100): #TODO: fix self argument problem in self.f
         """
         Parameters
         ----------

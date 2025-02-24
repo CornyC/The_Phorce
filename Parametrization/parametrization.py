@@ -12,7 +12,7 @@ class Parametrization:
 
     Parameters
     ----------
-    molecular_system : Molecular_system object
+    molecular_system : system.FMolecular_system object
         Contains properties of the molecular system that is to be parametrized
     term_type : str
         'energy' or 'force' or 'force & energy'; determines which terms go into the objective function
@@ -21,8 +21,8 @@ class Parametrization:
     regularization : bool
         whether a penalty term is used or not
 
-    parameters : dict
-        contains parameters from OMM_Interface.openmm.OpenMM_system.vectorized_scaled_reduced_ff_optimizable_values
+    parameters : 1d array
+        contains optimized, scaled & vectorized parameters
     """
     def __init__(self, molecular_system=None, term_type=None, optimizer=None, regularization=False):
 
@@ -35,13 +35,10 @@ class Parametrization:
         self.fqm = self.molecular_system.qm_net_forces
         self.weights = self.molecular_system.weights
         self.n_atoms = self.molecular_system.n_atoms
-        self.parameters = self.molecular_system.openmm_systems['all'].vectorized_scaled_reduced_ff_optimizable_values
+        self.parameters = None
 
         self.optimizer = optimizer
         self.regularization = regularization
-
-        self.energy_properties = None
-        self.force_properties = None
 
         self.term_types = ['energy', 'force', 'force&energy']
         self.term_type = term_type
@@ -84,6 +81,24 @@ class Parametrization:
         returns :
             value of the objective function in the format of the selected optimizer
         """
+
+        for sys_type in self.molecular_system.openmm_systems.keys():
+
+            if self.molecular_system.openmm_systems[sys_type] != None:
+
+                self.molecular_system.openmm_systems[sys_type].set_parameters()
+
+        if isinstance(self.weights, np.ndarray) == False:
+
+            self.molecular_system.generate_weights()
+            self.weights = self.molecular_system.weights
+            weights = np.atleast_2d(self.weights) #weights weigh conformations
+            weights = np.atleast_3d(weights.T)
+
+        else: 
+
+            weights = np.atleast_2d(self.weights) #weights weigh conformations
+            weights = np.atleast_3d(weights.T)
 
         self.calculate_classical_energies_forces()
 
@@ -131,7 +146,7 @@ class Parametrization:
 
         return obj_f_e
 
-    def evaluate_obj_func_force(self, method=None): #TODO: how to sum over confs?
+    def evaluate_obj_func_force(self, method=None): 
         """
         calculates the value of the objective function using the format required by the selected optimizer
                  1            n_atoms n_conf              |ΔF|²
@@ -144,8 +159,23 @@ class Parametrization:
 
         assert method in [None, "variance", "covariance"], "Force property term for method {} is not implemented.".format(method)
 
-        weights = np.atleast_2d(self.weights)
-        weights = np.atleast_3d(weights.T)
+        for sys_type in self.molecular_system.openmm_systems.keys():
+
+            if self.molecular_system.openmm_systems[sys_type] != None:
+
+                self.molecular_system.openmm_systems[sys_type].set_parameters()
+
+        if isinstance(self.weights, np.ndarray) == False:
+
+            self.molecular_system.generate_weights()
+            self.weights = self.molecular_system.weights
+            weights = np.atleast_2d(self.weights) #weights weigh conformations
+            weights = np.atleast_3d(weights.T)
+
+        else: 
+
+            weights = np.atleast_2d(self.weights) #weights weigh conformations
+            weights = np.atleast_3d(weights.T)
 
         self.calculate_classical_energies_forces
         self.calculate_classical_net_forces
@@ -162,7 +192,7 @@ class Parametrization:
                 enumerator = np.power(np.abs(delta_F), 2)
                 denominator = np.var(np.linalg.norm(self.fqm, axis=2))
                 frac_weighted = weights * (enumerator / denominator)
-                obj_f_f = np.sum(frac_weighted) / (3 * self.n_atoms)
+                obj_f_f = np.sum(frac_weighted) / (3 * self.n_atoms['all'])
                 #     1            n_atoms n_conf              |ΔF|²
                 # ----------------     Σ     Σ     ω_{conf} ------------
                 # 3n_atoms n_confs   atom   conf             Var(F^{QM})
@@ -172,7 +202,7 @@ class Parametrization:
             tf_fmm = tf.Variable(self.fmm, dtype=float)
             tf_fqm = tf.Variable(self.fqm, dtype=float)
             tf_weights = tf.constant(weights, dtype=float)
-            tf_n_atoms = tf.constant(self.n_atoms, dtype=int)
+            tf_n_atoms = tf.constant(self.n_atoms['all'], dtype=int)
             delta_F = tf.math.subtract(tf_fmm, tf_fqm)
 
             if method is None:
@@ -193,7 +223,7 @@ class Parametrization:
             pt_fmm = torch.tensor(self.fmm, dtype=torch.float64, requires_grad=True)
             pt_fqm = torch.tensor(self.fqm, dtype=torch.float64, requires_grad=True)
             pt_weights = torch.tensor(weights, dtype=torch.float64, requires_grad=False)
-            pt_n_atoms = torch.tensor(self.n_atoms, dtype=torch.int64, requires_grad=False)
+            pt_n_atoms = torch.tensor(self.n_atoms['all'], dtype=torch.int64, requires_grad=False)
             pt_f = tf_weights ("obj_f_f")
             delta_F = pt_fmm - pt_f
             delta_F = pt_fmm - pt_fqm
@@ -235,51 +265,78 @@ class Parametrization:
         Parameters
         ----------
         parameters : 1d array
-            Selected scaled and vectorized parameters from molecular_system.vectorized_scaled_reduced_ff_optimizable_values
-
+            Selected scaled and vectorized parameters from molecular_system.scaled_parameters
         other (internal) parameters:
-            self.term_type
+            self.molecular_system : system.Molecular_system object
+            self.term_type : str
 
         returns :
             value of objective funtion as float
         """
-    
+        self.molecular_system.scaled_parameters = parameters
+
+        self.molecular_system.unscale_parameters()
+        self.molecular_system.redistribute_vectorized_parameters()
+        self.molecular_system.reshape_vectorized_parameters()
+        self.molecular_system.expand_reduced_parameters()
             
         if self.term_type == 'energy':
-            obj_f = self.evaluate_obj_func_energy()
+            obj_f_value = self.evaluate_obj_func_energy()
 
         elif self.term_type == 'force':
-            obj_f = self.evaluate_obj_func_force()
+            obj_f_value = self.evaluate_obj_func_force()
 
         elif self.term_type == 'force & energy':
             obj_f_f = self.evaluate_obj_func_force()
             obj_f_e = self.evaluate_obj_func_energy()
-            obj_f = obj_f_f + obj_f_e
+            obj_f_value = obj_f_f + obj_f_e
+
+        self.molecular_system.reduce_ff_optimizable(self.molecular_system.slice_list)
+        self.molecular_system.vectorize_reduced_parameters()
+        self.molecular_system.merge_vectorized_parameters()
+        self.molecular_system.scale_parameters()
+
+        self.molecular_system.scaled_parameters = parameters
+
 
         #TODO: add regularization term if needed
+        """
         if self.regularization:
 
             regularization_term = self.calculate_regularization_term()
             obj_f += regularization_term
+        """
 
-        return obj_f
+        return obj_f_value
 
 
-    def parametrize(self, regularization_type='L2', scaling_factor=1.0, hyperbolic_beta=0.01):
+    def parametrize(self, parameters, regularization_type='L2', scaling_factor=1.0, hyperbolic_beta=0.01):
+        """
+        Feeds the objective function wrapper and the parameters to the selected optimizer.
+
+        Parameters:
+        -----------
+        parameters : 1d array
+            Selected scaled and vectorized parameters from molecular_system.scaled_parameters
+        
+        sets: 
+            self.parameters : 1d array
+                optimized scaled & vectorized parameters
+        """
 
         assert self.optimizer is not None, 'optimizer not set'
         assert self.term_type is not None, 'term_type not set'
         assert self.term_type in self.term_types, 'please choose a valid term_type'
 
-        #implement regularization term if needed
+        #TODO: implement regularization term if needed
+        """
         if self.regularization:
             regularization_term = self.calculate_regularization_term(regularization_type, scaling_factor, hyperbolic_beta)
         else:
             regularization_term = 0.0
-
-        parameters = self.parameters['scaled_parameters']
+        """
 
         optimized_params, obj_f_value = self.optimizer.run_optimizer(self.wrap_objective_function, parameters)
-        self.parameters['current_scaled_parameters'] = optimized_params
+        self.parameters = optimized_params
 
-        obj_f_value += regularization_term
+        #obj_f_value += regularization_term
