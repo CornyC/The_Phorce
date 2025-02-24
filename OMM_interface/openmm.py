@@ -51,6 +51,35 @@ class OpenMM_system:
         Keyword arguments passed to the integrator
     create_system_params : dict
         Keyword arguments passed to the top.createSystem instance
+
+    other (internal) parameters :
+        self.top : openmm object
+            either AmberPrmtopFile, GromacsTopFile, CharmmPsfFile, or openmm native ForceField
+        self.top_params : openmm object
+            CharmmParameterSet
+        self.crd : openmm object
+            one of AmberInpcrdFile, GromacsGroFile, CharmmCrdFile, PDBFile
+        self.platform : openmm.openmm.Platform
+        self.system : openmm.openmm.System
+        self.context : openmm.openmm.Context
+        self.force_groups : dict
+            keys see self.force_groups_dict, values are lists of openmm's force group indices
+        self.extracted_ff : dict
+            keys see self.force_groups, values are lists of np.recarrays containing the force field params
+        self.ff_optimizable : dict
+            contains force groups and their parameters that should be optimized
+        self.force_groups_dict : dict
+                                 {'HarmonicBondForce': [],
+                                  'HarmonicAngleForce': [],
+                                  'PeriodicTorsionForce': [],
+                                  'NonbondedForce': [],
+                                  'CustomBondForce': [],
+                                  'CustomAngleForce': [],
+                                  'CustomTorsionForce': [],
+                                  "CMAPTorsionForce": [],
+                                  "NBException": []}
+        self.charges : np.array
+            mm charges of all atoms in the openmm system
     """
 
 
@@ -87,6 +116,7 @@ class OpenMM_system:
         self.crd = None
         self.platform = None
         self.system = None
+        self.context = None
 
         # other params (required to extract FF)
         self.force_groups = {}
@@ -103,8 +133,6 @@ class OpenMM_system:
                                   "NBException": []}
 
         # data params
-        self.energies = None
-        self.forces = None
         self.charges = None
 
     def import_molecular_system(self):
@@ -227,7 +255,7 @@ class OpenMM_system:
             self.system = self.top.createSystem(**self.create_system_params)
 
 
-    def set_openmm_context(self):
+    def set_openmm_context(self): #TODO: Inject params here somewhere, then call this in the wrapper
         """
         sets the OpenMM context object by checking constraints, reading the initial coordinates and bundling it all
         up w/ the integrator and platform (a.k.a. prepares the mdrun/classical calculation)
@@ -832,15 +860,12 @@ class OpenMM_system:
                     self.ff_optimizable[force_type].append(copy.deepcopy(nb_exc_array))
 
 
-    def set_parameters(self, force_key: str):
+    def set_parameters(self):
         """
         writes the optimized parameters to the OpenMM system
 
         Parameters
         ----------
-        force_key : str
-            type of force field parameter
-
         self.ff_optimizable : dictionary containing the optimizable force field parameters
         self.system : OpenMM system object
 
@@ -848,38 +873,40 @@ class OpenMM_system:
 
         assert len(self.ff_optimizable) != 0, 'ff_optimizable does not exist, please create it first.'
 
-        force_terms = self.ff_optimizable[force_key]
+        for force_key in self.ff_optimizable.keys():
 
-        # loop needed in case of tuple index for force group
-        for omm_force_indices in self.force_groups[force_key]:
-            force = self.system.getForce(omm_force_indices)
+            parameter_array = self.ff_optimizable[force_key]
 
-            for index, term in enumerate(force_terms[0]):
+            # loop needed in case of tuple index for force group
+            for index_no, omm_force_index in enumerate(self.force_groups[force_key]):
+                force = self.system.getForce(omm_force_index) # this is the openmm force object
 
-                if force_key == 'NonbondedForce':
-                    force.setParticleParameters(index, term["charge"], term["lj_sigma"], term["lj_eps"])
-                    force.updateParametersInContext(self.context)
+                for index, parameters in enumerate(parameter_array[index_no]):
 
-                elif force_key == 'HarmonicBondForce':
-                    force.setBondParameters(index, term["atom1"], term["atom2"], term["bond_length"],
-                                            term['force_constant'])
-                    force.updateParametersInContext(self.context)
+                    if force_key == 'NonbondedForce':
+                        force.setParticleParameters(index, parameters["charge"], parameters["lj_sigma"], parameters["lj_eps"])
+                        force.updateParametersInContext(self.context)
 
-                elif force_key == 'HarmonicAngleForce':
-                    force.setAngleParameters(index, term["atom1"], term["atom2"], term['atom3'], term["angle"],
-                                             term['force_constant'])
-                    force.updateParametersInContext(self.context)
+                    elif force_key == 'HarmonicBondForce':
+                        force.setBondParameters(index, parameters["atom1"], parameters["atom2"], parameters["bond_length"],
+                                                parameters['force_constant'])
+                        force.updateParametersInContext(self.context)
 
-                elif force_key == 'PeriodicTorsionForce':
-                    force.setTorsionParameters(index, term["atom1"], term["atom2"], term['atom3'], term['atom4'],
-                                               term["periodicity"], term['phase'], term['force_constant'])
-                    force.updateParametersInContext(self.context)
+                    elif force_key == 'HarmonicAngleForce':
+                        force.setAngleParameters(index, parameters["atom1"], parameters["atom2"], parameters['atom3'], parameters["angle"],
+                                                parameters['force_constant'])
+                        force.updateParametersInContext(self.context)
 
-                elif force_key == 'NBException':
+                    elif force_key == 'PeriodicTorsionForce':
+                        force.setTorsionParameters(index, parameters["atom1"], parameters["atom2"], parameters['atom3'], parameters['atom4'],
+                                                parameters["periodicity"], parameters['phase'], parameters['force_constant'])
+                        force.updateParametersInContext(self.context)
 
-                    force.setExceptionParameters(index, term["atom1"], term["atom2"], term["chargeProd"], term['sigma'],
-                                                 term['epsilon'])
-                    force.updateParametersInContext(self.context)
+                    elif force_key == 'NBException':
+
+                        force.setExceptionParameters(index, parameters["atom1"], parameters["atom2"], parameters["chargeProd"], parameters['sigma'],
+                                                    parameters['epsilon'])
+                        force.updateParametersInContext(self.context)
 
 
 
