@@ -4,7 +4,7 @@ import fnmatch
 from pathlib import Path
 import numpy as np
 import re
-from System.input_paths import *
+from System.paths import *
 
 #### Calculate Mulliken, Hirshfeld, RESP charges, and BSSE using cp2k ####
 
@@ -22,10 +22,13 @@ class Direct_Calculator:
     run_type : str
         type of cp2k calculation: Either charges or BSSE
     """
-    def __init__(self, input_paths, run_type=None):
+    def __init__(self, paths, run_type=None):
+    
+        assert run_type in [systype for systype in ['single_point', 'optmization']], "Run type {} is" \
+                                                                                " not implemented.".format(run_type)
 
-        self.project_path = input_paths.traj_file_path
-        self.project_name = input_paths.project_name
+        self.project_path = paths.traj_file_path
+        self.project_name = paths.project_name
         self.run_type = run_type
 
         if self.project_path == None:
@@ -37,6 +40,14 @@ class Direct_Calculator:
 
         if self.project_name == None:
             self.project_name = 'cp2k_direct'
+            
+        os.chdir(self.project_path)
+        
+        if Path(self.project_path + self.project_name).is_dir() is True:
+            os.chdir(self.project_name)
+        else:
+            os.system('mkdir '+self.project_name)
+            os.chdir(self.project_name)
 
         # other params
         self.energy = None
@@ -59,7 +70,7 @@ class Direct_Calculator:
         cp2k_input_file.write(cp2k_input)
         cp2k_input_file.close()
 
-    def run_cp2k(self, omp_threads: int, cp2k_binary_name: str):
+    def run_cp2k(self, omp_threads: int, cp2k_binary_name: str, path: str):
         """
         starts the cp2k process and feeds the input file
 
@@ -69,75 +80,29 @@ class Direct_Calculator:
             set the number of OpenMP threads to use
         cp2k_binary_name : str
             name by which the cp2k binary is called on your machine, e.g. cp2k.ssmp or cp2k.psmp
+        path : str
+            directory in which the calculation is run
         """
 
         assert type(omp_threads) == int, 'invalid number of OMP threads'
         assert os.system('which '+str(cp2k_binary_name)) == 0, 'cp2k binary with name {} not found'\
                                                                 .format(cp2k_binary_name)
 
-        os.chdir(self.project_path)
+        os.chdir(path)
         os.system('export OMP_NUM_THREADS='+str(omp_threads))
         os.system(str(cp2k_binary_name)+' -o '+str(self.project_name)+'_'+str(self.run_type)+'.out '
                   +str(self.project_name)+'_'+str(self.run_type)+'.inp')
 
-    def extract_charges(self, charge_type: str, n_atoms: int):
-        """
-        reads the desired charge type from cp2k output file
 
-        Parameters
-        ----------
-        charge_type : str
-            Options are 'Mulliken', 'Hirshfeld', 'RESP'
-        n_atoms : int
-            number of atoms of the molecule that should be parametrized
-        """
-        assert charge_type in ['Mulliken', 'Hirshfeld', 'RESP'], 'invalid charge_type {}'.format(charge_type)
-        assert (type(n_atoms) == int and n_atoms > 0) == True, 'invalid number of atoms {}'.format(n_atoms)
-
-        f = open(self.project_path+self.project_name+'_'+self.run_type+'.out', 'r')
-        read = []
-        for index, line in enumerate(f.readlines()):
-            line = line.strip()
-            read.append(line)
-        f.close()
-
-        energy_line = [index for index, string in enumerate(read) if 'ENERGY| Total FORCE_EVAL ( QS ) energy [a.u.]:'
-                       in string]
-        self.energy = float(re.findall(r"[-+]?(?:\d*\.*\d+)", read[energy_line[-1]])[0])
-
-        if charge_type == 'Mulliken':
-            mullken_start = [index for index, string in enumerate(read) if 'Mulliken Population Analysis' in string]
-            charges = np.loadtxt(self.project_path+self.project_name+'_'+self.run_type+'.out', skiprows=mullken_start[0]+3,
-                                 max_rows=n_atoms, usecols=4, dtype=float)
-
-        elif charge_type == 'Hirshfeld':
-            hirshfeld_start = [index for index, string in enumerate(read) if 'Hirshfeld Charges' in string]
-            charges = np.loadtxt(self.project_path+self.project_name+'_'+self.run_type+'.out',
-                                 skiprows=hirshfeld_start[0]+3, max_rows=n_atoms, usecols=5, dtype=float)
-
-        elif charge_type == 'RESP':
-            resp_start = [index for index, string in enumerate(read) if 'RESP charges:' in string]
-            charges = np.loadtxt(self.project_path+self.project_name+'_'+self.run_type+'.out', skiprows=resp_start[0]+3,
-                                 max_rows=n_atoms, usecols=3, dtype=float)
-
-        forces_start = [index for index, string in enumerate(read) if 'ATOMIC FORCES in [a.u.]' in string]
-        self.forces = np.loadtxt(self.project_path+self.project_name+'_'+self.run_type+'.out', skiprows=forces_start[0]+3,
-                             max_rows=n_atoms, usecols=(3,4,5), dtype=float)
-
-        self.charges = charges
-
-
-    def extract_bsse(self):
+    def extract_bsse(self, read_lines):
         """
         reads the basis set superposition error from the .out file
+        
+        Parameters
+        ----------
+        read_lines : 
+        	read-in lines from .out file in str format
         """
-
-        f = open(self.project_path+self.project_name+self.run_type+'.out', 'r')
-        read = []
-        for index, line in enumerate(f.readlines()):
-            line = line.strip()
-            read.append(line)
-        f.close()
 
         bsse_line = [index for index, string in enumerate(read) if 'BSSE RESULTS' in string]
         self.bsse_total = float(re.findall(r"[-+]?(?:\d*\.*\d+)", read[bsse_line+2])[0])
@@ -145,19 +110,17 @@ class Direct_Calculator:
         bsse_free_line = [index for index, string in enumerate(read) if 'BSSE-free interaction energy:' in string]
         self.bsse_free = float(re.findall(r"[-+]?(?:\d*\.*\d+)", read[bsse_free_line])[0])
 
-    def extract_energy(self):
+    def extract_energy(self, read_lines):
         """
         reads the energy from the .out file
+        
+        Parameters
+        ----------
+        read_lines : 
+        	read-in lines from .out file in str format
         """
 
-        f = open(self.project_path+self.project_name+self.run_type+'.out', 'r')
-        read = []
-        for index, line in enumerate(f.readlines()):
-            line = line.strip()
-            read.append(line)
-        f.close()
-
-        energy_line = [index for index, string in enumerate(read) if 'ENERGY| Total FORCE_EVAL ( QS ) energy [a.u.]:'
+        energy_line = [index for index, string in enumerate(read_lines) if 'ENERGY| Total FORCE_EVAL ( QS ) energy [a.u.]:'
                        in string]
         """
         print(energy_line[-1])
@@ -166,9 +129,9 @@ class Direct_Calculator:
         print(type([energy_line[-1]]))
         """
 
-        self.energy = float(re.findall(r"[-+]?(?:\d*\.*\d+)", read[energy_line[-1]])[0]) * 2625.4996394798 # Hartree to kJ/mol
+        self.energy = float(re.findall(r"[-+]?(?:\d*\.*\d+)", read_lines[energy_line[-1]])[0]) # Hartree 
 
-    def extract_forces(self, n_atoms: int):
+    def extract_forces(self, n_atoms, read_lines):
 
         """
         reads the relevant forces from the .out file
@@ -177,15 +140,10 @@ class Direct_Calculator:
         ----------
         n_atoms : int
             number of all atoms
+        read_lines : 
+            read-in lines from .out file in str format
         """
 
-        f = open(self.project_path+self.project_name+self.run_type+'.out', 'r')
-        read = []
-        for index, line in enumerate(f.readlines()):
-            line = line.strip()
-            read.append(line)
-        f.close()
-
-        forces_start = [index for index, string in enumerate(read) if 'ATOMIC FORCES in [a.u.]' in string]
-        self.forces = np.loadtxt(self.project_path+self.project_name+self.run_type+'.out', skiprows=forces_start[0]+3,
-                             max_rows=n_atoms, usecols=(3,4,5), dtype=float) * 49614.752589482 # a.u. to kJ/mol/nm
+        forces_start = [index for index, string in enumerate(read_lines) if 'ATOMIC FORCES in [a.u.]' in string]
+        self.forces = np.loadtxt(self.project_path+self.project_name+self.run_type+'.out', skiprows=forces_start[-1]+3,
+                             max_rows=n_atoms, usecols=(3,4,5), dtype=float) # Hartree/Bohr
