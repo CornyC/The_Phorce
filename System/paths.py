@@ -1,6 +1,8 @@
 from pathlib import Path
 
+
 def check_path(path: str):
+
     if path != None:
 
         assert Path(path).is_dir() is True, 'path {} does not exist'.format(path)
@@ -10,7 +12,17 @@ def check_path(path: str):
 
         return path
     
-#### instance to store input file paths and names ####
+def check_if_file_exists(path: str):
+
+    if path != None:
+
+        if Path(path).is_dir() == True:
+
+            pass
+
+        else:
+
+            assert Path(path).is_file() is True, 'file {} does not exist'.format(path)
 
 class Paths:
     """
@@ -94,6 +106,7 @@ class Paths:
             if ('dir' in key or 'path' in key) == True:
 
                 if len(vars(self)[key]) != 0:
+
                     vars(self)[key] = check_path(vars(self)[key])
 
 
@@ -102,14 +115,18 @@ class Paths:
         self.mm_stream = self.mm_str_file_path + self.mm_str_file
         self.mm_crd = self.mm_crd_file_path + self.mm_crd_file
         self.mm_traj = self.mm_traj_file_path + self.mm_traj_file
-        self.mm_nosol_crd = self.mm_nosol_crd_file_path + self.mm_nosol_crd_file
-        self.mm_nosol_top = self.mm_nosol_top_file_path + self.mm_nosol_top_file
+        self.mm_nosol_crd = self.mm_nosol_crd_file_path + '/' + self.mm_nosol_crd_file
+        self.mm_nosol_top = self.mm_nosol_top_file_path + '/' + self.mm_nosol_top_file
         self.mm_mol1_crd = self.mm_mol1_crd_file_path + self.mm_mol1_crd_file
         self.mm_mol1_top = self.mm_mol1_top_file_path + self.mm_mol1_top_file
         self.mm_mol2_crd = self.mm_mol2_crd_file_path + self.mm_mol2_crd_file
         self.mm_mol2_top = self.mm_mol2_top_file_path + self.mm_mol2_top_file
 
+
         for key in vars(self):
             
             if len(vars(self)[key]) == 0:
+
                 vars(self)[key] = None
+            
+
