@@ -9,6 +9,8 @@ import copy, os
 import fnmatch
 from pathlib import Path
 from System.paths import *
+from math import sqrt
+
 
 #### Setting up the OpenMM System ####
 
@@ -30,7 +32,9 @@ class OpenMM_system:
     crd_file : str, optional, default=None
         Path to the AMBER, GROMACS or CHARMM coordinates file.
     charmm_param_file : str
-        Path to the CHARMM param file.
+        Path to the CHARMM param file (CHARMM stream file with .str extension). 
+        Register the main CHARMM param stream file for your molecule here and if needed 
+        have it read in other .str/.rtf files ;-)
     xml_files : list of str, optional, default=None
         Path to the .xml OpenMM topology files.
     pbc : bool
@@ -68,6 +72,11 @@ class OpenMM_system:
             keys see self.force_groups, values are lists of np.recarrays containing the force field params
         self.ff_optimizable : dict
             contains force groups and their parameters that should be optimized
+        self.custom_nb_params : np.array
+            triggered if NBFIX present. Contains rmin(=r/sigma; nm), epsilon (kJ/mol)(in GMX/OMM units), and atom type (str)
+        self.nbfix : np.array
+            triggered if NBFIX is present. Contains rij (nm) and wdij (kJ/mol) (GMX/OMM units), 
+            atom type 1, atom type 2 (str), and index 
         self.force_groups_dict : dict
                                  {'HarmonicBondForce': [],
                                   'HarmonicAngleForce': [],
@@ -77,7 +86,8 @@ class OpenMM_system:
                                   'CustomAngleForce': [],
                                   'CustomTorsionForce': [],
                                   "CMAPTorsionForce": [],
-                                  "NBException": []}
+                                  "NBException": [],
+                                  "CMMotionremover": []}
         self.charges : np.array
             mm charges of all atoms in the openmm system
     """
@@ -129,8 +139,10 @@ class OpenMM_system:
                                   'CustomBondForce': [],
                                   'CustomAngleForce': [],
                                   'CustomTorsionForce': [],
+                                  'CustomNonbondedForce': [],
                                   "CMAPTorsionForce": [],
-                                  "NBException": []}
+                                  "NBException": [],
+                                  "CMMotionremover": []}
 
         # data params
         self.charges = None
@@ -182,6 +194,8 @@ class OpenMM_system:
                 self.topology = self.top.topology
 
                 p = Path(__file__).parent
+                print(p)
+                print(str(p)+'/top_all36_cgenff.rtf')
                 self.top_params = app.CharmmParameterSet(str(p)+'/top_all36_cgenff.rtf', str(p)+'/par_all36_cgenff.prm',
                                                        str(p)+'/toppar_water_ions.str', self.charmm_param_file)
 
@@ -255,7 +269,7 @@ class OpenMM_system:
             self.system = self.top.createSystem(**self.create_system_params)
 
 
-    def set_openmm_context(self): #TODO: Inject params here somewhere, then call this in the wrapper
+    def set_openmm_context(self): 
         """
         sets the OpenMM context object by checking constraints, reading the initial coordinates and bundling it all
         up w/ the integrator and platform (a.k.a. prepares the mdrun/classical calculation)
@@ -334,8 +348,8 @@ class OpenMM_system:
 
         """
 
-        epot = self.context.getState(getEnergy=True).getPotentialEnergy()._value
-        forces = self.context.getState(getForces=True).getForces(asNumpy=True)._value # in kJ/(mol*nm)
+        epot = self.context.getState(getEnergy=True).getPotentialEnergy()._value #kJ/mol
+        forces = self.context.getState(getForces=True).getForces(asNumpy=True)._value # in kJ/mol/nm
 
         """
 
@@ -346,10 +360,86 @@ class OpenMM_system:
         """
 
         return epot, forces
+    
+    def _extract_CustomNonbondedForce(self):
+        """
+        Automatically triggered if sigma == 1 and epsilon == 0 in NonbondedForce.
+        In case some atom type used in the system has a NBFIX specified, OpenMM reads, stores, and handles the 
+        nonbonded parameters differently. This function imports them and formats the in line with the traditional nonbonded parameters
+        so that they reach the optimizer in the correct format
+        """
+        lj_r_sigma, lj_epsilon = [], [] #both have len=np.max(lj_idx_list)
+        self.lj_type_list, atomtypes_list = [], [] #len = np.max(lj_idx_list)
+        """
+        looks like:
+        vars(lj_type_list[0]) = {'name': 'CG331',
+                                    'number': -1,
+                                    'mass': Quantity(value=12.011, unit=dalton),
+                                    'atomic_number': 6,
+                                    'epsilon': -0.078,
+                                    'rmin': 2.05,
+                                    'epsilon_14': -0.01,
+                                    'rmin_14': 1.9,
+                                    'nbfix': {},
+                                    'nbthole': {}}
+        """
+        for i, atom in enumerate(self.top.atom_list):
+
+            atomtype = atom.type 
+
+            self.lj_type_list.append(atomtype) # collects dicts of atomtypes and params
+            atomtypes_list.append(atomtype.name) # collects strs of atomtypes
+            lj_r_sigma.append(atomtype.rmin) # rmin is r/sigma in Angström
+            lj_epsilon.append(atomtype.epsilon) # epsilon in kcal/mol
+
+        # Conversion factors from CHARMM to OpenMM/Gromacs
+        length_conv = unit.angstrom.conversion_factor_to(unit.nanometer)
+        ene_conv = unit.kilocalorie_per_mole.conversion_factor_to(unit.kilojoule_per_mole)
+
+        # construct instances for atomtype-based custom nb params
+        self.custom_nb_params = np.vstack((lj_r_sigma, lj_epsilon, atomtypes_list))
+        self.custom_nb_params[:,0] = self.custom_nb_params[:,0] * length_conv
+        self.custom_nb_params[:,1] = self.custom_nb_params[:,1] * ene_conv
+
+        nbfix_rij, nbfix_wdij = [], []
+        nbfix_atype1, nbfix_atype2 = [], []
+
+        for i in range(len(self.lj_type_list)):
+
+            for j in range(len(self.lj_type_list)):
+
+                atomtype_j = self.lj_type_list[j].name
+
+                try:
+
+                    #has NBFIX
+                    rij, wdij = self.lj_type_list[i].nbfix[atomtype_j][:2]
+                    atype1 = self.lj_type_list[i].name
+                    atype2 = atomtype_j
+
+                    nbfix_rij.append(rij)
+                    nbfix_wdij.append(wdij)
+                    nbfix_atype1.append(atype1)
+                    nbfix_atype2.append(atype2)
+
+                except KeyError:
+
+                    # no NBFIX
+                    continue
+
+        self.nbfix = np.vstack((nbfix_rij, nbfix_wdij, nbfix_atype1, nbfix_atype2)).T
+        self.nbfix[:,0] = self.nbfix[:,0] * length_conv
+        self.nbfix[:,1] = self.nbfix[:,1] * ene_conv
+
 
     def extract_forcefield(self):
         """
-        extracts all the force field params from the OpenMM system
+        Extracts all the force field params from the OpenMM system. 
+        So far, HarmonicBondforce, HarmonicAngleForce, PeriodicTotrsionForce, and NonbondedForce are defined. NBExceptions
+        do not work at the moment as they would require a Context update (terribly slow) in the parametrization loop
+        (see https://github.com/openmm/openmm/issues/252).
+        WARNING: Static implementation for only one CustomNonbondedForce in the OpenMM system. If there are more, this will not work.
+
 
         Parameters
         ----------
@@ -387,11 +477,6 @@ class OpenMM_system:
 
         # dict w/ force group names and their omm indices
         self.force_groups = copy.deepcopy(self.forces_indices)
-
-        # Add extra force group for nonbonded exceptions & assign NonbondedForce group index to it
-        force_key = "NBException"
-        assert force_key not in self.force_groups, "\t * ERROR: Force {} already in the dictionary.".format(force_key)
-        self.force_groups[force_key] = self.force_groups["NonbondedForce"]
 
         # grab all forces of all types from the openmm sys and file them in our extracted_ff
         for group in self.force_groups:
@@ -496,6 +581,25 @@ class OpenMM_system:
                     # Append sub_force_field to extracted_ff[force_key]
                     self.extracted_ff[force_key].append(sub_force_field)
 
+                    #Check for NBFIX
+                    if (np.unique(sub_force_field['lj_sigma']) == 1 or np.unique(sub_force_field['lj_eps']) == 0) == True:
+
+                        customnb = self.system.getForce(self.force_groups['CustomNonbondedForce'][0])
+                        acoeffunc = customnb.getTabulatedFunction(0)
+                        bcoeffunc = customnb.getTabulatedFunction(1)
+                        num_coeffs = len(acoeffunc.getFunctionParameters()[-1])
+
+                        sub_force_field2 = np.recarray((num_coeffs),
+                                                       formats=['float', 'float'],
+                                                       names = ['acoef', 'bcoef'])
+                        sub_force_field2['acoef'] = acoeffunc.getFunctionParameters()[-1] #skip xsize&ysize, only grab values
+                        sub_force_field2['bcoef'] = bcoeffunc.getFunctionParameters()[-1]
+
+                        self.extracted_ff['CustomNonbondedForce'].append(sub_force_field2)
+
+                        self._extract_CustomNonbondedForce()
+                        
+
                 if force_key == 'NBException':
 
                     # create structured array to store ff special interaction term params
@@ -592,7 +696,7 @@ class OpenMM_system:
 
                 np.savetxt(fname, array, delimiter=' ', newline='\n', fmt=column_fmt, header=header_fmtd)
 
-        filenames = fnmatch.filter(os.listdir(output_path), '*.ff')
+        filenames = [x for x in fnmatch.filter(os.listdir(output_path), "*.ff") if '*opt*' not in x ]
         filenames.sort()
 
         assert 'extracted.ff' not in filenames, 'extracted.ff already exists'
@@ -602,6 +706,99 @@ class OpenMM_system:
             os.system('cat '+str(filename)+' >> extracted.ff')
 
         os.system('echo \# END >> extracted.ff')
+
+
+    def write_ff_optimizable(self, output_path=None, file_name=None): 
+
+        """
+        writes the optimized force field parameters from the OpenMM system to file
+
+        Parameters
+        ----------
+        output_path : str, optional, default=None
+            path where the .ff files containing the force field parameters are written 
+        file_name : str, optional, default=None
+            filename of ...._opt.ff       
+        """
+
+        if output_path != None:
+
+            assert Path(output_path).is_dir() is True, 'output directory does not exist'
+
+            if output_path[-1] != '/':
+                output_path += '/'
+        
+        else:
+            output_path = os.getcwd()+'/'
+
+        if file_name == None:
+
+            file_name = 'ff_optimizable.ff'
+
+        for force_type in self.ff_optimizable.keys():
+
+            if force_type == 'HarmonicBondForce':
+
+                column_fmt = ['%i', '%i', '%.5f', '%.1f']
+
+            elif force_type == 'HarmonicAngleForce':
+
+                column_fmt = ['%i', '%i', '%i', '%.8f', '%.4f']
+
+            elif force_type == 'PeriodicTorsionForce':
+
+                column_fmt = ['%i', '%i', '%i', '%i', '%i', '%.8f', '%.4f']
+
+            elif force_type == 'NonbondedForce':
+
+                column_fmt = ['%.3f', '%.8f', '%.8f']
+
+            elif force_type == 'NBException':
+
+                column_fmt = ['%i', '%i', '%.6f', '%.8f', '%.8f']
+
+            if len(self.ff_optimizable[force_type]) > 1:
+
+                for i, array in enumerate(self.extracted_ff[force_type]):
+
+                    fname = output_path + file_name +'_'+ str(force_type) + '_' + str(i) + '_opt.ff'
+
+                    header_fmtd = str(force_type) + ' ' + str(self.force_groups[force_type][i]) + '\n'
+
+                    for n, name in enumerate(array.dtype.names):
+                        if n < len(array.dtype.names) - 1:
+                            header_fmtd += str(name) + ' '
+                        elif n == len(array.dtype.names) - 1:
+                            header_fmtd += str(name)
+
+                    np.savetxt(fname, array, delimiter=' ', newline='\n', fmt=column_fmt, header=header_fmtd)
+
+            elif len(self.ff_optimizable[force_type]) == 1:
+
+                array = self.ff_optimizable[force_type][0]
+
+                fname = output_path + file_name +'_'+ str(force_type) + '_opt.ff'
+
+                header_fmtd = str(force_type) + ' ' + str(self.force_groups[force_type][0]) + '\n'
+
+                for n, name in enumerate(array.dtype.names):
+                    if n < len(array.dtype.names) - 1:
+                        header_fmtd += str(name) + ' '
+                    elif n == len(array.dtype.names) - 1:
+                        header_fmtd += str(name)
+
+                np.savetxt(fname, array, delimiter=' ', newline='\n', fmt=column_fmt, header=header_fmtd)
+
+        filenames = fnmatch.filter(os.listdir(output_path), '*_opt.ff')
+        filenames.sort()
+
+        assert file_name not in filenames, '{} already exists'.format(file_name)
+
+        for filename in filenames:
+
+            os.system('cat '+str(filename)+' >> '+str(file_name)+'_ff_optimizable.ff')
+
+        os.system('echo \# END >> '+str(file_name)+'_ff_optimizable.ff')
 
 
     def read_extracted_ff(self, input_path=None):
@@ -692,7 +889,7 @@ class OpenMM_system:
                                                                         ('charge', 'lj_sigma', 'lj_eps'),
                                                                                                 'formats':
                                                                         ('float', 'float', 'float')})
-
+                                                                        # GMX/OMM units: nm and kJ/mol
                 self.read_in_ff[group].append(array)
 
     def get_charges(self):
@@ -803,6 +1000,12 @@ class OpenMM_system:
 
                 if (opt_charges == True and opt_lj == True) == True:
 
+                    if 'CustomNonbondedForce' in list(self.extracted_ff.keys()): #NBFIX check
+
+                        assert self.extracted_ff['CustomNonbondedForce'] != [], 'NBFIX may be present but has not been extracted, check ff parameters'
+                        
+                        self.ff_optimizable['CustomNonbondedForce'] = copy.deepcopy(self.extracted_ff['CustomNonbondedForce'])
+                    
                     self.ff_optimizable[force_type] = copy.deepcopy(self.extracted_ff[force_type])
 
                 elif (opt_charges == True and opt_lj == False) == True:
@@ -907,6 +1110,20 @@ class OpenMM_system:
                         force.setExceptionParameters(index, parameters["atom1"], parameters["atom2"], parameters["chargeProd"], parameters['sigma'],
                                                     parameters['epsilon'])
                         force.updateParametersInContext(self.context)
+
+                
+                if force_key == 'CustomNonbondedForce':
+
+                    acoeffunc = force.getTabulatedFunction(0)
+                    bcoeffunc = force.getTabulatedFunction(1)
+
+                    xsize, ysize = acoeffunc.getFunctionParameters[:2]
+
+                    acoeffunc.setFunctionParameters(xsize, ysize, parameter_array['acoef'])
+                    bcoeffunc.setFunctionParameters(xsize, ysize, parameter_array['bcoef'])
+
+                    force.updateParametersInContext(self.context)
+                    #TODO: test this
 
 
 
