@@ -1,4 +1,4 @@
-#### package imports ####
+﻿#### package imports ####
 
 import numpy as np
 import ase
@@ -117,6 +117,9 @@ class ASE_system:
             self.forces_gp
             if 'gas_phase' is chosen
         """
+
+        assert run_type in [systype for systype in ['single_point', 'optmization']], "Run type {} is" \
+                                                                                " not implemented.".format(run_type)
 
         if run_type == 'single_point':
 
