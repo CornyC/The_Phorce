@@ -33,7 +33,7 @@ class Parametrization:
 
         assert molecular_system is not None, 'no molecular system selected'
 
-        self.molecular_system = molecular_system #TODO: implement constraints checker
+        self.molecular_system = molecular_system 
         self.emm = self.molecular_system.mm_energies['all']
         self.fmm = self.molecular_system.mm_net_forces
         self.eqm = self.molecular_system.qm_energies['all']
@@ -55,7 +55,7 @@ class Parametrization:
                 CAUTION! If you want to implement auto constraints for another force_group, make sure to put them in the alphabetically
                 correct position, e.g. if you want to add HarmonicBondForce, put 'elif force_group == "HarmonicBondForce":' 
                 after CustomNonbondedForce but before NonbondedForce. This ensures that the bounds list holds the corresponding 
-                bounds in the correct position!
+                bounds in the correct position (alphabetic order)!
                 """
 
                 if force_group == 'CustomNonbondedForce':
