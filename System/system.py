@@ -1161,36 +1161,39 @@ class Molecular_system:
         """
         for sys_type in self.openmm_systems.keys():
 
-            num_lj_types = len(self.openmm_systems[sys_type].custom_nb_params)
-            acoef = [0 for i in range(num_lj_types*num_lj_types)]
-            bcoef = acoef[:]
+            if self.openmm_systems[sys_type] is not None:
 
-            for nbfix in self.openmm_systems[sys_type].nbfix:
+                num_lj_types = len(self.openmm_systems[sys_type].lj_type_list) #nope TODO where is the number of lj types stoerd?
+                acoef = [0 for i in range(num_lj_types*num_lj_types)]
+                bcoef = acoef[:]
 
-                for i in range(num_lj_types):
+                for nbfix in self.openmm_systems[sys_type].nbfix:
 
-                    atomtype_i = self.openmm_systems[sys_type].custom_nb_params[i][-1]
+                    for i in range(num_lj_types):
 
-                    for j in range(num_lj_types):
+                        atomtype_i = self.openmm_systems[sys_type].custom_nb_params[i][-1]
 
-                        atomtype_j = self.openmm_systems[sys_type].custom_nb_params[j][-1]
+                        for j in range(num_lj_types):
 
-                        if (nbfix[-2] == atomtype_i and nbfix[-1] == atomtype_j) == True:
+                            atomtype_j = self.openmm_systems[sys_type].custom_nb_params[j][-1]
 
-                            rij = nbfix[0]
-                            wdij = nbfix[1]
+                            if (nbfix[-2] == atomtype_i and nbfix[-1] == atomtype_j) == True:
 
-                        else:
-                            rij = self.openmm_systems[sys_type].custom_nb_params[i][0] + \
-                                   self.openmm_systems[sys_type].custom_nb_params[j][0]
-                            wdij = sqrt(self.openmm_systems[sys_type].custom_nb_params[i][1]) * \
-                                    self.openmm_systems[sys_type].custom_nb_params[j][1]
+                                rij = nbfix[0]
+                                wdij = nbfix[1]
 
-                        acoef[i+num_lj_types*j] = sqrt(wdij) * rij**6
-                        bcoef[i+num_lj_types*j] = 2 * wdij * rij**6
+                            else:
+                                rij = self.openmm_systems[sys_type].custom_nb_params[i][0] + \
+                                    self.openmm_systems[sys_type].custom_nb_params[j][0]
+                                
+                                wdij = sqrt(self.openmm_systems[sys_type].custom_nb_params[i][1] * \
+                                        self.openmm_systems[sys_type].custom_nb_params[j][1])
 
-            self.openmm_systems[sys_type].ff_optimzable['CustomNonbondedForce'][0]['acoef'] = acoef
-            self.openmm_systems[sys_type].ff_optimzable['CustomNonbondedForce'][0]['bcoef'] = bcoef
+                            acoef[i+num_lj_types*j] = sqrt(wdij) * rij**6
+                            bcoef[i+num_lj_types*j] = 2 * wdij * rij**6
+
+                self.openmm_systems[sys_type].ff_optimizable['CustomNonbondedForce'][0]['acoef'] = acoef
+                self.openmm_systems[sys_type].ff_optimizable['CustomNonbondedForce'][0]['bcoef'] = bcoef
 
     def _eliminate_duplicate_atomtypes(self, sliceable_ff_optimizable, sys_type, force_group, ff_atom_types_indices):
 
@@ -1233,6 +1236,7 @@ class Molecular_system:
 
             reduced_indexed_ff_opt = np.delete(indexed_sel_ff_opt, delete_list, 0)
             reduced_ff_opt_values = reduced_indexed_ff_opt[:,2:]
+
 
         elif force_group in ['NBException', 'HarmonicBondForce', 'HarmonicAngleForce', 'PeriodicTorsionForce']:
 
@@ -1369,35 +1373,45 @@ class Molecular_system:
 
                         if 'CustomNonbondedForce' in list(self.openmm_systems[sys_type].ff_optimizable.keys()): #NBFIX
                             # remove useless sigma and epsilon columns
+                
                             reduced_indexed_ff_opt = reduced_indexed_ff_opt[:,:-2]
                             reduced_ff_opt_values = reduced_ff_opt_values[:,:-2]
-                    
+
+                        # store in Molsys
+                        self.reduced_indexed_ff_optimizable[sys_type][force_group].append(reduced_indexed_ff_opt)
+                        self.reduced_ff_optimizable_values[sys_type][force_group].append(reduced_ff_opt_values) 
+
                     elif force_group in ['NBException', 'HarmonicBondForce', 'HarmonicAngleForce', 'PeriodicTorsionForce']: 
 
                         sliceable_ff_optimizable = _array.view('<f8').reshape(len(_array), reshape_column_indices[force_group]) # turns 1d recarray into sliceable nd array 
                         reduced_indexed_ff_opt, reduced_ff_opt_values = self._eliminate_duplicate_atomtypes(sliceable_ff_optimizable, sys_type, force_group, ff_atom_types_indices)
 
+                        # store in Molsys
+                        self.reduced_indexed_ff_optimizable[sys_type][force_group].append(reduced_indexed_ff_opt)
+                        self.reduced_ff_optimizable_values[sys_type][force_group].append(reduced_ff_opt_values) 
+
                     elif force_group == 'CustomNonbondedForce':
 
-                        reduced_indexed_ff_opt = []
+                        custom_selected_indexed_ff_opt = []
                         nbfixes = []
 
-                        for atomtype in list(self.dupes[sys_type].keys()):
+                        for atomtype in self.dupes[sys_type].items():
 
                             for i, param_line in enumerate(self.openmm_systems[sys_type].custom_nb_params):
 
-                                if atomtype == param_line[-1]:
+                                if atomtype[0] == param_line[-1]: 
 
-                                    reduced_indexed_ff_opt.append(np.hstack((param_line, i)))
+                                    custom_selected_indexed_ff_opt.append(np.hstack((param_line, i)))
 
                             for i, param_line in enumerate(self.openmm_systems[sys_type].nbfix):
 
-                                if (atomtype == param_line[-2] or atomtype == param_line[-1]) == True:
+                                if (atomtype[0] == param_line[-2] or atomtype[0] == param_line[-1]) == True:
 
                                     nbfixes.append(np.hstack((param_line, i))) 
 
                         nbfixes = np.array(nbfixes)
 
+                        # find duplicate nbfixes
                         reduced_nbfix = []
                         nbfix_dupes = []
                         i = 0
@@ -1426,20 +1440,35 @@ class Molecular_system:
                         reduced_nbfix = np.array(reduced_nbfix)
                         self.nbfix_dupes[sys_type] = nbfix_dupes
 
-                        reduced_indexed_ff_opt = np.array(reduced_indexed_ff_opt)
-                        reduced_indexed_ff_opt = reduced_indexed_ff_opt[reduced_indexed_ff_opt[:,-1].argsort()]
-                        reduced_ff_opt_values = reduced_indexed_ff_opt[:,:-2]
-      
-                    # store in Molsys
-                    self.reduced_indexed_ff_optimizable[sys_type][force_group].append(reduced_indexed_ff_opt)
-                    self.reduced_ff_optimizable_values[sys_type][force_group].append(reduced_ff_opt_values) 
+                        # duplicate removal from custom_selected_indexed_ff_opt
+                        delete_list = []
 
-                    if isinstance(reduced_nbfix, np.ndarray) and len(reduced_nbfix != 0) == True:
+                        for index, selected_parameters in enumerate(custom_selected_indexed_ff_opt):
+
+                            if selected_parameters[-1] in self.to_be_removed[sys_type]:
+
+                                delete_list.append(index)
+
+                        custom_reduced_indexed_ff_opt = np.delete(custom_selected_indexed_ff_opt, delete_list, axis=0)
+                        custom_reduced_indexed_ff_opt = custom_reduced_indexed_ff_opt[custom_reduced_indexed_ff_opt[:,-1].argsort()]
+                        custom_reduced_indexed_ff_opt[:,0] = custom_reduced_indexed_ff_opt[:,0] * (2**(-1/6) * 2) # convert r/sigma to sigma
+                        custom_reduced_indexed_ff_opt[:,1] = np.abs(custom_reduced_indexed_ff_opt[:,1]) # convert -epsilon to epsilon
+                        custom_reduced_ff_opt_values = custom_reduced_indexed_ff_opt[:,:-2]
+      
+                        # store in Molsys
+                        self.reduced_indexed_ff_optimizable[sys_type][force_group].append(custom_reduced_indexed_ff_opt)
+                        self.reduced_ff_optimizable_values[sys_type][force_group].append(custom_reduced_ff_opt_values) 
+
+                        if (isinstance(reduced_nbfix, np.ndarray) and len(reduced_nbfix) != 0) == True:
                         
-                        # store in Molsys as 2nd array of force_group (index 1)
-                        self.reduced_indexed_ff_optimizable[sys_type][force_group].append(reduced_nbfix)  
-                        self.reduced_ff_optimizable_values[sys_type][force_group].append(reduced_nbfix[:,:-3])
-                   
+                            # store in Molsys as 2nd array of force_group (index 1)
+                            self.reduced_indexed_ff_optimizable[sys_type][force_group].append(reduced_nbfix)  
+                            self.reduced_ff_optimizable_values[sys_type][force_group].append(reduced_nbfix[:,:-3])
+
+            #sort dict keys bc python is stupid
+            self.reduced_ff_optimizable_values[sys_type] = dict(sorted(self.reduced_ff_optimizable_values[sys_type].items()))  
+            self.reduced_indexed_ff_optimizable[sys_type] = dict(sorted(self.reduced_indexed_ff_optimizable[sys_type].items()))           
+
         if list(sorted(self.reduced_indexed_ff_optimizable.keys())) == ['all', 'nosol']:
 
             for fg_nr, force_group in enumerate(self.reduced_indexed_ff_optimizable['all'].keys()):
@@ -1488,16 +1517,16 @@ class Molecular_system:
                                                                                                     , self.reduced_indexed_ff_optimizable['mol2'][force_group][0][:,2])))):
                         
                         raise ValueError('Sliced atoms in CustomNonbondedForce do not match. Check slice_list.')
-                        
+                    
                     
     def expand_reduced_parameters(self): 
         """
-        puts parameter values from reduced_ff_optimizable_values back into ff_optimizable (and custom_nb_params, nbfix if required)
+        puts parameter values from reduced_ff_optimizable_values['all'] back into ff_optimizable[sys_type] (and custom_nb_params, nbfix if required)
 
         internal parameters:
-            self.reduced_ff_optimizable_values
-            self.reduced_indexed_ff_optimizable
-            self.dupes
+            self.reduced_ff_optimizable_values['all']
+            self.reduced_indexed_ff_optimizable[sys_type]
+            self.dupes['all']
             self.nbfix_dupes
             self.interaction_dupes
             self.openmm_systems[sys_type].ff_optimizable
@@ -1524,7 +1553,7 @@ class Molecular_system:
 
                                 for atom_index in self.dupes['all'][atom_type]:
 
-                                    if 'CustomNonbondedForce' in list(self.openmm_systems['all'].keys()): #NBFIX
+                                    if 'CustomNonbondedForce' in list(self.openmm_systems['all'].extracted_ff.keys()): #NBFIX
 
                                         reduced_ff_opt_values = self.reduced_ff_optimizable_values['all'][force_group][array_no][line_no]
                                         reduced_ff_opt_values = np.append(reduced_ff_opt_values, [1.0, 0.0]) #reintroduce faux sigma & epsilon
@@ -1541,7 +1570,7 @@ class Molecular_system:
 
                                         for atom_idx in self.dupes[sys_type][atom_type]:
 
-                                            if 'CustomNonbondedForce' in list(self.openmm_systems[sys_type].keys()): #NBFIX
+                                            if 'CustomNonbondedForce' in list(self.openmm_systems[sys_type].extracted_ff.keys()): #NBFIX
 
                                                 reduced_ff_opt_values = self.reduced_ff_optimizable_values['all'][force_group][array_no][line_no]
                                                 reduced_ff_opt_values = np.append(reduced_ff_opt_values, [1.0, 0.0]) #reintroduce faux sigma & epsilon
@@ -1552,45 +1581,54 @@ class Molecular_system:
                                                 self.openmm_systems[sys_type].ff_optimizable[force_group][array_no][atom_idx] = \
                                                     tuple(self.reduced_ff_optimizable_values['all'][force_group][array_no][line_no])
             
-            elif force_group == 'CustomNonbondedForce':
+            elif force_group == 'CustomNonbondedForce': 
 
                 # collect optimized values from arrays
                 for array_no, _array in enumerate(self.reduced_indexed_ff_optimizable['all'][force_group]):
 
-                    for line_no, parameter_line in enumerate(_array):
+                    if _array.shape[1] == 4: # array at index 0 should be custom_nb_params
 
-                        if len(parameter_line) == 4: # array at index 0 should be custom_nb_params
+                        gmx_to_charmm_conversion_array = self.reduced_ff_optimizable_values['all'][force_group][array_no]
 
-                            self.openmm_systems['all'].custom_nb_params[parameter_line[-1]] = self.reduced_ff_optimizable_values['all'][force_group][array_no][line_no][:,:-1]
+                        gmx_to_charmm_conversion_array[:,0] = self.reduced_ff_optimizable_values['all'][force_group][array_no][:,0] / (2**(-1/6) * 2)
+                        gmx_to_charmm_conversion_array[:,1] = -1*self.reduced_ff_optimizable_values['all'][force_group][array_no][:,1]
 
-                        elif len(parameter_line) == 5: # array at index 1 should be nbfix 
+                        for line_no, parameter_line in enumerate(_array):
 
-                            for pair_type_idx in self.nbfix_dupes[sys_type]: 
+                            self.openmm_systems['all'].custom_nb_params[parameter_line[-1]][:2] = gmx_to_charmm_conversion_array[line_no]
 
-                                for pair_index in pair_type_idx:
+                            for sys_type in list(self.reduced_ff_optimizable_values.keys())[1:]: # mol1&2 / nosol
 
-                                    self.openmm_systems['all'].nbfix[pair_index] = self.reduced_ff_optimizable_values['all'][force_group][array_no][line_no][:,:-1]
+                                for param_line_no, param_line in enumerate(self.openmm_systems[sys_type].custom_nb_params):
 
-                        for sys_type in list(self.reduced_ff_optimizable_values.keys())[1:]: # mol1&2 / nosol
+                                    if param_line[-1] == parameter_line[2]:
 
-                            if len(parameter_line) == 4: # array at index 0 should be custom_nb_params
+                                            self.openmm_systems[sys_type].custom_nb_params[param_line_no][:2] = gmx_to_charmm_conversion_array[line_no]
+                                            
 
-                                for type_no, atom_type in enumerate(self.reduced_indexed_ff_optimizable[sys_type][force_group][array_no][:,2]):
+                    elif _array.shape[1] == 5: 
 
-                                    if atom_type == parameter_line[2]:
+                        for pair_type_idx in self.nbfix_dupes['all']: 
 
-                                        self.openmm_systems[sys_type].custom_nb_params[type_no] = self.reduced_ff_optimizable_values['all'][force_group][array_no][line_no][:,:-1]
+                            for line_no, line in enumerate(_array):
 
-                            elif len(parameter_line) == 5: # array at index 1 should be nbfix
+                                if line[-1] in pair_type_idx: # check if index matches
 
-                                for p_type_no, pair_type in enumerate(self.reduced_indexed_ff_optimizable[sys_type][force_group][array_no][:,2:4]):
+                                    for nbfix_index in pair_type_idx:
 
-                                    if np.unique(pair_type == parameter_line[2:4]) or np.unique(np.array([_type[::-1] for _type in pair_type]) == parameter_line[2:4]) == True:
+                                        self.openmm_systems['all'].nbfix[nbfix_index][:-2] = self.reduced_ff_optimizable_values['all'][force_group][array_no][line_no]
 
-                                        self.openmm_systems[sys_type].nbfix[p_type_no] = self.reduced_ff_optimizable_values['all'][force_group][array_no][line_no][:,:-1]
-            
+                                for sys_type in list(self.reduced_ff_optimizable_values.keys())[1:]: # mol1&2 / nosol
+                                        
+                                    for nbfix_no, nbfix in enumerate(self.openmm_systems[sys_type].nbfix):
+
+                                        if (np.all(line[2:4] == nbfix[2:4]) or np.all(line[2:4][::-1] == nbfix[2:4])) == True: # check if atomtypes match
+
+                                            self.openmm_systems[sys_type].nbfix[nbfix_no][:2] = self.reduced_ff_optimizable_values['all'][force_group][array_no][line_no]
+                
                 # calc acoef, bcoef
                 self.calculate_acoef_bcoef()
+                
            
             elif force_group in ['HarmonicBondForce', 'HarmonicAngleForce', 'PeriodicTorsionForce', 'NBException']: 
 
@@ -1645,7 +1683,7 @@ class Molecular_system:
         flattens nd np.arrays of parameters to 1d np.arrays of parameters
 
         internal parameters:
-            self.reduced_ff_optimizable_values
+            self.reduced_ff_optimizable_values['all']
 
         sets:
             self.vectorized_reduced_ff_optimizable_values
@@ -1677,7 +1715,7 @@ class Molecular_system:
 
             for array_no, _array in enumerate(self.vectorized_reduced_ff_optimizable_values[force_group]):
 
-                self.reduced_ff_optimizable_values['all'][force_group][array_no] = np.array(_array).reshape(np.array(self.reduced_ff_optimizable_values['all'][force_group][0]).shape)
+                self.reduced_ff_optimizable_values['all'][force_group][array_no] = np.array(_array).reshape(np.array(self.reduced_ff_optimizable_values['all'][force_group][array_no]).shape)
 
 
     def merge_vectorized_parameters(self): 
@@ -1724,7 +1762,7 @@ class Molecular_system:
 
                 slice_end += len(_array)
                 self.vectorized_reduced_ff_optimizable_values[force_group][_array_no] = self.vectorized_parameters[slice_start:slice_end]
-                slice_start += slice_end
+                slice_start = slice_end
 
 
     def scale_initial_parameters(self): 
