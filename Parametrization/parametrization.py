@@ -47,54 +47,132 @@ class Parametrization:
 
         if self.constraints == 'auto':
 
-            if 'NonbondedForce' in self.molecular_system.reduced_indexed_ff_optimizable['all'].keys():
+            bounds = []
 
-                assert len(list(self.molecular_system.reduced_indexed_ff_optimizable['all'].keys())) == 1, 'Automatic constraints support only NonbondedForce.'
+            for force_group in self.molecular_system.reduced_indexed_ff_optimizable['all'].keys():
 
-                sigma_constraints = (0.03, 5.0)
-                epsilon_constraints = (0.1, 5.0)
+                """
+                CAUTION! If you want to implement auto constraints for another force_group, make sure to put them in the alphabetically
+                correct position, e.g. if you want to add HarmonicBondForce, put 'elif force_group == "HarmonicBondForce":' 
+                after CustomNonbondedForce but before NonbondedForce. This ensures that the bounds list holds the corresponding 
+                bounds in the correct position!
+                """
 
-                bounds = []
+                if force_group == 'CustomNonbondedForce':
 
-                for parameter_type in self.molecular_system.reduced_indexed_ff_optimizable['all']['NonbondedForce'][0]:
+                    r_sigma_constraints = (0.03, 1.0) # nm
+                    epsilon_depth_constraints = (0.002, 20) # kJ/mol
+                    nbfix_r_sigma_constr = (0.2, 1.0) # nm
+                    nbfix_eps_depth_constr = (0.06, 15.5) # kJ/mol
 
-                    if parameter_type[1][0] == 'P':
+                    for _array in self.molecular_system.reduced_indexed_ff_optimizable['all']['CustomNonbondedForce']:
 
-                        bounds.append((0.0, 6.0))
-                        bounds.append(sigma_constraints)
-                        bounds.append(epsilon_constraints)
+                        for parameter_type in _array:
+                                
+                            if len(parameter_type) is 4:
 
-                    elif parameter_type[1][0] == 'H':
+                                if parameter_type[2][0] == 'P':
 
-                        bounds.append((0.0, 1.0))
-                        bounds.append(sigma_constraints)
-                        bounds.append(epsilon_constraints)
+                                    bounds.append((r_sigma_constraints))
+                                    bounds.append((epsilon_depth_constraints))
 
-                    elif parameter_type[1][0] == 'C':
+                                elif parameter_type[2][0] == 'H':
 
-                        bounds.append((-4.0, 4.0))
-                        bounds.append(sigma_constraints)
-                        bounds.append(epsilon_constraints)
+                                    bounds.append((r_sigma_constraints))
+                                    bounds.append((epsilon_depth_constraints))
 
-                    elif parameter_type[1][0] == 'O':
+                                elif parameter_type[2][0] == 'C':
 
-                        bounds.append((-2.0, 0.0))
-                        bounds.append(sigma_constraints)
-                        bounds.append(epsilon_constraints)
+                                    bounds.append((r_sigma_constraints))
+                                    bounds.append((epsilon_depth_constraints))
 
-                    elif parameter_type[1][0] == 'N':
+                                elif parameter_type[2][0] == 'O':
 
-                        bounds.append((0.0, -3.0))
-                        bounds.append(sigma_constraints)
-                        bounds.append(epsilon_constraints)
+                                    bounds.append((r_sigma_constraints))
+                                    bounds.append((epsilon_depth_constraints))
 
-                    else: 
-                        raise ValueError('Automatic bounds for {} charge not implemented'.format(parameter_type[1][0]))
+                                elif parameter_type[2][0] == 'N':
+
+                                    bounds.append((r_sigma_constraints))
+                                    bounds.append((epsilon_depth_constraints))
+                                
+                                else: 
+                                    raise NotImplementedError('Automatic bounds for {} charge not implemented'.format(parameter_type[1][0]))
+
+                            elif len(parameter_type) is 5:
+
+                                bounds.append((nbfix_r_sigma_constr))
+                                bounds.append((nbfix_eps_depth_constr))
+
+                            else:
+                                raise ValueError('Parameter type {} not supported'.format(parameter_type))
+
+                elif force_group == 'NonbondedForce':
+
+                    if 'CustomNonbondedForce' not in self.molecular_system.reduced_indexed_ff_optimizable['all'].keys():
+                        # Nonbonded parameters are handled by the NonbondedForce force group
+                        sigma_constraints = (0.03, 1.0) # nm
+                        epsilon_constraints = (0.002, 20.0) # kJ/mol
+
+                    for _array in self.molecular_system.reduced_indexed_ff_optimizable['all']['NonbondedForce']:
+
+                        for parameter_type in _array:
+
+                            if parameter_type[1][0] == 'P':
+
+                                bounds.append((0.0, 6.0))
+
+                                if len(parameter_type) == 5:
+                                    # Nonbonded parameters are handled by the NonbondedForce force group
+                                    bounds.append(sigma_constraints)
+                                    bounds.append(epsilon_constraints)
+
+                            elif parameter_type[1][0] == 'H':
+
+                                bounds.append((0.0, 1.0))
+
+                                if len(parameter_type) == 5:
+
+                                    bounds.append(sigma_constraints)
+                                    bounds.append(epsilon_constraints)
+
+                            elif parameter_type[1][0] == 'C':
+
+                                bounds.append((-4.0, 4.0))
+
+                                if len(parameter_type) == 5:
+
+                                    bounds.append(sigma_constraints)
+                                    bounds.append(epsilon_constraints)
+
+                            elif parameter_type[1][0] == 'O':
+
+                                bounds.append((-2.0, 0.0))
+
+                                if len(parameter_type) == 5:
+
+                                    bounds.append(sigma_constraints)
+                                    bounds.append(epsilon_constraints)
+
+                            elif parameter_type[1][0] == 'N':
+
+                                bounds.append((0.0, -3.0))
+
+                                if len(parameter_type) == 5:
+
+                                    bounds.append(sigma_constraints)
+                                    bounds.append(epsilon_constraints)
+
+                            else: 
+                                raise NotImplementedError('Automatic bounds for {} charge not implemented'.format(parameter_type[1][0]))
+
+                else:
+                    raise NotImplementedError('Automatic constraints support only NonbondedForce and CustomNonbondedForce.')
 
                 self.bounds = bounds    
 
         if self.constraints == 'man':
-            print('Please register a list of tuples with len(parameters) in Parametrization.bounds')
+            print('Please register a list with len(parameters) filled with tuples (lower_bound, upper_bound) in Parametrization.bounds')
 
         self.term_types = ['energy', 'force', 'force & energy', 'force_i', 'force_c']
         self.term_type = term_type
