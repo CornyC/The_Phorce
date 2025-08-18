@@ -84,7 +84,8 @@ class OpenMM_system:
                                   'NonbondedForce': [],
                                   'CustomBondForce': [],
                                   'CustomAngleForce': [],
-                                  'CustomTorsionForce': [],
+                                  'CustomTorsionForce': []
+                                  'CustomNonbondedForce': [],
                                   "CMAPTorsionForce": [],
                                   "NBException": [],
                                   "CMMotionremover": []}
@@ -366,10 +367,12 @@ class OpenMM_system:
         Automatically triggered if sigma == 1 and epsilon == 0 in NonbondedForce.
         In case some atom type used in the system has a NBFIX specified, OpenMM reads, stores, and handles the 
         nonbonded parameters differently. This function imports them and formats the in line with the traditional nonbonded parameters
-        so that they reach the optimizer in the correct format
+        so that they reach the optimizer in the correct format. Code partially stolen from OpenMM's charmmpsffile.py
         """
-        lj_r_sigma, lj_epsilon = [], [] #both have len=np.max(lj_idx_list)
-        self.lj_type_list, atomtypes_list = [], [] #len = np.max(lj_idx_list)
+        lj_index_list = [0 for atom in self.top.atom_list]
+        num_lj_types = 0
+        lj_r_sigma, lj_epsilon = [], [] 
+        self.lj_type_list, atomtypes_list = [], []
         """
         looks like:
         vars(lj_type_list[0]) = {'name': 'CG331',
@@ -387,19 +390,43 @@ class OpenMM_system:
 
             atomtype = atom.type 
 
-            self.lj_type_list.append(atomtype) # collects dicts of atomtypes and params
-            atomtypes_list.append(atomtype.name) # collects strs of atomtypes
-            lj_r_sigma.append(atomtype.rmin) # rmin is r/sigma in Angström
-            lj_epsilon.append(atomtype.epsilon) # epsilon in kcal/mol
+            if lj_index_list[i]:
+                continue
 
-        # Conversion factors from CHARMM to OpenMM/Gromacs
+            num_lj_types +=1
+            lj_index_list[i] = num_lj_types
+            ljtype = (atomtype.rmin, atomtype.epsilon)
+
+            self.lj_type_list.append(atomtype) # collects dicts of atomtypes and params #TODO: filter out duplicates!
+            atomtypes_list.append(atomtype.name) # collects strs of atomtypes
+            lj_r_sigma.append(float(atomtype.rmin)) # rmin is r/sigma in Angström
+            lj_epsilon.append(float(atomtype.epsilon)) # epsilon in kcal/mol
+
+            for j in range(i+1, len(self.top.atom_list)):
+
+                atomtype2 = self.top.atom_list[j].type
+
+                if lj_index_list[j] > 0: 
+                    continue # already assigned
+
+                if atomtype2 is atomtype:
+                    lj_index_list[j] = num_lj_types
+
+                elif not atomtype.nbfix and not atomtype.nbthole and not atomtype2.nbfix and not atomtype2.nbthole:
+                    # Only non-NBFIXed and non-NBTholed atom types can be compressed
+                    ljtype2 = (atomtype2.rmin, atomtype2.epsilon)
+
+                    if ljtype == ljtype2:
+                        lj_index_list[j] = num_lj_types
+
+        # Conversion factors from CHARMM to OpenMM/Gromacs/SI units
         length_conv = unit.angstrom.conversion_factor_to(unit.nanometer)
         ene_conv = unit.kilocalorie_per_mole.conversion_factor_to(unit.kilojoule_per_mole)
 
         # construct instances for atomtype-based custom nb params
-        self.custom_nb_params = np.vstack((lj_r_sigma, lj_epsilon, atomtypes_list))
-        self.custom_nb_params[:,0] = self.custom_nb_params[:,0] * length_conv
-        self.custom_nb_params[:,1] = self.custom_nb_params[:,1] * ene_conv
+        self.custom_nb_params = np.vstack((lj_r_sigma, lj_epsilon, atomtypes_list), dtype='object').T
+        self.custom_nb_params[:,0] = self.custom_nb_params[:,0].astype('float') * length_conv #CAREFUL only converts unit -> compatibility w/ acoef&bcoef
+        self.custom_nb_params[:,1] = self.custom_nb_params[:,1].astype('float') * ene_conv #CAREFUL only converts unit -> compatibility w/ acoef&bcoef
 
         nbfix_rij, nbfix_wdij = [], []
         nbfix_atype1, nbfix_atype2 = [], []
@@ -427,9 +454,9 @@ class OpenMM_system:
                     # no NBFIX
                     continue
 
-        self.nbfix = np.vstack((nbfix_rij, nbfix_wdij, nbfix_atype1, nbfix_atype2)).T
-        self.nbfix[:,0] = self.nbfix[:,0] * length_conv
-        self.nbfix[:,1] = self.nbfix[:,1] * ene_conv
+        self.nbfix = np.vstack((nbfix_rij, nbfix_wdij, nbfix_atype1, nbfix_atype2), dtype='object').T
+        self.nbfix[:,0] = self.nbfix[:,0].astype('float') * length_conv
+        self.nbfix[:,1] = self.nbfix[:,1].astype('float') * ene_conv
 
 
     def extract_forcefield(self):
@@ -483,9 +510,8 @@ class OpenMM_system:
 
             force_key = group
 
-            assert force_key not in self.extracted_ff, "\t * ERROR: " \
-                                                      "Force group {} already exists.".format(force_key)
-            self.extracted_ff[force_key] = []
+            if force_key not in list(self.extracted_ff.keys()):
+                self.extracted_ff[force_key] = []
 
             # loop needed in case of tuple index for force group
             for force_indices in self.force_groups[force_key]:
@@ -594,6 +620,9 @@ class OpenMM_system:
                                                        names = ['acoef', 'bcoef'])
                         sub_force_field2['acoef'] = acoeffunc.getFunctionParameters()[-1] #skip xsize&ysize, only grab values
                         sub_force_field2['bcoef'] = bcoeffunc.getFunctionParameters()[-1]
+
+                        if 'CustomNonbondedForce' not in list(self.extracted_ff.keys()):
+                            self.extracted_ff['CustomNonbondedForce'] = []
 
                         self.extracted_ff['CustomNonbondedForce'].append(sub_force_field2)
 
@@ -974,6 +1003,8 @@ class OpenMM_system:
             Flag that signals whether the charges will be optimized.
         opt_lj : bool
             Flag that signals whether the Lennard-Jones parameter will be optimized.
+
+        sets: self.ff_optimizable
         """
 
         assert self.extracted_ff is not None, "\t * ff_extracted dictionary was not created yet." \
@@ -1078,13 +1109,13 @@ class OpenMM_system:
 
         for force_key in self.ff_optimizable.keys():
 
-            parameter_array = self.ff_optimizable[force_key]
+            parameter_array_list = self.ff_optimizable[force_key]
 
             # loop needed in case of tuple index for force group
             for index_no, omm_force_index in enumerate(self.force_groups[force_key]):
                 force = self.system.getForce(omm_force_index) # this is the openmm force object
 
-                for index, parameters in enumerate(parameter_array[index_no]):
+                for index, parameters in enumerate(parameter_array_list[index_no]):
 
                     if force_key == 'NonbondedForce':
                         force.setParticleParameters(index, parameters["charge"], parameters["lj_sigma"], parameters["lj_eps"])
@@ -1110,20 +1141,20 @@ class OpenMM_system:
                         force.setExceptionParameters(index, parameters["atom1"], parameters["atom2"], parameters["chargeProd"], parameters['sigma'],
                                                     parameters['epsilon'])
                         force.updateParametersInContext(self.context)
-
                 
                 if force_key == 'CustomNonbondedForce':
 
                     acoeffunc = force.getTabulatedFunction(0)
                     bcoeffunc = force.getTabulatedFunction(1)
 
-                    xsize, ysize = acoeffunc.getFunctionParameters[:2]
+                    xsize, ysize = acoeffunc.getFunctionParameters()[:2]
 
-                    acoeffunc.setFunctionParameters(xsize, ysize, parameter_array['acoef'])
-                    bcoeffunc.setFunctionParameters(xsize, ysize, parameter_array['bcoef'])
+                    acoeffunc.setFunctionParameters(xsize, ysize, parameter_array_list[index_no]['acoef']) #TODO: we got a dtype issue
+                    bcoeffunc.setFunctionParameters(xsize, ysize, parameter_array_list[index_no]['bcoef'])
 
                     force.updateParametersInContext(self.context)
-                    #TODO: test this
+                
+
 
 
 
