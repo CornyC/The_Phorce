@@ -75,7 +75,7 @@ class OpenMM_system:
         self.custom_nb_params : np.array
             triggered if NBFIX present. Contains rmin(=r/sigma; nm), epsilon (kJ/mol)(in GMX/OMM units), and atom type (str)
         self.nbfix : np.array
-            triggered if NBFIX is present. Contains rij (nm) and wdij (kJ/mol) (GMX/OMM units), 
+            triggered if NBFIX is present. Contains r_min (nm) and epsilon (kJ/mol) (GMX/OMM units), 
             atom type 1, atom type 2 (str), and index 
         self.force_groups_dict : dict
                                  {'HarmonicBondForce': [],
@@ -608,25 +608,26 @@ class OpenMM_system:
                     self.extracted_ff[force_key].append(sub_force_field)
 
                     #Check for NBFIX
-                    if (np.unique(sub_force_field['lj_sigma']) == 1 or np.unique(sub_force_field['lj_eps']) == 0) == True:
+                    if (len(np.unique(sub_force_field['lj_sigma'])) == 1 or len(np.unique(sub_force_field['lj_eps'])) == 1) == True:
+                        if (np.unique(sub_force_field['lj_sigma']) == 1 or np.unique(sub_force_field['lj_eps']) == 0) == True:
 
-                        customnb = self.system.getForce(self.force_groups['CustomNonbondedForce'][0])
-                        acoeffunc = customnb.getTabulatedFunction(0)
-                        bcoeffunc = customnb.getTabulatedFunction(1)
-                        num_coeffs = len(acoeffunc.getFunctionParameters()[-1])
+                            customnb = self.system.getForce(self.force_groups['CustomNonbondedForce'][0])
+                            acoeffunc = customnb.getTabulatedFunction(0)
+                            bcoeffunc = customnb.getTabulatedFunction(1)
+                            num_coeffs = len(acoeffunc.getFunctionParameters()[-1])
 
-                        sub_force_field2 = np.recarray((num_coeffs),
-                                                       formats=['float', 'float'],
-                                                       names = ['acoef', 'bcoef'])
-                        sub_force_field2['acoef'] = acoeffunc.getFunctionParameters()[-1] #skip xsize&ysize, only grab values
-                        sub_force_field2['bcoef'] = bcoeffunc.getFunctionParameters()[-1]
+                            sub_force_field2 = np.recarray((num_coeffs),
+                                                        formats=['float', 'float'],
+                                                        names = ['acoef', 'bcoef'])
+                            sub_force_field2['acoef'] = acoeffunc.getFunctionParameters()[-1] #skip xsize&ysize, only grab values
+                            sub_force_field2['bcoef'] = bcoeffunc.getFunctionParameters()[-1]
 
-                        if 'CustomNonbondedForce' not in list(self.extracted_ff.keys()):
-                            self.extracted_ff['CustomNonbondedForce'] = []
+                            if 'CustomNonbondedForce' not in list(self.extracted_ff.keys()):
+                                self.extracted_ff['CustomNonbondedForce'] = []
 
-                        self.extracted_ff['CustomNonbondedForce'].append(sub_force_field2)
+                            self.extracted_ff['CustomNonbondedForce'].append(sub_force_field2)
 
-                        self._extract_CustomNonbondedForce()
+                            self._extract_CustomNonbondedForce()
                         
 
                 if force_key == 'NBException':
