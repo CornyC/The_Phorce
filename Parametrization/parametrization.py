@@ -3,6 +3,7 @@
 import numpy as np
 from Parametrization.optimizers import Optimizer
 from System.system import *
+import time
 
 class Parametrization:
     """
@@ -250,37 +251,7 @@ class Parametrization:
             #   Σ  ω_{conf} ------------
             #  conf         Var(E^{QM})            
 
-            """
 
-        elif self.optimizer.opt_method == "tf_adam":
-
-            tf_emm = tf.Variable(self.emm, dtype=float)
-            tf_eqm = tf.Variable(self.eqm, dtype=float)
-            tf_weights = tf.constant(self.weights, dtype=float)
-            delta_E = tf.math.subtract(tf_emm, tf_eqm)
-            enumerator = tf.math.pow((tf.math.subtract(delta_E, tf.math.reduce_mean(delta_E)), 2))
-            denominator = tf.math.reduce_variance(tf_eqm)
-            frac = tf.math.divide(enumerator, denominator)
-            obj_f_e = tf.math.reduce_sum(tf.math.multiply(tf_weights, frac))
-            # n_conf        (ΔE - <ΔE>)²
-            #   Σ  ω_{conf} ------------
-            #  conf         Var(E^{QM})
-
-        elif self.optimizer.opt_method == "pt_opt":
-
-            pt_emm = torch.tensor(self.emm, dtype=torch.float64, requires_grad=True)
-            pt_eqm = torch.tensor(self.eqm, dtype=torch.float64, requires_grad=True)
-            pt_weights = torch.tensor(self.weights, dtype=torch.float64, requires_grad=False)
-            delta_E = pt_emm - pt_eqm
-            enumerator = torch.pow((delta_E - torch.mean(delta_E)), 2)
-            denominator = torch.var(pt_eqm)
-            frac = torch.div(enumerator, denominator)
-            obj_f_e = torch.sum(torch.mul(pt_weights, frac))
-            # n_conf        (ΔE - <ΔE>)²
-            #   Σ  ω_{conf} ------------
-            #  conf         Var(E^{QM})
-
-            """
         else:
             raise ValueError('ERROR: Optimizer of type {} not implemented'.format(self.optimizer.opt_method.lower()))
 
@@ -354,50 +325,6 @@ class Parametrization:
                 # ----------------     Σ     Σ     ω_{conf} ------------
                 # 3n_atoms n_confs   atom   conf             Var(F^{QM})                
 
-            """
-        elif self.optimizer.opt_method == "tf_adam":
-
-            tf_fmm = tf.Variable(self.fmm, dtype=float)
-            tf_fqm = tf.Variable(self.fqm, dtype=float)
-            tf_weights = tf.constant(weights, dtype=float)
-            tf_n_atoms = tf.constant(self.n_atoms['all'], dtype=float)
-            delta_F = tf.math.subtract(tf_fmm, tf_fqm)
-
-            if method is None:
-                method = "variance"
-
-            if method == "variance":
-
-                enumerator = tf.math.pow(tf.math.abs(delta_F), 2)
-                denominator = tf.math.reduce_variance(tf.linalg.normalize(tf_fqm, axis=2)[-1])
-                frac_weighted = tf.math.multiply(tf_weights, (tf.math.divide(enumerator, denominator)))
-                obj_f_f = tf.math.divide(tf.math.reduce_sum(frac_weighted), tf.math.multiply(3, tf_n_atoms))
-                #     1            n_atoms n_conf              |ΔF|²
-                # ----------------     Σ     Σ     ω_{conf} ------------
-                # 3n_atoms n_confs   atom   conf             Var(F^{QM})
-            
-
-        elif self.optimizer.opt_method == "pt_opt":
-              
-            pt_fmm = torch.tensor(self.fmm, dtype=torch.float64, requires_grad=True)
-            pt_fqm = torch.tensor(self.fqm, dtype=torch.float64, requires_grad=True)
-            pt_weights = torch.tensor(weights, dtype=torch.float64, requires_grad=False)
-            pt_n_atoms = torch.tensor(self.n_atoms['all'], dtype=torch.int64, requires_grad=False)
-            delta_F = pt_fmm - pt_fqm
-
-            if method is None:
-                method = "variance"
-
-            if method == "variance":
-                  
-                enumerator = torch.pow(torch.abs(delta_F), 2)
-                denominator = torch.var(torch.linalg.norm(pt_fqm, axis=2))
-                frac_weighted = torch.mul(pt_weights, torch.div(enumerator, denominator))
-                obj_f_f = torch.sum(torch.div(frac_weighted, torch.mul(3, pt_n_atoms)))
-                #     1            n_atoms n_conf              |ΔF|²
-                # ----------------     Σ     Σ     ω_{conf} ------------
-                # 3n_atoms n_confs   atom   conf             Var(F^{QM})
-            """
 
         else:
             raise ValueError('ERROR: Optimizer of type {} not implemented'.format(self.optimizer.opt_method.lower()))
@@ -432,7 +359,6 @@ class Parametrization:
             value of objective funtion as float
         """
         self.molecular_system.scaled_parameters = parameters
-        #print('params handed over')
 
         self.molecular_system.unscale_parameters()
         self.molecular_system.redistribute_vectorized_parameters()
@@ -446,7 +372,6 @@ class Parametrization:
             obj_f_value = self.evaluate_obj_func_force()
 
         elif self.term_type == 'force_c':
-            #print('calculating_forces')
             obj_f_value = self.evaluate_obj_func_force(method="const_variance")
 
         elif self.term_type == 'force_i':
@@ -466,6 +391,9 @@ class Parametrization:
         self.molecular_system.scaled_parameters = parameters
       
         self.iterations += 1
+
+        print('Iteration {}'.format(self.iterations), end = '\r')
+        time.sleep(1)
 
         return obj_f_value
 
