@@ -357,7 +357,7 @@ class Molecular_system:
                 energy = float(re.findall(r"[-+]?(?:\d*\.*\d+)", read[energy_line[-1]])[0])
 
                 forces_start = [index for index, string in enumerate(read) if 'ATOMIC FORCES in [a.u.]' in string]
-        
+
                 forces = np.loadtxt(path + 'frame' + str(n) + '/' + outfilename + '.out',
                                         skiprows = forces_start[-1] + 3,
                                         max_rows = self.ini_coords[sys_type].shape[1], usecols=(3, 4, 5), dtype=float)
@@ -894,7 +894,7 @@ class Molecular_system:
             self.qm_net_forces = self.qm_forces['all'][:,mol_slice,:] - self.qm_forces['nosol']
 
 
-    def generate_mm_energies_forces(self, sys_type): 
+    def generate_mm_energies_forces(self, sys_type, verbose=False): 
         """
         collects the OpenMM system's classical properties (charges,energies&forces)
 
@@ -902,7 +902,11 @@ class Molecular_system:
         ----------
         sys_type : str
             'all' or 'nosol' or 'mol1' or 'mol2' 
+        verbose : bool
+            default=False, prints info if set True
 
+        other (internal) params:
+            
         self.openmm_systems : OpenMM system object
 
         sets:
@@ -926,9 +930,11 @@ class Molecular_system:
             # grab energies
             self.mm_energies[sys_type][frame_nr] = epot #kJ/mol
 
-        print('########################################')
-        print('# calculated MM F&E of '+str(frame_nr+1)+' frames')
-        print('########################################')
+        if verbose == True:
+
+            print('########################################')
+            print('# calculated MM F&E of '+str(frame_nr+1)+' frames')
+            print('########################################')
 
 
     def calculate_mm_net_forces(self): 
@@ -1116,6 +1122,8 @@ class Molecular_system:
 
         nb_processing_type = []
 
+        hybrid = False
+
         for sys_type in self.openmm_systems:
 
             if self.openmm_systems[sys_type] != None:
@@ -1160,9 +1168,10 @@ class Molecular_system:
                         
             self.hybrid = True
             self.hybrid_sys_types = hybrid_sys_types
-            self.hybrid_check_performed = True
 
             print('hybrid set to True')
+
+        self.hybrid_check_performed = True
 
 
     def get_types_from_psf_topology_file(self): 
