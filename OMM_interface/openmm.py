@@ -341,24 +341,10 @@ class OpenMM_system:
 
         self.context.setPositions(positions)
 
-        """
-
-        print('#############################################################')
-        print('#       Calculating classical Energies & Forces             #')
-        print('#############################################################')
-
-        """
 
         epot = self.context.getState(getEnergy=True).getPotentialEnergy()._value #kJ/mol
         forces = self.context.getState(getForces=True).getForces(asNumpy=True)._value # in kJ/mol/nm
 
-        """
-
-        print('#############################################################')
-        print('#                Calculation successful                     #')
-        print('#############################################################')
-
-        """
 
         return epot, forces
     
