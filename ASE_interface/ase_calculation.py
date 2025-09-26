@@ -197,25 +197,4 @@ class ASE_system:
             print('#           Single Point Calculation successful             #')
             print('#############################################################')
 
-        """
-        elif run_type == 'charges': # does not work bc not implemented in ASE, see module Direct_cp2k_calculation instead
 
-            print('#############################################################')
-            print('#           Running Single Point Calculation                #')
-            print('#                      in gas phase                         #')
-            print('#                 and calculating RESP                      #')
-            print('#############################################################')
-
-            assert (self.atoms.pbc is ([False, False, False]) and len(self.atoms.cell) is 0) is True, 'Remove pbc, ' \
-                                                                                                      'cell, and H2O ' \
-                                                                                                      'to run a gas ' \
-                                                                                                      'phase calc.'
-
-            self.energy_gp = self.atoms.get_potential_energy() * 96.48530749925794  # eV to kJ/mol
-            self.forces_gp = self.atoms.get_forces() * 96.48530749925794 * 10.0  # eV/A to kJ/mol/nm
-            #self.charges = self.atoms.get_charges() #not implemented in ASE -.-
-
-            print('#############################################################')
-            print('#           Single Point Calculation successful             #')
-            print('#############################################################')
-        """
