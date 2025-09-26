@@ -219,178 +219,9 @@ class Molecular_system:
                                                         'w/o molecule 1 not found'
             assert self.paths.mm_mol2_top is not None, 'Topology file for molecule 2 '\
                                                         'w/o molecule 1 not found.'
+            
 
-
-    def read_external_file(path: str, filename: str): #TODO: move out of class
-
-        """
-        standard line-by-line reader for human readable files
-
-        Parameters
-        ----------
-        path : str
-            path to the dirctory where the file can be found
-        filename : str
-            name of the file including extension
-
-        returns:
-            the lines of the file in str format
-        """
-
-        if path[-1] != '/':
-            path = path[:-1]
-
-        f = open(path + filename, 'r')
-        read = []
-        for index, line in enumerate(f.readlines()):
-            line = line.strip()
-            read.append(line)
-        f.close()
-
-        return read
-
-    def read_qm_charges(self, read_lines, charge_type, path, outfilename, sys_type, n):
-
-        """
-        reads cp2k .out files and collects the calculated atom charges based on the type
-
-
-        Parameters
-        -----------
-        read_lines : 
-            read-in file content as str
-        charge_type : str
-            one of the following: 'Mulliken', 'Hirshfeld', 'RESP'     
-        path : str
-            path to externally cp2k optimized structures
-        outfilename : str
-            equal to <cp2k>.out
-        sys_type : str
-            'all' or 'nosol' or 'mol1' or 'mol2'
-        n : int
-            frame number or conformation number    
-
-        returns: 
-            charges (qm charges) as numpy arrary   
-        """
-
-        read = read_lines
-
-        assert charge_type in ['Mulliken', 'Hirshfeld', 'RESP'], 'invalid charge_type {}'.format(charge_type)
-
-        if charge_type == 'Mulliken':
-            mullken_start = [index for index, string in enumerate(read) if 'Mulliken Population Analysis' in string]
-            charges = np.loadtxt(path + '/frame' + str(n) + '/' + outfilename + '.out',
-                                skiprows = mullken_start[0] + 3,
-                                max_rows = self.ini_coords[sys_type].shape[1], usecols=4, dtype=float)
-
-        elif charge_type == 'Hirshfeld':
-            hirshfeld_start = [index for index, string in enumerate(read) if 'Hirshfeld Charges' in string]
-            charges = np.loadtxt(path + '/frame' + str(n) + '/' + outfilename + '.out',
-                                skiprows = hirshfeld_start[0] + 3, max_rows = self.ini_coords[sys_type].shape[1],
-                                usecols=5, dtype=float)
-
-        elif charge_type == 'RESP':
-            resp_start = [index for index, string in enumerate(read) if 'RESP charges:' in string]
-            charges = np.loadtxt(path + '/frame' + str(n) + '/' + outfilename + '.out',
-                                skiprows = resp_start[0] + 3,
-                                max_rows = self.ini_coords[sys_type].shape[1], usecols=3, dtype=float)
-                
-        return charges
-    
-    def read_qm_energies_forces(self, sys_type:str, path: str, filename: str, outfilename: str, engine_type: str):
-
-        """
-        Useful if cp2k calculations have been run externally (e.g. on a cluster).
-        reads cp2k .out files and extracts energies and forces from it. Can also import 
-        optimized coordinates for sys_type = 'all'.
-
-        Parameters
-        ----------
-        sys_type : str
-            'all' or 'nosol' or 'mol1' or 'mol2' 
-        path : str
-            path to externally cp2k optimized structures
-        filename : str
-            equal to &GLOBAL>PROJECT str in cp2k.inp file
-        outfilename : str
-            equal to <cp2k>.out
-        engine_type : str
-            'ase' or 'cp2k_direct'
-
-        self.ini_coords : unoptimized coordinates of conformations
-        self.n_conformations : number of conformations
-        
-        sets:
-            self.qm_forces : quantum forces
-            self.qm_energies : quantum energies
-            (self.opt_coords : geometry-optimized coordinates of conformations)
-        """
-        assert engine_type in [etype for etype in ['ase', 'cp2k_direct']], "engine_type {} is not supported.".format(engine_type)
-
-        if path[-1] != '/':
-            path += '/'
-
-        #### init arrays ####
-        self.qm_forces[sys_type] = np.zeros((len(self.ini_coords[sys_type]), self.ini_coords[sys_type].shape[1], 3))
-        self.qm_energies[sys_type] = np.zeros((len(self.ini_coords[sys_type]), 1))
-        if sys_type == 'all':
-            self.opt_coords[sys_type] = np.zeros((len(self.ini_coords[sys_type]), self.ini_coords[sys_type].shape[1], 3))
-
-        #### fill the arrays ####
-
-        for n in range(self.n_conformations): 
-
-            if engine_type is 'cp2k_direct':
-                
-                assert Path(path+'frame'+str(n)+'/'+outfilename+'.out').is_file() is True, 'file {} does not exist'.format(path+'frame'+str(n)+'/'+outfilename+'.out')
-
-                read = read_external_file(path+'frame'+str(n)+'/', outfilename+'.out')
-
-                energy_line = [index for index, string in enumerate(read) if
-                            'ENERGY| Total FORCE_EVAL ( QS ) energy [a.u.]:'
-                            in string]
-                
-                if len(energy_line) == 0:
-                    raise ValueError('ENERGY not found in frame'+str(n)+'/'+outfilename+'.out')
-
-                energy = float(re.findall(r"[-+]?(?:\d*\.*\d+)", read[energy_line[-1]])[0])
-
-                forces_start = [index for index, string in enumerate(read) if 'ATOMIC FORCES in [a.u.]' in string]
-
-                forces = np.loadtxt(path + 'frame' + str(n) + '/' + outfilename + '.out',
-                                        skiprows = forces_start[-1] + 3,
-                                        max_rows = self.ini_coords[sys_type].shape[1], usecols=(3, 4, 5), dtype=float)
-                
-                energy = energy * 2.62549961709828E+03 #Hartree to kJ/mol
-                forces = forces * 2.62549961709828E+03/ 0.0529177249 #Hartree/Bohr to kJ/mol/nm
-
-            elif engine_type is 'ase':
-
-                assert Path(path + 'frame' + str(n) + '/forces_energy_'+outfilename+'_frame'+str(n)+'.txt').is_file() is True, 'file {} does not exist'.format(path + 'frame' + str(n) + '/forces_energy_'+outfilename+'_frame'+str(n)+'.txt')
-                
-                forces = np.genfromtxt(path + 'frame' + str(n) + '/forces_energy_'+outfilename+'_frame'+str(n)+'.txt', skip_header=1)
-               
-                f = open(path + 'frame' + str(n) + '/forces_energy_'+outfilename+'_frame'+str(n)+'.txt', 'r')
-                read = []
-                for i, line in enumerate(f.readlines()):
-                    line = line.strip('# E:\n')
-                    if i == 0:
-                        read.append(line)
-                f.close()
-                energy = float(read[0])
-
-            self.qm_forces[sys_type][n, :, :] = forces 
-            self.qm_energies[sys_type][n] = energy 
-
-            if sys_type == 'all':
-
-                u = mda.Universe(path + 'frame' + str(n) + '/' + filename + '-pos-1.xyz')
-                coords = ct.get_coords(u.atoms)[-1]
-                self.opt_coords[sys_type][n, :, :] = coords
-
-
-    def read_qm_charges_energies_forces_optcoords(self, sys_type:str, path: str, filename: str, outfilename: str, charge_type: str):
+    def read_qm_charges_energies_forces_optcoords(self, sys_type: str, path: str, cp2k_outfilename: str, filename=None, charge_type=None):
 
         """
         Useful if cp2k calculations have been run externally (e.g. on a cluster).
@@ -402,12 +233,14 @@ class Molecular_system:
             'all' or 'nosol' or 'mol1' or 'mol2' 
         path : str
             path to externally cp2k optimized structures
-        filename : str
-            equal to &GLOBAL>PROJECT str in cp2k.inp file
-        outfilename : str
+        cp2k_outfilename : str
             equal to <cp2k>.out
+        filename : str
+            default = None. Needed if sys_type = 'all'
+            equal to &GLOBAL>PROJECT str in cp2k.inp file. Required to read optimized coords.
         charge_type : str
-            one of the following: 'Mulliken', 'Hirshfeld', 'RESP'
+            default = None. If charges should be read, supply one of the following: 
+            'Mulliken', 'Hirshfeld', 'RESP'
 
         self.ini_coords : unoptimized coordinates of conformations
         self.n_conformations : number of conformations
@@ -418,41 +251,39 @@ class Molecular_system:
             self.qm_energies : quantum energies
             self.qm_charges : quantum charges
         """
+
         if path[-1] != '/':
             path += '/'
 
         #### init arrays ####
-        self.opt_coords[sys_type] = np.zeros(self.ini_coords[sys_type].shape)
+        if sys_type == 'all':
+            self.opt_coords[sys_type] = np.zeros(self.ini_coords[sys_type].shape)
+
         self.qm_forces[sys_type] = np.zeros((len(self.ini_coords[sys_type]), self.ini_coords[sys_type].shape[1], 3))
         self.qm_energies[sys_type] = np.zeros((len(self.ini_coords[sys_type]), 1))
-        self.qm_charges[sys_type] = np.zeros((len(self.ini_coords[sys_type]), self.ini_coords[sys_type].shape[1]))
+
+        if charge_type != None:
+            self.qm_charges[sys_type] = np.zeros((len(self.ini_coords[sys_type]), self.ini_coords[sys_type].shape[1]))
 
         #### fill the arrays ####
 
         for n in range(self.n_conformations): 
+            
+            assert Path(path+'frame'+str(n)+'/'+cp2k_outfilename+'.out').is_file() is True, 'file {} does not exist'.format(path+'frame'+str(n)+'/'+cp2k_outfilename+'.out')
+
             print('reading qm frame '+str(n)+' info')
-
-            read = read_external_file(path+'frame'+str(n)+'/', outfilename+'.out')
-
-            energy_line = [index for index, string in enumerate(read) if
-                           'ENERGY| Total FORCE_EVAL ( QS ) energy [a.u.]:'
-                           in string]
             
-            if len(energy_line) == 0:
-                raise ValueError('ENERGY not found in frame'+str(n)+'/'+outfilename+'.out')
-
-            energy = float(re.findall(r"[-+]?(?:\d*\.*\d+)", read[energy_line[-1]])[0])
-
-            forces_start = [index for index, string in enumerate(read) if 'ATOMIC FORCES in [a.u.]' in string]
-            forces = np.loadtxt(path + 'frame' + str(n) + '/' + outfilename + '.out',
-                                     skiprows = forces_start[-1] + 3,
-                                     max_rows = self.ini_coords[sys_type].shape[1], usecols=(3, 4, 5), dtype=float)
+            read = read_external_file(path+'frame'+str(n)+'/', cp2k_outfilename+'.out')
             
-            charges = self.read_qm_charges(read, charge_type, path, outfilename, sys_type, n)
-
+            energy, forces = read_qm_energy_forces(read, n, cp2k_outfilename, path, self.ini_coords[sys_type])
+            
             self.qm_forces[sys_type][n, :, :] = forces * 2.62549961709828E+03 / 0.0529177249 #Hartree/Bohr to kJ/mol/nm
             self.qm_energies[sys_type][n] = energy * 2.62549961709828E+03 #Hartree to kJ/mol
-            self.qm_charges[sys_type][n, :] = charges
+
+            if charge_type != None:
+
+                charges = read_qm_charges(read, charge_type, path, n, cp2k_outfilename, self.ini_coords[sys_type])
+                self.qm_charges[sys_type][n, :] = charges
 
             if sys_type == 'all':
 
@@ -461,262 +292,116 @@ class Molecular_system:
                 self.opt_coords[sys_type][n, :, :] = coords
 
 
-
-    def generate_qm_energies_forces(self, atomgroup, atomgroup_name, paths, cp2k_inp, sys_type):
+    def read_ase_energy_forces(self, sys_type: str, path: str, atomgroup_name: str):
 
         """
-        calculates QM energies and forces w/o geometry optimization. Single-point only.
-        Needed for net forces (raw sys forces - mol1 with water forces - mol2 with water forces = net forces)
+        Useful if ASE-cp2k calculations have been run externally (e.g. on a cluster).
+        reads ASE-generated cp2k.out files and extracts energies and forces from it
 
         Parameters
         ----------
-        atomgroup : MDAnalysis AtomGroup object
-            e.g. molecule1
-        atomgroup_name : str
-            e.g. 'molecule1', needed for output files
-        paths : paths.Paths object
-            contains working dir n stuff
-        cp2k_inp : str
-            input for the inp parameter of the ASE cp2k calculator w/ all the necessary cp2k control parameters
         sys_type : str
             'all' or 'nosol' or 'mol1' or 'mol2' 
-
-        sets:
-            self.qm_forces[sys_type] : quantum forces of atomgroup
-            self.qm_energies[sys_type] : quantum energies of atomgroup
-        """
+        path : str
+            path to externally optimized structures
+        atomgroup_name : str
+            e.g. 'mol1' or 'nosol'
+        self.ini_coords : unoptimized coordinates of conformations
+        self.n_conformations : number of conformations
         
-        #### init arrays ####
+        sets:
+            self.qm_forces : quantum forces
+            self.qm_energies : quantum energies
+        """
+
+        if path[-1] != '/':
+            path += '/'        
+    
+        # init arrays
         self.qm_forces[sys_type] = np.zeros((len(self.ini_coords[sys_type]), self.ini_coords[sys_type].shape[1], 3))
         self.qm_energies[sys_type] = np.zeros((len(self.ini_coords[sys_type]), 1))
 
-        if Path(paths.working_dir + paths.project_name).is_dir() is True:
+        for n in range(self.n_conformations): 
 
-            os.chdir(paths.working_dir + paths.project_name)
-        
-        else:
+            assert Path(path + 'frame' + str(n) + '/forces_energy_'+atomgroup_name+'_frame'+str(n)+'.txt').is_file() is True, 'file {} does not exist'.format(path + 'frame' + str(n) + '/forces_energy_'+atomgroup_name+'_frame'+str(n)+'.txt')
 
-            os.chdir(paths.working_dir)
-            os.system('mkdir '+paths.project_name)
-            os.chdir(paths.project_name)
+            forces = np.genfromtxt(path + 'frame' + str(n) + '/forces_energy_'+atomgroup_name+'_frame'+str(n)+'.txt', skip_header=1)
 
-        coords = ct.get_coords(atomgroup)
+            f = open(path + 'frame' + str(n) + '/forces_energy_'+atomgroup_name+'_frame'+str(n)+'.txt', 'r')
+            read = []
+            for i, line in enumerate(f.readlines()):
+                line = line.strip('# E:\n')
+                if i == 0:
+                    read.append(line)
+            f.close()
+            energy = float(read[0])
 
-        #### run the ase calc ####
-        for frame_nr, frame in enumerate(coords):
-
-            os.system('mkdir frame'+str(frame_nr))
-            os.chdir('frame'+str(frame_nr))
-
-            ase_sys = ASE_system(atomgroup.elements, frame)
-            ase_sys.cell = ([16.0, 16.0, 16.0])
-            ase_sys.pbc = ([True, True, True])
-            ase_sys.construct_atoms_object()
-            calc = CP2K(debug=True, basis_set=None,
-                        basis_set_file=None,
-                        max_scf=None,
-                        charge=None,
-                        cutoff=None,
-                        force_eval_method=None,
-                        potential_file=None,
-                        poisson_solver=None,
-                        pseudo_potential=None,
-                        stress_tensor=False,
-                        uks=False,
-                        xc=None,
-                        inp=cp2k_inp,
-                        print_level='MEDIUM',
-                        command = 'env OMP_NUM_THREADS=6 cp2k_shell.ssmp')
-            # TODO: set OMP_NUM_THREADS somewhere else? (can just call os.environ where it's needed -> currently initialized below the main class)
-            #optional method to set OMP_NUM_THREADS
-            #def set_omp_num_threads(num_threads):
-             #   original_value = os.environ.get('OMP_NUM_THREADS', None)
-             #    os.environ['OMP_NUM_THREADS'] = str(num_threads)
-             #    yield
-             # if original_value is not None:
-             #   os.environ['OMP_NUM_THREADS'] = original_value
-             # else:
-             #     del os.environ['OMP_NUM_THREADS']
-            ase_sys.atoms.calc = calc
-            ase_sys.run_calculation(run_type='single_point')
-            np.savetxt('forces_energy_' + atomgroup_name + '_frame' + str(frame_nr) + '.txt', ase_sys.forces,
-                       header='E: ' + str(ase_sys.energy))
-            outstr = 'cp cp2k.out ' + atomgroup_name + '_frame' + str(frame_nr) + '.out'
-            os.system(outstr)
-
-            # grab forces
-            self.qm_forces[sys_type][frame_nr, :, :] = ase_sys.forces #kJ/mol/nm
-            
-            # grab energies
-            self.qm_energies[sys_type][frame_nr] = ase_sys.energy #kJ/mol
-
-            os.system('rm cp2k.out')
-            os.system('pkill cp2k_shell.ssmp')
-            os.system('touch cp2k.out')
-            os.chdir('..')
+            self.qm_forces[sys_type][n, :, :] = forces 
+            self.qm_energies[sys_type][n] = energy 
 
 
-    def generate_qm_charges_energies_forces(self, atomgroup, atomgroup_name, paths, cp2k_inp, charge_type, sys_type):
+    def collect_ase_settings(self, n_threads, cell_dimensions, pbc, input_control, run_type):
 
         """
-        calculates QM charges, energies, and forces w/o geometry optimization. Single-point only.
-        Needed for net forces (raw sys forces - mol1 with water forces - mol2 with water forces = net forces)
+        Stores ASE settings in system.
 
         Parameters
         ----------
-        atomgroup : MDAnalysis AtomGroup object
-            e.g. molecule1
-        atomgroup_name : str
-            e.g. 'molecule1', needed for output files
-        paths : paths.Paths object
-            contains working dir n stuff
-        cp2k_inp : str
-            input for the inp parameter of the ASE cp2k calculator w/ all the necessary cp2k control parameters. 
-            Don't forget to set up the charge calculation in there!
-        charge_type : str
-            one of the following: 'Mulliken', 'Hirshfeld' (RESP printout is surpressed by ASE -.-) 
-        sys_type : str
-            'all' or 'nosol' or 'mol1' or 'mol2' 
-
-        sets:
-            self.qm_charges[sys_type] : quantum charges of atomgroup
-            self.qm_forces[sys_type] : quantum forces of atomgroup
-            self.qm_energies[sys_type] : quantum energies of atomgroup
+        n_threads : int
+            number of OpenMP threads
+        cell_dimensions : np.array
+            defines the unit cell vectors: ([x, y, z])
+        pbc : np.array
+            defines which direction is supposed to be periodic, e.g. ([True, True, True]) for periodicity in all directions
+        input_control : str
+            sets the input commands to the ASE calculator (e.g. like a cp2k.inp file)
+        run_type : str
+            'single_point' or 'optimization'
         """
-        assert charge_type in ['Mulliken', 'Hirshfeld'], '{} charges not supported by ASE'.format(charge_type)
 
-        #### init arrays ####
-        self.qm_forces[sys_type] = np.zeros((len(self.ini_coords[sys_type]), self.ini_coords[sys_type].shape[1], 3))
-        self.qm_energies[sys_type] = np.zeros((len(self.ini_coords[sys_type]), 1))
-        self.qm_charges[sys_type] = np.zeros((len(self.ini_coords[sys_type]), self.ini_coords[sys_type].shape[1]))
-
-
-        if Path(paths.working_dir + paths.project_name).is_dir() is True:
-
-            os.chdir(paths.working_dir + paths.project_name)
-        
-        else:
-
-            os.chdir(paths.working_dir)
-            os.system('mkdir '+paths.project_name)
-            os.chdir(paths.project_name)
-
-        coords = ct.get_coords(atomgroup)
-
-        #### run the ase calc ####
-        for frame_nr, frame in enumerate(coords):
-            
-            os.system('mkdir frame'+str(frame_nr))
-            os.chdir('frame'+str(frame_nr))
-
-            ase_sys = ASE_system(atomgroup.elements, frame)
-            ase_sys.cell = ([16.0, 16.0, 16.0])
-            ase_sys.pbc = ([True, True, True])
-            ase_sys.construct_atoms_object()
-            calc = CP2K(basis_set=None,
-                        basis_set_file=None,
-                        max_scf=None,
-                        charge=None,
-                        cutoff=None,
-                        force_eval_method=None,
-                        potential_file=None,
-                        poisson_solver=None,
-                        pseudo_potential=None,
-                        stress_tensor=False,
-                        uks=False,
-                        xc=None,
-                        inp=cp2k_inp,
-                        print_level='MEDIUM',
-                        command = 'env OMP_NUM_THREADS=6 cp2k_shell.ssmp')
-            # TODO: set OMP_NUM_THREADS somewhere else? (can just call os.environ where it's needed -> currently initialized below the main class)
-            #optional method to set OMP_NUM_THREADS
-            #def set_omp_num_threads(num_threads):
-            #   original_value = os.environ.get('OMP_NUM_THREADS', None)
-            #    os.environ['OMP_NUM_THREADS'] = str(num_threads)
-            #    yield
-            # if original_value is not None:
-            #   os.environ['OMP_NUM_THREADS'] = original_value
-            # else:
-            #     del os.environ['OMP_NUM_THREADS']
-            ase_sys.atoms.calc = calc
-            ase_sys.run_calculation(run_type='single_point')
-            np.savetxt('forces_energy_' + atomgroup_name + '_frame' + str(frame_nr) + '.txt', ase_sys.forces,
-                    header='E: ' + str(ase_sys.energy))
-            
-            # grab charges
-            os.chdir('..')
-            path = os.getcwd()
-            os.chdir('frame' + str(frame_nr))
-            read = read_external_file(path + '/' + 'frame' + str(frame_nr), 'cp2k.out')
-            charges = self.read_qm_charges(read, charge_type, path, 'cp2k', sys_type, frame_nr)
-            self.qm_charges[sys_type][frame_nr, :] = charges
-
-            outstr = 'cp cp2k.out ' + atomgroup_name + '_frame' + str(frame_nr) + '.out'
-            os.system(outstr)
-
-            # grab forces
-            self.qm_forces[sys_type][frame_nr, :, :] = ase_sys.forces #kJ/mol/nm
-            
-            # grab energies
-            self.qm_energies[sys_type][frame_nr] = ase_sys.energy #kJ/mol
-
-            os.system('rm cp2k.out')
-            os.system('pkill cp2k_shell.ssmp')
-            os.system('touch cp2k.out')
-            os.chdir('..')
+        self.n_threads = n_threads
+        self.ase_cell_dims = cell_dimensions
+        self.ase_pbc = pbc
+        self.ase_input_control = input_control
+        self.ase_run_type = run_type
 
 
-    def generate_qm_energies_forces_optcoords(self, atomgroup, atomgroup_name, paths, cp2k_inp, sys_type): 
+    def _run_ase(self, coords, atomgroup, atomgroup_name, sys_type):
         """
-        calculates QM forces and energies of the optimized conformations using ASE. Runs a geometry optimization.
+        Loops over conformations and runs ASE to obtain QM data.
 
         Parameters
         ----------
+        coords : np.array
+            molecule coordinates as numpy array
         atomgroup : MDAnalysis AtomGroup object
-            e.g. molecule1
+            e.g. mol1
         atomgroup_name : str
-            e.g. 'molecule1', needed for output files
-        paths : paths.Paths object
-            contains working dir n stuff
-        cp2k_inp : str
-            input for the inp parameter of the ASE cp2k calculator w/ all the necessary cp2k control parameters. 
-            Don't forget to set up the charge calculation in there!
+            e.g. 'mol1', needed for output files
         sys_type : str
             'all' or 'nosol' or 'mol1' or 'mol2' 
+
+        internal parameters : self.n_threads, self.ase_cell_dims, self.ase_pbc, self.ase_input_control, self.ase_run_type
 
         sets:
             self.qm_forces[sys_type] : quantum forces of atomgroup after geometry opt
             self.qm_energies[sys_type] : quantum energies of atomgroup after geom opt
-            self.opt_coords[sys_type] : coordinates after DFT geometry optimization
+            (self.opt_coords[sys_type] : coordinates after DFT geometry optimization)
         """
+        for setting in [self.ase_cell_dims, self.ase_pbc, self.ase_input_control, self.n_threads, self.ase_run_type]:
+            try: 
+                assert setting is not None, 'ASE settings are not defined, call collect_ase_settings(n_threads, cell_dimensions, pbc, input_control, run_type) first'
+            except NameError:
+                pass
 
-        #### init arrays ####
-        self.qm_forces[sys_type] = np.zeros((len(self.ini_coords[sys_type]), self.ini_coords[sys_type].shape[1], 3))
-        self.qm_energies[sys_type] = np.zeros((len(self.ini_coords[sys_type]), 1))        
-        self.opt_coords[sys_type] = np.zeros((len(self.ini_coords[sys_type]), self.ini_coords[sys_type].shape[1], 3))
-        self.qm_charges[sys_type] = np.zeros((len(self.ini_coords[sys_type]), self.ini_coords[sys_type].shape[1]))
-
-        if Path(paths.working_dir + paths.project_name).is_dir() is True:
-
-            os.chdir(paths.working_dir + paths.project_name)
-        
-        else:
-
-            os.chdir(paths.working_dir)
-            os.system('mkdir '+paths.project_name)
-            os.chdir(paths.project_name)
-
-        coords = ct.get_coords(atomgroup)
-
-        #### run the ase calc ####
         for frame_nr, frame in enumerate(coords):
 
             os.system('mkdir frame'+str(frame_nr))
             os.chdir('frame'+str(frame_nr))
 
             ase_sys = ASE_system(atomgroup.elements, frame)
-            ase_sys.cell = ([16.0, 16.0, 16.0])
-            ase_sys.pbc = ([True, True, True])
+            ase_sys.cell = self.ase_cell_dims
+            ase_sys.pbc = self.ase_pbc
             ase_sys.construct_atoms_object()
             calc = CP2K(basis_set=None,
                         basis_set_file=None,
@@ -730,21 +415,14 @@ class Molecular_system:
                         stress_tensor=False,
                         uks=False,
                         xc=None,
-                        inp=cp2k_inp,
+                        inp=self.ase_input_control,
                         print_level='MEDIUM',
-                        command = 'env OMP_NUM_THREADS=6 cp2k_shell.ssmp')
-             # TODO: set OMP_NUM_THREADS somewhere else? (can just call os.environ where it's needed -> currently initialized below the main class)
-            #optional method to set OMP_NUM_THREADS
-            #def set_omp_num_threads(num_threads):
-             #   original_value = os.environ.get('OMP_NUM_THREADS', None)
-             #    os.environ['OMP_NUM_THREADS'] = str(num_threads)
-             #    yield
-             # if original_value is not None:
-             #   os.environ['OMP_NUM_THREADS'] = original_value
-             # else:
-             #     del os.environ['OMP_NUM_THREADS']
+                        command = 'env OMP_NUM_THREADS='+str(self.n_threads)+' cp2k_shell.ssmp')
+
             ase_sys.atoms.calc = calc
-            ase_sys.run_calculation(run_type='optimization')
+            if sys_type is not 'all':
+                self.ase_run_type = 'single_point'
+            ase_sys.run_calculation(run_type = self.ase_run_type)
             np.savetxt('forces_energy_' + atomgroup_name + '_frame' + str(frame_nr) + '.txt', ase_sys.forces,
                        header='E: ' + str(ase_sys.energy))
             outstr = 'cp cp2k.out ' + atomgroup_name + '_frame' + str(frame_nr) + '.out'
@@ -752,98 +430,147 @@ class Molecular_system:
 
             # grab forces
             self.qm_forces[sys_type][frame_nr, :, :] = ase_sys.forces #kJ/mol/nm
-            
+
             # grab energies
             self.qm_energies[sys_type][frame_nr] = ase_sys.energy #kJ/mol
 
-            # grab optcoords
-            self.opt_coords[sys_type][frame_nr, :, :] = ase_sys.opt_coords
+            if self.ase_run_type == 'optimization':
+                # grab optcoords
+                self.opt_coords[sys_type][frame_nr, :, :] = ase_sys.opt_coords
 
             os.system('rm cp2k.out')
             os.system('pkill cp2k_shell.ssmp')
             os.system('touch cp2k.out')
             os.chdir('..') 
 
-    def generate_qm_charges_energies_forces_optcoords(self, paths, MDA_reader, cp2k_input: str, omp_threads: int, cp2k_binary_name: str, charge_type: str, 
-                                                      sys_type: str): 
 
+    def generate_qm_data_w_ase(self, sys_type: str, paths: str, atomgroup, atomgroup_name: str):
         """
-        Calculates QM energies, forces, and charges using native cp2k. 
-        Requires topology file and starting coords as well as a valid cp2k input file (please check cp2k doc).
-        Only recommended for sys_type = 'all' in order to represent valid biochemical conditions.
+        Uses ASE to generate QM data- Only energies, forces, and optimized coordinates are supported. If you want charges, use generate_qm_data_w_cp2k()
 
         Parameters
         ----------
+        sys_type : str
+            'all' or 'nosol' or 'mol1' or 'mol2' 
+        paths : paths.Paths object
+            contains working dir n stuff
+        paths : paths.Paths object
+            contains working dir n stuff
+        atomgroup : MDAnalysis AtomGroup object
+            e.g. mol1
+        atomgroup_name : str
+            e.g. 'mol1', needed for output files
+        """
+
+        #### init arrays ####
+        self.qm_forces[sys_type] = np.zeros((len(self.ini_coords[sys_type]), self.ini_coords[sys_type].shape[1], 3))
+        self.qm_energies[sys_type] = np.zeros((len(self.ini_coords[sys_type]), 1))
+        if self.ase_run_type == 'optimization':
+            self.opt_coords[sys_type] = np.zeros((len(self.ini_coords[sys_type]), self.ini_coords[sys_type].shape[1], 3))
+
+        if Path(paths.working_dir + paths.project_name).is_dir() is True:
+
+            os.chdir(paths.working_dir + paths.project_name)
+
+        else:
+
+            os.chdir(paths.working_dir)
+            os.system('mkdir '+paths.project_name)
+            os.chdir(paths.project_name)
+
+        coords = ct.get_coords(atomgroup)
+
+        self._run_ase(coords, atomgroup, atomgroup_name, sys_type)
+
+
+    def collect_cp2k_settings(self, cp2k_input: str, n_threads: int, cp2k_binary_name: str, cp2k_run_type: str):
+        """
+        Stores cp2k settings in system.
+
+        Parameters
+        ----------
+        cp2k_input : str
+            all the commands and strings that go into a cp2k .inp file (see cp2k doc). It is recommended to load the
+            input into a separate variable beforehand
+        n_threads : int
+            number of OpenMP threads to use for the parallel cp2k calculation
+        cp2k_binary_name : str
+            name by which the cp2k binary is called on your machine
+        cp2k_run_type : str
+            'single_point' or 'optimization'
+        """
+        self.cp2k_input = cp2k_input
+        self.n_threads = n_threads
+        self.cp2k_binary_name = cp2k_binary_name
+        self.cp2k_run_type = cp2k_run_type
+
+
+    def generate_qm_data_w_cp2k(self, sys_type: str, paths: str, MDA_reader, charge_type=None):
+        """
+        Calculates QM energies, forces (and charges) using native cp2k. 
+        Requires topology file and starting coords as well as a valid cp2k input file (please check cp2k doc).
+
+        Parameters
+        ----------
+        sys_type : str
+            'all' or 'nosol' or 'mol1' or 'mol2' 
         paths : paths.Paths object
             contains paths and filenames etc
         MDA_reader : Coord_Toolz.mdanalysis.MDA_reader object
             contains MDA universes w/ atom info, coords, ...
-        cp2k_input : str
-            all the commands and strings that go into a cp2k .inp file (see cp2k doc). It is recommended to load the
-            input into a separate variable beforehand
-        omp_threads : int
-            number of openMP threads to use for the parallel cp2k calculation
-        cp2k_binary_name : str
-            name by which the cp2k binary is called on your machine
         charge_type : str
-            Options are 'Mulliken', 'Hirshfeld', 'RESP'
-        sys_type : str
-            'all' or 'nosol' or 'mol1' or 'mol2' 
-
-        self.n_conformations : number of conformations
-
-        sets:
-            self.qm_charges[sys_type] : quantum charges of atomgroup after geom opt
-            self.qm_forces[sys_type] : quantum forces of atomgroup after geometry opt
-            self.qm_energies[sys_type] : quantum energies of atomgroup after geom opt
-            self.opt_coords[sys_type] : coordinates after DFT geometry optimization
+            Default=None, no charges will be computed.
+            Charge options are 'Mulliken', 'Hirshfeld', 'RESP'
         """
 
+        for setting in [self.cp2k_input, self.n_threads, self.cp2k_binary_name, self.cp2k_run_type]:
+            try:
+                assert setting is not None, 'cp2k settings not defined, run collect_cp2k_settings(cp2k_input, n_threads, cp2k_binary_name, cp2k_run_type, charge_type) first.'
+            except NameError:
+                pass
+
         from ..Direct_cp2k_calculation.direct_cp2k import Direct_Calculator as cc
-    
+
         #### init arrays ####
         self.qm_forces[sys_type] = np.zeros((len(self.ini_coords[sys_type]), self.ini_coords[sys_type].shape[1], 3))
-        self.qm_energies[sys_type] = np.zeros((len(self.ini_coords[sys_type]), 1))        
-        self.opt_coords[sys_type] = np.zeros((len(self.ini_coords[sys_type]), self.ini_coords[sys_type].shape[1], 3))
-
-
+        self.qm_energies[sys_type] = np.zeros((len(self.ini_coords[sys_type]), 1))
+        if self.cp2k_run_type == 'optimization':
+            self.opt_coords[sys_type] = np.zeros((len(self.ini_coords[sys_type]), self.ini_coords[sys_type].shape[1], 3))
 
         #### fill the arrays #### 
         for n in range(self.n_conformations):
 
             #### construct charge calculator object ####
-            run_type = 'charges'
-            charge_calc = cc(paths, run_type)
+            cp2k_calc = cc(paths, self.cp2k_run_type)
 
-            charge_calc.generate_cp2k_input_file(cp2k_input)
+            cp2k_calc.generate_cp2k_input_file(self.cp2k_input)
 
             os.system('mkdir frame'+str(n))
             os.chdir('frame'+str(n))
             os.system('cp '+paths.mm_top+' .') # copy the topol file
-            os.system('cp '+charge_calc.project_path+charge_calc.project_name+charge_calc.run_type+'.inp .')
+            os.system('cp '+cp2k_calc.project_path+cp2k_calc.project_name+cp2k_calc.run_type+'.inp .')
             MDA_reader.universes[sys_type].atoms.write('frame'+str(n)+'.pdb', frames=MDA_reader.universes[sys_type].trajectory[n:n+1])
 
             path = os.getcwd()
 
             # run the calculation
-            charge_calc.run_cp2k(omp_threads, cp2k_binary_name, path)
+            cp2k_calc.run_cp2k(self.n_threads, self.cp2k_binary_name, path)
 
             # grab results
-            read = read_external_file(charge_calc.project_path+'frame'+str(n)+'/', charge_calc.project_name+run_type+'.out')
+            read = read_external_file(cp2k_calc.project_path+'frame'+str(n)+'/', cp2k_calc.project_name+run_type+'.out')
 
-            charge_calc.charges = self.read_qm_charges(read, charge_type, charge_calc.project_path, charge_calc.project_name+run_type+'.out',
-                                                        sys_type, n)
+            if charge_type is not None:
+                cp2k_calc.charges = read_qm_charges(read, charge_type, cp2k_calc.project_path, n, cp2k_calc.project_name+run_type, self.ini_coords)
+                self.qm_charges[sys_type][n, :] = cp2k_calc.charges
 
-            self.qm_charges[sys_type][n, :] = charge_calc.charges
+            cp2k_calc.extract_energy(read)
+            self.qm_energies[sys_type][n] = cp2k_calc.energy * 2.62549961709828E+03 #Hartree to kJ/mol
 
-            charge_calc.extract_energy(read)
-            self.qm_energies[sys_type][n] = charge_calc.energy * 2.62549961709828E+03 #Hartree to kJ/mol
-
-            charge_calc.extract_forces(self.ini_coords[sys_type].shape[1], read)
-            self.qm_forces[sys_type][n, :, :] = charge_calc.forces * 2.62549961709828E+03 / 0.0529177249 #Hartree/Bohr to kJ/mol/nm
+            cp2k_calc.extract_forces(self.ini_coords[sys_type].shape[1], read)
+            self.qm_forces[sys_type][n, :, :] = cp2k_calc.forces * 2.62549961709828E+03 / 0.0529177249 #Hartree/Bohr to kJ/mol/nm
 
             os.chdir('..') 
-    
+
 
     def calculate_qm_net_forces(self): 
          
@@ -1047,7 +774,6 @@ class Molecular_system:
             self.eqm_bsse[sys_type][n] = bsse_calc.bsse_total * 2.62549961709828E+03  # Hartree to kJ/mol
             os.chdir('..') 
 
-    # def get_dihedrals(self):
             
     def get_mm_charges(self, sys_type: str):
         """
@@ -1961,10 +1687,6 @@ class Molecular_system:
             self.scaled_parameters, mutable
         """
 
-        #individual_mean = np.mean(self.vectorized_parameters)
-        #individual_sdev = np.std(self.vectorized_parameters)
-        #scaling_factors = (self.vectorized_parameters - individual_mean) / individual_sdev # TODO: keep these const or recalc??? 
-        #self.scaling_factors = scaling_factors.astype('float')
         scaled_parameters = self.vectorized_parameters * self.scaling_factors
         self.scaled_parameters = scaled_parameters.astype('float')
 
@@ -2036,3 +1758,92 @@ def find_same_type(ff_atom_types_indices):
                 dupes[dupe].append(atom_type[0])
 
     return dupes
+
+def read_qm_charges(read_lines, charge_type, path, n, cp2k_outfilename, ini_coords):
+
+    """
+    reads cp2k .out files and collects the calculated atom charges based on the type
+
+
+    Parameters
+    -----------
+    read_lines : list of str
+        read-in file content
+    charge_type : str
+        one of the following: 'Mulliken', 'Hirshfeld', 'RESP'     
+    path : str
+        path to externally cp2k optimized structures
+    n : int
+        frame number or conformation number
+    cp2k_outfilename : str
+        equal to <cp2k>.out
+    ini_coords : np.array
+        unoptimized coordinates of conformations
+
+    returns: 
+        charges (qm charges) as numpy arrary   
+    """
+
+    read = read_lines
+
+    assert charge_type in ['Mulliken', 'Hirshfeld', 'RESP'], 'invalid charge_type {}'.format(charge_type)
+
+    if charge_type == 'Mulliken':
+        mullken_start = [index for index, string in enumerate(read) if 'Mulliken Population Analysis' in string]
+        charges = np.loadtxt(path + '/frame' + str(n) + '/' + cp2k_outfilename + '.out',
+                            skiprows = mullken_start[0] + 3,
+                            max_rows = ini_coords.shape[1], usecols=4, dtype=float)
+
+    elif charge_type == 'Hirshfeld':
+        hirshfeld_start = [index for index, string in enumerate(read) if 'Hirshfeld Charges' in string]
+        charges = np.loadtxt(path + '/frame' + str(n) + '/' + cp2k_outfilename + '.out',
+                            skiprows = hirshfeld_start[0] + 3, max_rows = ini_coords.shape[1],
+                            usecols=5, dtype=float)
+
+    elif charge_type == 'RESP':
+        resp_start = [index for index, string in enumerate(read) if 'RESP charges:' in string]
+        charges = np.loadtxt(path + '/frame' + str(n) + '/' + cp2k_outfilename + '.out',
+                            skiprows = resp_start[0] + 3,
+                            max_rows = ini_coords.shape[1], usecols=3, dtype=float)
+            
+    return charges
+
+def read_qm_energy_forces(read, n, cp2k_outfilename, path, ini_coords):
+
+    """
+    Useful if cp2k calculations have been run externally (e.g. on a cluster).
+    reads cp2k .out files and extracts energy and forces from it. 
+
+    Parameters
+    ----------
+    read : list of str
+        read-in file content
+    n : int
+        frame number or conformation number
+    cp2k_outfilename : str
+        equal to <cp2k>.out
+    path : str
+        path to externally cp2k optimized structures
+    ini_coords : np.array
+        unoptimized coordinates of conformations
+    
+    returns:
+        energy, forces : quantum energy & forces as float & np.array
+    """
+
+    energy_line = [index for index, string in enumerate(read) if
+                'ENERGY| Total FORCE_EVAL ( QS ) energy [a.u.]:'
+                in string]
+
+    if len(energy_line) == 0:
+        raise ValueError('ENERGY not found in frame'+str(n)+'/'+cp2k_outfilename+'.out')
+
+    energy = float(re.findall(r"[-+]?(?:\d*\.*\d+)", read[energy_line[-1]])[0])
+
+    forces_start = [index for index, string in enumerate(read) if 'ATOMIC FORCES in [a.u.]' in string]
+
+    forces = np.loadtxt(path + 'frame' + str(n) + '/' + cp2k_outfilename + '.out',
+                            skiprows = forces_start[-1] + 3,
+                            max_rows = ini_coords.shape[1], usecols=(3, 4, 5), dtype=float)
+                            
+    return energy, forces # in Hartree, Hartree/Bohr
