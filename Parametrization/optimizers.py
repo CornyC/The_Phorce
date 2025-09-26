@@ -535,7 +535,7 @@ class Optimizer:
 
         print("###################################################################################")
         print(
-            "#                         STARTING " + self.opt_method.upper() + " OPTIMIZER                            #")
+            "#                         STARTING " + self.opt_method.upper() + " OPTIMIZER                            ")
         print("###################################################################################")
 
         if self.opt_method == "scipy_local":
@@ -560,7 +560,7 @@ class Optimizer:
 
         print("###################################################################################")
         print(
-            "#                         " + self.opt_method.upper() + " OPTIMIZER FINISHED                            #")
+            "#                         " + self.opt_method.upper() + " OPTIMIZER FINISHED                            ")
         print("###################################################################################")
 
         print('optimized parameters:')
