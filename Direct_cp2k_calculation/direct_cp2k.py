@@ -104,11 +104,11 @@ class Direct_Calculator:
         	read-in lines from .out file in str format
         """
 
-        bsse_line = [index for index, string in enumerate(read) if 'BSSE RESULTS' in string]
-        self.bsse_total = float(re.findall(r"[-+]?(?:\d*\.*\d+)", read[bsse_line+2])[0])
+        bsse_line = [index for index, string in enumerate(read_lines) if 'BSSE RESULTS' in string]
+        self.bsse_total = float(re.findall(r"[-+]?(?:\d*\.*\d+)", read_lines[bsse_line+2])[0])
 
-        bsse_free_line = [index for index, string in enumerate(read) if 'BSSE-free interaction energy:' in string]
-        self.bsse_free = float(re.findall(r"[-+]?(?:\d*\.*\d+)", read[bsse_free_line])[0])
+        bsse_free_line = [index for index, string in enumerate(read_lines) if 'BSSE-free interaction energy:' in string]
+        self.bsse_free = float(re.findall(r"[-+]?(?:\d*\.*\d+)", read_lines[bsse_free_line])[0])
 
     def extract_energy(self, read_lines):
         """
