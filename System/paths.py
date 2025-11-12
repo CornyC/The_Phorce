@@ -1,9 +1,14 @@
 from pathlib import Path
-
+import os
 
 def check_path(path: str):
 
     if path != None:
+
+        if Path(path).is_dir() is False:
+
+            os.system('mkdir '+path)
+            print('Created folder '+path)
 
         assert Path(path).is_dir() is True, 'path {} does not exist'.format(path)
 
