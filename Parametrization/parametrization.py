@@ -61,9 +61,9 @@ class Parametrization:
 
                 if force_group == 'CustomNonbondedForce':
 
-                    r_sigma_constraints = (0.03, 1.0) # nm
+                    r_sigma_constraints = (0.03, 1.0) # sigma in nm
                     epsilon_depth_constraints = (0.002, 20) # kJ/mol
-                    nbfix_r_sigma_constr = (0.2, 1.0) # nm
+                    nbfix_r_sigma_constr = (0.2, 1.0) # r_min in nm
                     nbfix_eps_depth_constr = (0.06, 15.5) # kJ/mol
 
                     for _array in self.molecular_system.reduced_indexed_ff_optimizable['all']['CustomNonbondedForce']:
