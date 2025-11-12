@@ -383,7 +383,7 @@ class OpenMM_system:
             lj_index_list[i] = num_lj_types
             ljtype = (atomtype.rmin, atomtype.epsilon)
 
-            self.lj_type_list.append(atomtype) # collects dicts of atomtypes and params #TODO: filter out duplicates!
+            self.lj_type_list.append(atomtype) # collects dicts of atomtypes and params 
             atomtypes_list.append(atomtype.name) # collects strs of atomtypes
             lj_r_sigma.append(float(atomtype.rmin)) # rmin is r/sigma in Angström
             lj_epsilon.append(float(atomtype.epsilon)) # epsilon in kcal/mol
