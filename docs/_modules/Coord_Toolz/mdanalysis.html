@@ -1,1 +1,430 @@
 
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Coord_Toolz.mdanalysis &mdash; The Phorce 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=92fd9be5" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js?v=e031e9a9"></script>
+      <script src="../../_static/doctools.js?v=888ff710"></script>
+      <script src="../../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            The Phorce
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">The Phorce</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">Coord_Toolz.mdanalysis</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for Coord_Toolz.mdanalysis</h1><div class="highlight"><pre>
+<span></span><span class="c1">#### package imports ####</span>
+
+<span class="kn">import</span> <span class="nn">MDAnalysis</span> <span class="k">as</span> <span class="nn">mda</span>
+<span class="kn">import</span> <span class="nn">MDAnalysis.core.groups</span>
+<span class="kn">from</span> <span class="nn">MDAnalysis.core.universe</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">MDAnalysis.analysis.base</span> <span class="kn">import</span> <span class="n">AnalysisFromFunction</span>
+<span class="kn">from</span> <span class="nn">MDAnalysis.coordinates.memory</span> <span class="kn">import</span> <span class="n">MemoryReader</span> <span class="c1">#faster processing for small trajectories</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">System.paths</span> <span class="kn">import</span> <span class="o">*</span>
+
+
+<div class="viewcode-block" id="MDA_reader"><a class="viewcode-back" href="../../The_Phorce.Coord_Toolz.html#Coord_Toolz.mdanalysis.MDA_reader">[docs]</a><span class="k">class</span> <span class="nc">MDA_reader</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Reads in sampled structures trajectory and topology. Coordinates in Angström. Allows for manipulations of atoms.</span>
+<span class="sd">    Input upon initialization can be empty or a predefined MDAnalysis Universe: </span>
+<span class="sd">    Example: MDR = MDA_reader(MDAnalysis.core.universe.Universe) or MDR = MDA_reader()</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    all : MDAnalysis.core.universe.Universe object</span>
+<span class="sd">        Contains all atoms and their names &amp; identifiers, positions, forces...(check MDAnalysis doc)</span>
+<span class="sd">    nosol : MDAnalysis.core.groups.AtomGroup</span>
+<span class="sd">        Contains atom selection of universe that represents the molecule to parametrize w/o solvent or ions. Enables </span>
+<span class="sd">        calculation of forces between molecule and solvent. </span>
+<span class="sd">    mol1 : MDAnalysis.core.groups.AtomGroup</span>
+<span class="sd">        Contains atom selection of universe that represents molecule1 (w/ solvent if solvent in &#39;all&#39;) without molecule2. </span>
+<span class="sd">        Enables calculation of net forces between molecules.</span>
+<span class="sd">    mol2 : MDAnalysis.core.groups.AtomGroup</span>
+<span class="sd">        Contains atom selection of universe that represents molecule2 (w/ solvent if solvent in &#39;all&#39;) without molecule1. </span>
+<span class="sd">        Enables calculation of net forces between molecules.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">universe</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">universes</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;all&#39;</span><span class="p">:</span> <span class="n">universe</span><span class="p">,</span>
+                          <span class="s1">&#39;nosol&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+                          <span class="s1">&#39;mol1&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+                          <span class="s1">&#39;mol2&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">}</span>
+
+
+<div class="viewcode-block" id="MDA_reader.set_traj_input"><a class="viewcode-back" href="../../The_Phorce.Coord_Toolz.html#Coord_Toolz.mdanalysis.MDA_reader.set_traj_input">[docs]</a>    <span class="k">def</span> <span class="nf">set_traj_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">top</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">traj</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calls the MDAnalysis trajectory reader and creates the mda.Universe from it.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        top : str</span>
+<span class="sd">           path to topology file, can also be a .pdb</span>
+<span class="sd">        traj : str</span>
+<span class="sd">           path to trajectory file</span>
+
+<span class="sd">        Attributes</span>
+<span class="sd">        ----------</span>
+<span class="sd">        universes[&#39;all&#39;] : MDAnalysis.core.universe.Universe object</span>
+<span class="sd">            Contains all atoms and their names &amp; identifiers, positions, forces...(check MDAnalysis doc)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">top</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">top</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s1">&#39;enter path to topology file</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="k">assert</span> <span class="n">Path</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">top</span><span class="p">))</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;Path topology </span><span class="si">{}</span><span class="s1"> does not exist&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">top</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">traj</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">traj</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s1">&#39;enter path to trajectory file</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="k">assert</span> <span class="n">Path</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">traj</span><span class="p">))</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;Path topology </span><span class="si">{}</span><span class="s1"> does not exist&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">traj</span><span class="p">)</span>
+
+        <span class="n">u</span> <span class="o">=</span> <span class="n">mda</span><span class="o">.</span><span class="n">Universe</span><span class="p">(</span><span class="n">top</span><span class="p">,</span> <span class="n">traj</span><span class="p">,</span> <span class="n">in_memory</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">atoms</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;No element symbols found in topology and ASE needs them :(&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">universes</span><span class="p">[</span><span class="s1">&#39;all&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">u</span></div>
+
+<div class="viewcode-block" id="MDA_reader.set_crd_input"><a class="viewcode-back" href="../../The_Phorce.Coord_Toolz.html#Coord_Toolz.mdanalysis.MDA_reader.set_crd_input">[docs]</a>    <span class="k">def</span> <span class="nf">set_crd_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">crd_input</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calls the MDAnalysis coordinate file reader and sets the mda.Universe from it.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        crd_input : str</span>
+<span class="sd">            path to coordinate file</span>
+<span class="sd">        </span>
+<span class="sd">        Attributes</span>
+<span class="sd">        ----------</span>
+<span class="sd">        universes[&#39;all&#39;] : MDAnalysis.core.universe.Universe object</span>
+<span class="sd">            Contains all atoms and their names &amp; identifiers, positions, forces...(check MDAnalysis doc)</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">crd_input</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">u</span> <span class="o">=</span> <span class="n">mda</span><span class="o">.</span><span class="n">Universe</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">input</span><span class="p">(</span><span class="s1">&#39;enter path to .pdb file</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)))</span>
+            <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">elements</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;Edit your .pdb file so that the last column has element symbols&#39;</span>\
+                                     <span class="s1">&#39;(Avogadro does it automatically for you) bc ASE needs them&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">universes</span><span class="p">[</span><span class="s1">&#39;all&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">u</span></div>
+
+<div class="viewcode-block" id="MDA_reader.remove_water_ions"><a class="viewcode-back" href="../../The_Phorce.Coord_Toolz.html#Coord_Toolz.mdanalysis.MDA_reader.remove_water_ions">[docs]</a>    <span class="k">def</span> <span class="nf">remove_water_ions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atomgroup</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Removes water molecules and ions from system and saves it to self.universes[&#39;nosol&#39;].</span>
+<span class="sd">        feel free to add entries from your FF here :)</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        atomgroup : MDAnalysis.core.groups.AtomGroup</span>
+<span class="sd">             Should contain all atoms of universe</span>
+
+<span class="sd">        Attributes</span>
+<span class="sd">        ----------</span>
+<span class="sd">        universes[&#39;nosol&#39;] : MDAnalysis.core.groups.AtomGroup</span>
+<span class="sd">            Contains atom selection of universe that represents the molecule to parametrize w/o solvent or ions. Enables </span>
+<span class="sd">            calculation of forces between molecule and solvent.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">water_resnames</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;TIP3&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                        <span class="s1">&#39;TIP3P&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                        <span class="s1">&#39;TP3M&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                        <span class="s1">&#39;SOL&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                        <span class="s1">&#39;HOH&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                        <span class="s1">&#39;TIP4&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                        <span class="s1">&#39;TIP4P&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>
+
+        <span class="n">ion_resnames</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;SOD&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                      <span class="s1">&#39;NA&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                      <span class="s1">&#39;POT&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                      <span class="s1">&#39;K&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                      <span class="s1">&#39;CAL&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                      <span class="s1">&#39;CA&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                      <span class="s1">&#39;MG&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                      <span class="s1">&#39;CL&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+                      <span class="s1">&#39;CLA&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>
+
+        <span class="k">if</span> <span class="n">atomgroup</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">atomgroup</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">universes</span><span class="p">[</span><span class="s1">&#39;all&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">atoms</span>
+
+        <span class="k">for</span> <span class="n">water_resname</span> <span class="ow">in</span> <span class="n">water_resnames</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">water_resname</span> <span class="ow">in</span> <span class="n">atomgroup</span><span class="o">.</span><span class="n">resnames</span><span class="p">:</span>
+                <span class="n">water_resnames</span><span class="p">[</span><span class="n">water_resname</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="k">if</span> <span class="kc">True</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">water_resnames</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Water residues not found, please select manually&#39;</span><span class="p">)</span>
+            <span class="n">water_id</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">input</span><span class="p">(</span><span class="s1">&#39;enter water residue name</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">))</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">water_resname</span> <span class="ow">in</span> <span class="n">water_resnames</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">water_resnames</span><span class="p">[</span><span class="n">water_resname</span><span class="p">]</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+                    <span class="n">water_id</span> <span class="o">=</span> <span class="n">water_resname</span>
+
+        <span class="k">for</span> <span class="n">ion_resname</span> <span class="ow">in</span> <span class="n">ion_resnames</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">ion_resname</span> <span class="ow">in</span> <span class="n">atomgroup</span><span class="o">.</span><span class="n">resnames</span><span class="p">:</span>
+                <span class="n">ion_resnames</span><span class="p">[</span><span class="n">ion_resname</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="k">if</span> <span class="kc">True</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ion_resnames</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Ion residues not found, please select manually&#39;</span><span class="p">)</span>
+            <span class="n">yes_choices</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;yes&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">]</span>
+            <span class="n">no_choices</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;no&#39;</span><span class="p">,</span> <span class="s1">&#39;n&#39;</span><span class="p">]</span>
+            <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="n">has_ions</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">input</span><span class="p">(</span><span class="s1">&#39;Does your system have ions? (yes/no)</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">))</span>
+                <span class="k">if</span> <span class="n">has_ions</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="n">yes_choices</span><span class="p">:</span>
+                    <span class="n">ions_present</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="n">ion_id</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="nb">input</span><span class="p">(</span><span class="s1">&#39;enter ion residue name</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">))</span>
+                    <span class="k">break</span>
+                <span class="k">elif</span> <span class="n">has_ions</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="n">no_choices</span><span class="p">:</span>
+                    <span class="n">ions_present</span> <span class="o">=</span> <span class="kc">False</span>
+                    <span class="k">break</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Type yes or no&#39;</span><span class="p">)</span>
+                    <span class="k">continue</span>
+
+        <span class="k">if</span> <span class="n">ions_present</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">universes</span><span class="p">[</span><span class="s1">&#39;nosol&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">atomgroup</span><span class="o">.</span><span class="n">select_atoms</span><span class="p">(</span><span class="s1">&#39;not resname &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">water_id</span><span class="p">))</span>
+
+        <span class="k">elif</span> <span class="n">ions_present</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">universes</span><span class="p">[</span><span class="s1">&#39;nosol&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">atomgroup</span><span class="o">.</span><span class="n">select_atoms</span><span class="p">(</span><span class="s1">&#39;not resname &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">water_id</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39; and not resname &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">ion_id</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="MDA_reader.delete_one_molecule"><a class="viewcode-back" href="../../The_Phorce.Coord_Toolz.html#Coord_Toolz.mdanalysis.MDA_reader.delete_one_molecule">[docs]</a>    <span class="k">def</span> <span class="nf">delete_one_molecule</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">selection</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        &#39;Deletes&#39; atoms based on the MDAnalysis atom selection algebra. Returns only selected atoms.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        selection : str</span>
+<span class="sd">            e.g. &#39;resname not MP0&#39; or &#39;resid not 2&#39; (inverse selection to remove in these examples residue MP0/2)</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        remaining_molecules : mda.Universe</span>
+<span class="sd">            mda.Universe of selected atoms</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">remaining_molecules</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">universes</span><span class="p">[</span><span class="s1">&#39;all&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">select_atoms</span><span class="p">(</span><span class="n">selection</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">remaining_molecules</span></div></div>
+
+<div class="viewcode-block" id="write_single_pdb"><a class="viewcode-back" href="../../The_Phorce.Coord_Toolz.html#Coord_Toolz.mdanalysis.write_single_pdb">[docs]</a><span class="k">def</span> <span class="nf">write_single_pdb</span><span class="p">(</span><span class="n">atomgroup</span><span class="p">,</span> <span class="n">pdb_filename</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pdb_path</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    write single-frame pdb to file</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    atomgroup : MDAnalysis.core.groups.AtomGroup</span>
+<span class="sd">         Contains atom selection of universe</span>
+<span class="sd">    pdb_filename : str</span>
+<span class="sd">        output filename of pdb file</span>
+<span class="sd">    pdb_path : str</span>
+<span class="sd">        path to directory of pdb output</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">pdb_path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">pdb_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span><span class="o">+</span><span class="s1">&#39;/&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="n">Path</span><span class="p">(</span><span class="n">pdb_path</span><span class="p">)</span><span class="o">.</span><span class="n">is_dir</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;output directory does not exist&#39;</span>
+        <span class="k">if</span> <span class="n">pdb_path</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;/&#39;</span><span class="p">:</span>
+            <span class="n">pdb_path</span> <span class="o">+=</span> <span class="s1">&#39;/&#39;</span>
+
+    <span class="k">if</span> <span class="n">pdb_filename</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">pdb_filename</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">atomgroup</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;.pdb&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">pdb_filename</span><span class="p">[</span><span class="o">-</span><span class="mi">4</span><span class="p">:]</span> <span class="o">!=</span> <span class="s1">&#39;.pdb&#39;</span><span class="p">:</span>
+            <span class="n">pdb_filename</span> <span class="o">+=</span> <span class="s1">&#39;.pdb&#39;</span>
+
+    <span class="n">atomgroup</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">pdb_path</span><span class="o">+</span><span class="n">pdb_filename</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="write_traj"><a class="viewcode-back" href="../../The_Phorce.Coord_Toolz.html#Coord_Toolz.mdanalysis.write_traj">[docs]</a><span class="k">def</span> <span class="nf">write_traj</span><span class="p">(</span><span class="n">atomgroup</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">outpath</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    write multiframe trajectory to file as .xyz and .xtc</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    atomgroup : MDAnalysis.core.groups.AtomGroup</span>
+<span class="sd">         Contains atom selection of universe</span>
+<span class="sd">    filename : str</span>
+<span class="sd">        output filename of trajectory</span>
+<span class="sd">    outpath : str</span>
+<span class="sd">        path to directory of trajectory output</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">outpath</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">outpath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span><span class="o">+</span><span class="s1">&#39;/&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="n">Path</span><span class="p">(</span><span class="n">outpath</span><span class="p">)</span><span class="o">.</span><span class="n">is_dir</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;output directory does not exist&#39;</span>
+        <span class="k">if</span> <span class="n">outpath</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;/&#39;</span><span class="p">:</span>
+            <span class="n">outpath</span> <span class="o">+=</span> <span class="s1">&#39;/&#39;</span>
+
+    <span class="k">if</span> <span class="n">filename</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">ext</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;.xyz&#39;</span><span class="p">,</span><span class="s1">&#39;.xtc&#39;</span><span class="p">]:</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">atomgroup</span><span class="p">)</span><span class="o">+</span><span class="n">ext</span>
+            <span class="n">atomgroup</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">frames</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">filename</span><span class="p">[</span><span class="o">-</span><span class="mi">4</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;.&#39;</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">ext</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;.xyz&#39;</span><span class="p">,</span><span class="s1">&#39;.xtc&#39;</span><span class="p">]:</span>
+                <span class="n">atomgroup</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">filename</span><span class="o">+</span><span class="n">ext</span><span class="p">,</span> <span class="n">frames</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="get_coords"><a class="viewcode-back" href="../../The_Phorce.Coord_Toolz.html#Coord_Toolz.mdanalysis.get_coords">[docs]</a><span class="k">def</span> <span class="nf">get_coords</span><span class="p">(</span><span class="n">atomgroup</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get positions of multiframe trajectory as numpy array</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    atomgroup : MDAnalysis.core.groups.AtomGroup</span>
+<span class="sd">         Contains atom selection of universe</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    trajcoords : np.array</span>
+<span class="sd">        np.array (3d) of selected atom coordinates  </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">trajcoords</span> <span class="o">=</span> <span class="n">AnalysisFromFunction</span><span class="p">(</span><span class="k">lambda</span> <span class="n">ag</span><span class="p">:</span> <span class="n">ag</span><span class="o">.</span><span class="n">positions</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="n">atomgroup</span><span class="o">.</span><span class="n">atoms</span><span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">()</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="s1">&#39;timeseries&#39;</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">trajcoords</span></div>
+
+<div class="viewcode-block" id="merge_atoms_positions"><a class="viewcode-back" href="../../The_Phorce.Coord_Toolz.html#Coord_Toolz.mdanalysis.merge_atoms_positions">[docs]</a><span class="k">def</span> <span class="nf">merge_atoms_positions</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="o">*</span><span class="n">atomgroups</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Re-merge atom group info with positions numpy array</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    atomgroups : MDAnalysis.core.groups.AtomGroup</span>
+<span class="sd">        Contains atom selection of universe</span>
+<span class="sd">    coords : 3D numpy array</span>
+<span class="sd">        Position coordinates of a trajectory</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    u : mda.Universe</span>
+<span class="sd">        mda.Universe of atoms and their coords</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">u</span> <span class="o">=</span> <span class="n">mda</span><span class="o">.</span><span class="n">Merge</span><span class="p">(</span><span class="o">*</span><span class="n">atomgroups</span><span class="p">)</span>
+
+    <span class="n">u</span><span class="o">.</span><span class="n">load_new</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">u</span></div>
+
+<div class="viewcode-block" id="collect_optimized_structures"><a class="viewcode-back" href="../../The_Phorce.Coord_Toolz.html#Coord_Toolz.mdanalysis.collect_optimized_structures">[docs]</a><span class="k">def</span> <span class="nf">collect_optimized_structures</span><span class="p">(</span><span class="n">n_structures</span><span class="p">:</span><span class="nb">int</span><span class="p">,</span> <span class="n">directory</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">project_name</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">outputpath</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">topol</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Merge the DFT-optimized coordinates back into one trajectory and write &#39;em to file as multiframe .pdb, .xyz, and .dcd</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    n_structures : int</span>
+<span class="sd">    	number of structures</span>
+<span class="sd">    directory : str (path)</span>
+<span class="sd">    poject_name : str</span>
+<span class="sd">    outputpath : str (path)</span>
+<span class="sd">    topol: str (path+filename)</span>
+<span class="sd">    	(path to) pdb &#39;topology&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="n">Path</span><span class="p">(</span><span class="n">directory</span><span class="p">)</span><span class="o">.</span><span class="n">is_dir</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;directory </span><span class="si">{}</span><span class="s1"> does not exist&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">directory</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">directory</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;/&#39;</span><span class="p">:</span>
+        <span class="n">directory</span> <span class="o">+=</span> <span class="s1">&#39;/&#39;</span>
+    <span class="k">assert</span> <span class="n">Path</span><span class="p">(</span><span class="n">outputpath</span><span class="p">)</span><span class="o">.</span><span class="n">is_dir</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;output directory </span><span class="si">{}</span><span class="s1"> does not exist&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">outputpath</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">outputpath</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;/&#39;</span><span class="p">:</span>
+        <span class="n">outputpath</span> <span class="o">+=</span> <span class="s1">&#39;/&#39;</span>
+    <span class="k">assert</span> <span class="n">Path</span><span class="p">(</span><span class="n">topol</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;topology </span><span class="si">{}</span><span class="s1"> does not exist&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">topol</span><span class="p">)</span>
+
+    <span class="n">top</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">topol</span><span class="p">)</span>
+    <span class="n">pdbu</span> <span class="o">=</span> <span class="n">mda</span><span class="o">.</span><span class="n">Universe</span><span class="p">(</span><span class="n">top</span><span class="p">)</span>
+
+    <span class="n">optcoords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">n_structures</span><span class="p">,</span> <span class="n">pdbu</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">n_atoms</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_structures</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">traj</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">directory</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;frame&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">project_name</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;_opt-pos-1.xyz&#39;</span>
+        <span class="n">u</span> <span class="o">=</span> <span class="n">mda</span><span class="o">.</span><span class="n">Universe</span><span class="p">(</span><span class="n">top</span><span class="p">,</span> <span class="n">traj</span><span class="p">)</span>
+        <span class="n">coords</span> <span class="o">=</span> <span class="n">get_coords</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">atoms</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">optcoords</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="n">coords</span>
+
+    <span class="n">u</span><span class="o">.</span><span class="n">load_new</span><span class="p">(</span><span class="n">optcoords</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="n">MemoryReader</span><span class="p">)</span>
+    
+    <span class="n">u</span><span class="o">.</span><span class="n">dimensions</span> <span class="o">=</span> <span class="n">pdbu</span><span class="o">.</span><span class="n">dimensions</span>
+
+    <span class="k">for</span> <span class="n">ext</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;dcd&#39;</span><span class="p">,</span> <span class="s1">&#39;xyz&#39;</span><span class="p">,</span> <span class="s1">&#39;pdb&#39;</span><span class="p">]:</span>
+        <span class="n">u</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">outputpath</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;optcoords.&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">ext</span><span class="p">),</span> <span class="n">frames</span><span class="o">=</span><span class="n">u</span><span class="o">.</span><span class="n">trajectory</span><span class="p">)</span></div>
+
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Viktoria Korn.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
