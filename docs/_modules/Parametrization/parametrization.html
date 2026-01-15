@@ -1,0 +1,570 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Parametrization.parametrization &mdash; The Phorce 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=92fd9be5" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js?v=e031e9a9"></script>
+      <script src="../../_static/doctools.js?v=888ff710"></script>
+      <script src="../../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            The Phorce
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">The Phorce</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">Parametrization.parametrization</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for Parametrization.parametrization</h1><div class="highlight"><pre>
+<span></span><span class="c1">#### package import ####</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">Parametrization.optimizers</span> <span class="kn">import</span> <span class="n">Optimizer</span>
+<span class="kn">from</span> <span class="nn">System.system</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">import</span> <span class="nn">time</span>
+
+<div class="viewcode-block" id="Parametrization"><a class="viewcode-back" href="../../The_Phorce.Parametrization.html#Parametrization.parametrization.Parametrization">[docs]</a><span class="k">class</span> <span class="nc">Parametrization</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Parametrizes your molecular system.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    molecular_system : system.FMolecular_system object</span>
+<span class="sd">        Contains properties of the molecular system that is to be parametrized</span>
+<span class="sd">    term_type : str</span>
+<span class="sd">        &#39;energy&#39; or &#39;force&#39; or &#39;force &amp; energy&#39;; determines which terms go into the objective function</span>
+<span class="sd">        Additionally, &#39;force_i&#39; can be used to enable an individal variance computation for each conformation (some sort of wheighing).</span>
+<span class="sd">        &#39;force_c&#39; computes the variance over all conformations and uses the same value for each conformation in the objective function. </span>
+<span class="sd">        This is the default setting also used in &#39;force&#39; and &#39;force &amp; energy&#39;.</span>
+<span class="sd">    optimizer : Parametrization.optimiizers.Optimizer object</span>
+<span class="sd">        Contains optimizer type and specific settings</span>
+<span class="sd">    constraints : str</span>
+<span class="sd">        Applies manual &#39;man&#39; or automatic &#39;auto&#39; bounds directly or indirectly to the optimization</span>
+<span class="sd">        sets self.bounds</span>
+<span class="sd">    </span>
+<span class="sd">    Attributes</span>
+<span class="sd">    -----------</span>
+<span class="sd">    parameters : 1d array</span>
+<span class="sd">        contains optimized, scaled &amp; vectorized parameters</span>
+<span class="sd">    bounds : list of tuples</span>
+<span class="sd">            upper and lower limit for parameters if the optimization is constrained.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If parameter_type not supported</span>
+<span class="sd">    NotImplementedError</span>
+<span class="sd">        If automatic bounds for a certain atom&#39;s charge are not implemented</span>
+<span class="sd">        If automatic constraints are chsoen for force groups other than NonbondedForce and CustomNonbondedForce</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">molecular_system</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">term_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">optimizer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">constraints</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+
+        <span class="k">assert</span> <span class="n">molecular_system</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;no molecular system selected&#39;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">molecular_system</span> <span class="o">=</span> <span class="n">molecular_system</span> 
+        <span class="bp">self</span><span class="o">.</span><span class="n">emm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">molecular_system</span><span class="o">.</span><span class="n">mm_energies</span><span class="p">[</span><span class="s1">&#39;all&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fmm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">molecular_system</span><span class="o">.</span><span class="n">mm_net_forces</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">eqm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">molecular_system</span><span class="o">.</span><span class="n">qm_energies</span><span class="p">[</span><span class="s1">&#39;all&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fqm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">molecular_system</span><span class="o">.</span><span class="n">qm_net_forces</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">weights</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">molecular_system</span><span class="o">.</span><span class="n">weights</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_atoms</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">molecular_system</span><span class="o">.</span><span class="n">n_atoms</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span> <span class="o">=</span> <span class="n">optimizer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span> <span class="o">=</span> <span class="n">constraints</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span> <span class="o">==</span> <span class="s1">&#39;auto&#39;</span><span class="p">:</span>
+
+            <span class="n">bounds</span> <span class="o">=</span> <span class="p">[]</span>
+
+            <span class="k">for</span> <span class="n">force_group</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">molecular_system</span><span class="o">.</span><span class="n">reduced_indexed_ff_optimizable</span><span class="p">[</span><span class="s1">&#39;all&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+
+<span class="w">                </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                CAUTION! If you want to implement auto constraints for another force_group, make sure to put them in the alphabetically</span>
+<span class="sd">                correct position, e.g. if you want to add HarmonicBondForce, put &#39;elif force_group == &quot;HarmonicBondForce&quot;:&#39; </span>
+<span class="sd">                after CustomNonbondedForce but before NonbondedForce. This ensures that the bounds list holds the corresponding </span>
+<span class="sd">                bounds in the correct position (alphabetic order)!</span>
+<span class="sd">                &quot;&quot;&quot;</span>
+
+                <span class="k">if</span> <span class="n">force_group</span> <span class="o">==</span> <span class="s1">&#39;CustomNonbondedForce&#39;</span><span class="p">:</span>
+
+                    <span class="n">r_sigma_constraints</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.03</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span> <span class="c1"># sigma in nm</span>
+                    <span class="n">epsilon_depth_constraints</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.002</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span> <span class="c1"># kJ/mol</span>
+                    <span class="n">nbfix_r_sigma_constr</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span> <span class="c1"># r_min in nm</span>
+                    <span class="n">nbfix_eps_depth_constr</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.06</span><span class="p">,</span> <span class="mf">15.5</span><span class="p">)</span> <span class="c1"># kJ/mol</span>
+
+                    <span class="k">for</span> <span class="n">_array</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">molecular_system</span><span class="o">.</span><span class="n">reduced_indexed_ff_optimizable</span><span class="p">[</span><span class="s1">&#39;all&#39;</span><span class="p">][</span><span class="s1">&#39;CustomNonbondedForce&#39;</span><span class="p">]:</span>
+
+                        <span class="k">for</span> <span class="n">parameter_type</span> <span class="ow">in</span> <span class="n">_array</span><span class="p">:</span>
+                                
+                            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">parameter_type</span><span class="p">)</span> <span class="ow">is</span> <span class="mi">4</span><span class="p">:</span>
+
+                                <span class="k">if</span> <span class="n">parameter_type</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;P&#39;</span><span class="p">:</span>
+
+                                    <span class="n">bounds</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">r_sigma_constraints</span><span class="p">))</span>
+                                    <span class="n">bounds</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">epsilon_depth_constraints</span><span class="p">))</span>
+
+                                <span class="k">elif</span> <span class="n">parameter_type</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;H&#39;</span><span class="p">:</span>
+
+                                    <span class="n">bounds</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">r_sigma_constraints</span><span class="p">))</span>
+                                    <span class="n">bounds</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">epsilon_depth_constraints</span><span class="p">))</span>
+
+                                <span class="k">elif</span> <span class="n">parameter_type</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;C&#39;</span><span class="p">:</span>
+
+                                    <span class="n">bounds</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">r_sigma_constraints</span><span class="p">))</span>
+                                    <span class="n">bounds</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">epsilon_depth_constraints</span><span class="p">))</span>
+
+                                <span class="k">elif</span> <span class="n">parameter_type</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;O&#39;</span><span class="p">:</span>
+
+                                    <span class="n">bounds</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">r_sigma_constraints</span><span class="p">))</span>
+                                    <span class="n">bounds</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">epsilon_depth_constraints</span><span class="p">))</span>
+
+                                <span class="k">elif</span> <span class="n">parameter_type</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;N&#39;</span><span class="p">:</span>
+
+                                    <span class="n">bounds</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">r_sigma_constraints</span><span class="p">))</span>
+                                    <span class="n">bounds</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">epsilon_depth_constraints</span><span class="p">))</span>
+                                
+                                <span class="k">else</span><span class="p">:</span> 
+                                    <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;Automatic bounds for </span><span class="si">{}</span><span class="s1"> charge not implemented&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">parameter_type</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]))</span>
+
+                            <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">parameter_type</span><span class="p">)</span> <span class="ow">is</span> <span class="mi">5</span><span class="p">:</span>
+
+                                <span class="n">bounds</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">nbfix_r_sigma_constr</span><span class="p">))</span>
+                                <span class="n">bounds</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">nbfix_eps_depth_constr</span><span class="p">))</span>
+
+                            <span class="k">else</span><span class="p">:</span>
+                                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Parameter type </span><span class="si">{}</span><span class="s1"> not supported&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">parameter_type</span><span class="p">))</span>
+
+                <span class="k">elif</span> <span class="n">force_group</span> <span class="o">==</span> <span class="s1">&#39;NonbondedForce&#39;</span><span class="p">:</span>
+
+                    <span class="k">if</span> <span class="s1">&#39;CustomNonbondedForce&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">molecular_system</span><span class="o">.</span><span class="n">reduced_indexed_ff_optimizable</span><span class="p">[</span><span class="s1">&#39;all&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                        <span class="c1"># Nonbonded parameters are handled by the NonbondedForce force group</span>
+                        <span class="n">sigma_constraints</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.03</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span> <span class="c1"># nm</span>
+                        <span class="n">epsilon_constraints</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.002</span><span class="p">,</span> <span class="mf">20.0</span><span class="p">)</span> <span class="c1"># kJ/mol</span>
+
+                    <span class="k">for</span> <span class="n">_array</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">molecular_system</span><span class="o">.</span><span class="n">reduced_indexed_ff_optimizable</span><span class="p">[</span><span class="s1">&#39;all&#39;</span><span class="p">][</span><span class="s1">&#39;NonbondedForce&#39;</span><span class="p">]:</span>
+
+                        <span class="k">for</span> <span class="n">parameter_type</span> <span class="ow">in</span> <span class="n">_array</span><span class="p">:</span>
+
+                            <span class="k">if</span> <span class="n">parameter_type</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;P&#39;</span><span class="p">:</span>
+
+                                <span class="n">bounds</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">6.0</span><span class="p">))</span>
+
+                                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">parameter_type</span><span class="p">)</span> <span class="o">==</span> <span class="mi">5</span><span class="p">:</span>
+                                    <span class="c1"># Nonbonded parameters are handled by the NonbondedForce force group</span>
+                                    <span class="n">bounds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sigma_constraints</span><span class="p">)</span>
+                                    <span class="n">bounds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">epsilon_constraints</span><span class="p">)</span>
+
+                            <span class="k">elif</span> <span class="n">parameter_type</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;H&#39;</span><span class="p">:</span>
+
+                                <span class="n">bounds</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">))</span>
+
+                                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">parameter_type</span><span class="p">)</span> <span class="o">==</span> <span class="mi">5</span><span class="p">:</span>
+
+                                    <span class="n">bounds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sigma_constraints</span><span class="p">)</span>
+                                    <span class="n">bounds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">epsilon_constraints</span><span class="p">)</span>
+
+                            <span class="k">elif</span> <span class="n">parameter_type</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;C&#39;</span><span class="p">:</span>
+
+                                <span class="n">bounds</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="o">-</span><span class="mf">4.0</span><span class="p">,</span> <span class="mf">4.0</span><span class="p">))</span>
+
+                                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">parameter_type</span><span class="p">)</span> <span class="o">==</span> <span class="mi">5</span><span class="p">:</span>
+
+                                    <span class="n">bounds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sigma_constraints</span><span class="p">)</span>
+                                    <span class="n">bounds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">epsilon_constraints</span><span class="p">)</span>
+
+                            <span class="k">elif</span> <span class="n">parameter_type</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;O&#39;</span><span class="p">:</span>
+
+                                <span class="n">bounds</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="o">-</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">))</span>
+
+                                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">parameter_type</span><span class="p">)</span> <span class="o">==</span> <span class="mi">5</span><span class="p">:</span>
+
+                                    <span class="n">bounds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sigma_constraints</span><span class="p">)</span>
+                                    <span class="n">bounds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">epsilon_constraints</span><span class="p">)</span>
+
+                            <span class="k">elif</span> <span class="n">parameter_type</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;N&#39;</span><span class="p">:</span>
+
+                                <span class="n">bounds</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="mf">0.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">3.0</span><span class="p">))</span>
+
+                                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">parameter_type</span><span class="p">)</span> <span class="o">==</span> <span class="mi">5</span><span class="p">:</span>
+
+                                    <span class="n">bounds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sigma_constraints</span><span class="p">)</span>
+                                    <span class="n">bounds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">epsilon_constraints</span><span class="p">)</span>
+
+                            <span class="k">else</span><span class="p">:</span> 
+                                <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;Automatic bounds for </span><span class="si">{}</span><span class="s1"> charge not implemented&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">parameter_type</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]))</span>
+
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;Automatic constraints support only NonbondedForce and CustomNonbondedForce.&#39;</span><span class="p">)</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span> <span class="o">=</span> <span class="n">bounds</span>    
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span> <span class="o">==</span> <span class="s1">&#39;man&#39;</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Please register a list with len(parameters) filled with tuples (lower_bound, upper_bound) in Parametrization.bounds&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">term_types</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;energy&#39;</span><span class="p">,</span> <span class="s1">&#39;force&#39;</span><span class="p">,</span> <span class="s1">&#39;force &amp; energy&#39;</span><span class="p">,</span> <span class="s1">&#39;force_i&#39;</span><span class="p">,</span> <span class="s1">&#39;force_c&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">term_type</span> <span class="o">=</span> <span class="n">term_type</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">iterations</span> <span class="o">=</span> <span class="mi">0</span>
+
+
+<div class="viewcode-block" id="Parametrization.calculate_classical_energies_forces"><a class="viewcode-back" href="../../The_Phorce.Parametrization.html#Parametrization.parametrization.Parametrization.calculate_classical_energies_forces">[docs]</a>    <span class="k">def</span> <span class="nf">calculate_classical_energies_forces</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        calculates all classical energies and forces using OpenMM for the molecular_system</span>
+
+<span class="sd">        Attributes</span>
+<span class="sd">        ----------</span>
+<span class="sd">            emm : np.array</span>
+<span class="sd">                calssical energies of [&#39;all&#39;] system</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">for</span> <span class="n">omm_system_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">molecular_system</span><span class="o">.</span><span class="n">openmm_systems</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">molecular_system</span><span class="o">.</span><span class="n">openmm_systems</span><span class="p">[</span><span class="n">omm_system_name</span><span class="p">]</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">molecular_system</span><span class="o">.</span><span class="n">generate_mm_energies_forces</span><span class="p">(</span><span class="n">omm_system_name</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">emm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">molecular_system</span><span class="o">.</span><span class="n">mm_energies</span><span class="p">[</span><span class="s1">&#39;all&#39;</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="Parametrization.calculate_classical_net_forces"><a class="viewcode-back" href="../../The_Phorce.Parametrization.html#Parametrization.parametrization.Parametrization.calculate_classical_net_forces">[docs]</a>    <span class="k">def</span> <span class="nf">calculate_classical_net_forces</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        calculates classical net forces (if more than one molecule/ molecule is solvated)</span>
+
+<span class="sd">        Attributes</span>
+<span class="sd">        ----------</span>
+<span class="sd">            fmm : np.array</span>
+<span class="sd">                calssical forces (net)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">molecular_system</span><span class="o">.</span><span class="n">calculate_mm_net_forces</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">fmm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">molecular_system</span><span class="o">.</span><span class="n">mm_net_forces</span></div>
+
+<div class="viewcode-block" id="Parametrization.evaluate_obj_func_energy"><a class="viewcode-back" href="../../The_Phorce.Parametrization.html#Parametrization.parametrization.Parametrization.evaluate_obj_func_energy">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate_obj_func_energy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> 
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        calculates the value of the objective function using the format required by the selected optimizer</span>
+<span class="sd">            n_conf        (ΔE - &lt;ΔE&gt;)²</span>
+<span class="sd">        O =   Σ  ω_{conf} ------------</span>
+<span class="sd">             conf         Var(E^{QM})</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        obj_f_e</span>
+<span class="sd">            value of the objective function in the format of the selected optimizer</span>
+<span class="sd">        </span>
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If Optimizer of type {} not implemented</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">for</span> <span class="n">sys_type</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">molecular_system</span><span class="o">.</span><span class="n">openmm_systems</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">molecular_system</span><span class="o">.</span><span class="n">openmm_systems</span><span class="p">[</span><span class="n">sys_type</span><span class="p">]</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">molecular_system</span><span class="o">.</span><span class="n">openmm_systems</span><span class="p">[</span><span class="n">sys_type</span><span class="p">]</span><span class="o">.</span><span class="n">set_parameters</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weights</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">molecular_system</span><span class="o">.</span><span class="n">generate_weights</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">weights</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">molecular_system</span><span class="o">.</span><span class="n">weights</span>
+            <span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weights</span><span class="p">)</span> <span class="c1">#weights weigh conformations</span>
+            <span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_3d</span><span class="p">(</span><span class="n">weights</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span> 
+
+            <span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weights</span><span class="p">)</span> <span class="c1">#weights weigh conformations</span>
+            <span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_3d</span><span class="p">(</span><span class="n">weights</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">calculate_classical_energies_forces</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">opt_method</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;scipy_local&quot;</span><span class="p">,</span> <span class="s2">&quot;scipy_global&quot;</span><span class="p">,</span> <span class="s2">&quot;bayesian&quot;</span><span class="p">,</span> <span class="s2">&quot;cma&quot;</span><span class="p">,</span> <span class="s2">&quot;pso&quot;</span><span class="p">]:</span>
+
+            <span class="n">delta_E</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">emm</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">eqm</span>
+            <span class="n">enumerator</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">((</span><span class="n">delta_E</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">delta_E</span><span class="p">)),</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="n">denominator</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">eqm</span><span class="p">)</span>
+            <span class="n">frac</span> <span class="o">=</span> <span class="n">enumerator</span> <span class="o">/</span> <span class="n">denominator</span>
+            <span class="n">obj_f_e</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weights</span> <span class="o">*</span> <span class="n">frac</span><span class="p">)</span>
+            <span class="c1"># n_conf        (ΔE - &lt;ΔE&gt;)²</span>
+            <span class="c1">#   Σ  ω_{conf} ------------</span>
+            <span class="c1">#  conf         Var(E^{QM})            </span>
+
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Optimizer of type </span><span class="si">{}</span><span class="s1"> not implemented&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">opt_method</span><span class="o">.</span><span class="n">lower</span><span class="p">()))</span>
+
+        <span class="k">return</span> <span class="n">obj_f_e</span></div>
+
+<div class="viewcode-block" id="Parametrization.evaluate_obj_func_force"><a class="viewcode-back" href="../../The_Phorce.Parametrization.html#Parametrization.parametrization.Parametrization.evaluate_obj_func_force">[docs]</a>    <span class="k">def</span> <span class="nf">evaluate_obj_func_force</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;const_variance&#39;</span><span class="p">):</span> 
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        calculates the value of the objective function using the format required by the selected optimizer</span>
+<span class="sd">                 1            n_atoms n_conf              |ΔF|²</span>
+<span class="sd">        O = ----------------     Σ     Σ     ω_{conf} ------------</span>
+<span class="sd">            3n_atoms n_confs   atom   conf             Var(F^{QM})</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        method : str, default=&#39;const_variance&#39;</span>
+<span class="sd">            &quot;const_variance&quot;, or &quot;indiv_variance&quot;. &quot;const_variance&quot; computes the variance over the ntire qm dataset, </span>
+<span class="sd">            &quot;indiv_variance&quot; does so over each conformation (introduces a kind of weight)</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        obj_f_f</span>
+<span class="sd">            value of the objective function in the format of the selected optimizer</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If Optimizer of type {} not implemented</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">assert</span> <span class="n">method</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;const_variance&quot;</span><span class="p">,</span> <span class="s2">&quot;indiv_variance&quot;</span><span class="p">],</span> <span class="s2">&quot;Force property term for method </span><span class="si">{}</span><span class="s2"> is not implemented.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">method</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">sys_type</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">molecular_system</span><span class="o">.</span><span class="n">openmm_systems</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">molecular_system</span><span class="o">.</span><span class="n">openmm_systems</span><span class="p">[</span><span class="n">sys_type</span><span class="p">]</span><span class="o">.</span><span class="n">set_parameters</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weights</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">molecular_system</span><span class="o">.</span><span class="n">generate_weights</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">weights</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">molecular_system</span><span class="o">.</span><span class="n">weights</span>
+            <span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weights</span><span class="p">)</span> <span class="c1">#weights weigh conformations</span>
+            <span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_3d</span><span class="p">(</span><span class="n">weights</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span> 
+
+            <span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weights</span><span class="p">)</span> <span class="c1">#weights weigh conformations</span>
+            <span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_3d</span><span class="p">(</span><span class="n">weights</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">calculate_classical_energies_forces</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">calculate_classical_net_forces</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">opt_method</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;scipy_local&quot;</span><span class="p">,</span> <span class="s2">&quot;scipy_global&quot;</span><span class="p">,</span> <span class="s2">&quot;bayesian&quot;</span><span class="p">,</span> <span class="s2">&quot;cma&quot;</span><span class="p">,</span><span class="s2">&quot;pso&quot;</span><span class="p">]:</span>
+
+            <span class="n">delta_F</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fmm</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">fqm</span>
+            <span class="n">enumerator</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">delta_F</span><span class="p">),</span> <span class="mi">2</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;const_variance&quot;</span><span class="p">:</span>
+
+                <span class="n">denominator</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fqm</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span> <span class="c1"># one var over all confs</span>
+                <span class="n">frac_weighted</span> <span class="o">=</span> <span class="n">weights</span> <span class="o">*</span> <span class="p">(</span><span class="n">enumerator</span> <span class="o">/</span> <span class="n">denominator</span><span class="p">)</span>
+                <span class="n">obj_f_f</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">frac_weighted</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">3</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_atoms</span><span class="p">[</span><span class="s1">&#39;all&#39;</span><span class="p">])</span>
+                <span class="c1">#     1            n_atoms n_conf              |ΔF|²</span>
+                <span class="c1"># ----------------     Σ     Σ     ω_{conf} ------------</span>
+                <span class="c1"># 3n_atoms n_confs   atom   conf             Var(F^{QM})</span>
+
+                <span class="c1">#print(&#39;ka ching&#39;)</span>
+
+            <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;indiv_variance&quot;</span><span class="p">:</span>
+
+                <span class="n">norm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fqm</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+                <span class="n">variance</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">norm</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+                <span class="n">denominator</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">swapaxes</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">atleast_3d</span><span class="p">(</span><span class="n">variance</span><span class="p">),</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># individual var per conf</span>
+                <span class="n">frac_weighted</span> <span class="o">=</span> <span class="n">weights</span> <span class="o">*</span> <span class="p">(</span><span class="n">enumerator</span> <span class="o">/</span> <span class="n">denominator</span><span class="p">)</span>
+                <span class="n">obj_f_f</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">frac_weighted</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">3</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_atoms</span><span class="p">[</span><span class="s1">&#39;all&#39;</span><span class="p">])</span>
+                <span class="c1">#     1            n_atoms n_conf              |ΔF|²</span>
+                <span class="c1"># ----------------     Σ     Σ     ω_{conf} ------------</span>
+                <span class="c1"># 3n_atoms n_confs   atom   conf             Var(F^{QM})                </span>
+
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Optimizer of type </span><span class="si">{}</span><span class="s1"> not implemented&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">opt_method</span><span class="o">.</span><span class="n">lower</span><span class="p">()))</span>
+        
+        <span class="k">return</span> <span class="n">obj_f_f</span></div>
+    
+
+<div class="viewcode-block" id="Parametrization.calc_force_std_dev"><a class="viewcode-back" href="../../The_Phorce.Parametrization.html#Parametrization.parametrization.Parametrization.calc_force_std_dev">[docs]</a>    <span class="k">def</span> <span class="nf">calc_force_std_dev</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        calculates the standard deviation of forces</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        force_std_dev</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">delta_F</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fmm</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">fqm</span>
+        <span class="n">force_std_dev</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">delta_F</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">force_std_dev</span></div>
+    
+    
+<div class="viewcode-block" id="Parametrization.wrap_objective_function"><a class="viewcode-back" href="../../The_Phorce.Parametrization.html#Parametrization.parametrization.Parametrization.wrap_objective_function">[docs]</a>    <span class="k">def</span> <span class="nf">wrap_objective_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parameters</span><span class="p">):</span> 
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Abstract function that calculates the value of the objective function based on the parameters</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        parameters : 1d array</span>
+<span class="sd">            Selected scaled and vectorized parameters from molecular_system.scaled_parameters</span>
+
+<span class="sd">        Arguments</span>
+<span class="sd">        ----------</span>
+<span class="sd">        molecular_system : system.Molecular_system object</span>
+<span class="sd">        term_type : str</span>
+
+<span class="sd">        Returns </span>
+<span class="sd">        --------</span>
+<span class="sd">        obj_f_value : float</span>
+<span class="sd">            value of objective funtion as float</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">molecular_system</span><span class="o">.</span><span class="n">scaled_parameters</span> <span class="o">=</span> <span class="n">parameters</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">molecular_system</span><span class="o">.</span><span class="n">unscale_parameters</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">molecular_system</span><span class="o">.</span><span class="n">redistribute_vectorized_parameters</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">molecular_system</span><span class="o">.</span><span class="n">reshape_vectorized_parameters</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">molecular_system</span><span class="o">.</span><span class="n">expand_reduced_parameters</span><span class="p">()</span>
+            
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">term_type</span> <span class="o">==</span> <span class="s1">&#39;energy&#39;</span><span class="p">:</span>
+            <span class="n">obj_f_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">evaluate_obj_func_energy</span><span class="p">()</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">term_type</span> <span class="o">==</span> <span class="s1">&#39;force&#39;</span><span class="p">:</span>
+            <span class="n">obj_f_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">evaluate_obj_func_force</span><span class="p">()</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">term_type</span> <span class="o">==</span> <span class="s1">&#39;force_c&#39;</span><span class="p">:</span>
+            <span class="n">obj_f_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">evaluate_obj_func_force</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s2">&quot;const_variance&quot;</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">term_type</span> <span class="o">==</span> <span class="s1">&#39;force_i&#39;</span><span class="p">:</span>
+            <span class="n">obj_f_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">evaluate_obj_func_force</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s2">&quot;indiv_variance&quot;</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">term_type</span> <span class="o">==</span> <span class="s1">&#39;force &amp; energy&#39;</span><span class="p">:</span>
+            <span class="n">obj_f_f</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">evaluate_obj_func_force</span><span class="p">()</span>
+            <span class="n">obj_f_e</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">evaluate_obj_func_energy</span><span class="p">()</span>
+            <span class="n">obj_f_value</span> <span class="o">=</span> <span class="n">obj_f_f</span> <span class="o">+</span> <span class="n">obj_f_e</span>
+
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">molecular_system</span><span class="o">.</span><span class="n">reduce_ff_optimizable</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">molecular_system</span><span class="o">.</span><span class="n">slice_list</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">molecular_system</span><span class="o">.</span><span class="n">vectorize_reduced_parameters</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">molecular_system</span><span class="o">.</span><span class="n">merge_vectorized_parameters</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">molecular_system</span><span class="o">.</span><span class="n">scale_parameters</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">molecular_system</span><span class="o">.</span><span class="n">scaled_parameters</span> <span class="o">=</span> <span class="n">parameters</span>
+      
+        <span class="bp">self</span><span class="o">.</span><span class="n">iterations</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Iteration </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">iterations</span><span class="p">),</span> <span class="n">end</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\r</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">obj_f_value</span></div>
+
+
+<div class="viewcode-block" id="Parametrization.parametrize"><a class="viewcode-back" href="../../The_Phorce.Parametrization.html#Parametrization.parametrization.Parametrization.parametrize">[docs]</a>    <span class="k">def</span> <span class="nf">parametrize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parameters</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Feeds the objective function wrapper and the parameters to the selected optimizer.</span>
+
+<span class="sd">        Parameters:</span>
+<span class="sd">        -----------</span>
+<span class="sd">        parameters : 1d array</span>
+<span class="sd">            Selected scaled and vectorized parameters from molecular_system.scaled_parameters</span>
+<span class="sd">        </span>
+<span class="sd">        Arguments</span>
+<span class="sd">        ---------- </span>
+<span class="sd">        parameters : 1d array</span>
+<span class="sd">            optimized scaled &amp; vectorized parameters</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        KeyError</span>
+<span class="sd">            If the optimizer does not support constraints but constraints have been selected by the user</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;optimizer not set&#39;</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">term_type</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;term_type not set&#39;</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">term_type</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">term_types</span><span class="p">,</span> <span class="s1">&#39;please choose a valid term_type&#39;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span> <span class="o">==</span> <span class="s1">&#39;man&#39;</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">parameters</span><span class="p">),</span> <span class="s1">&#39;incomplete bounds set for parameters&#39;</span>
+        
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+
+            <span class="n">scaled_bounds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">molecular_system</span><span class="o">.</span><span class="n">scaling_factors</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+            <span class="k">for</span> <span class="n">bound</span> <span class="ow">in</span> <span class="n">scaled_bounds</span><span class="p">:</span>
+                <span class="n">bound</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">opt_method</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;scipy_local&#39;</span><span class="p">:</span>
+
+                    <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">constraints</span> <span class="o">=</span> <span class="n">scaled_bounds</span>   
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s1">&#39;Constraints not implemented for other optimizers&#39;</span><span class="p">)</span>
+
+        <span class="n">optimized_params</span><span class="p">,</span> <span class="n">obj_f_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">run_optimizer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">wrap_objective_function</span><span class="p">,</span> <span class="n">parameters</span><span class="p">)</span>       
+        <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="n">optimized_params</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Viktoria Korn.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

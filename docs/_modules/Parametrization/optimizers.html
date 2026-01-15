@@ -1,1 +1,690 @@
 
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Parametrization.optimizers &mdash; The Phorce 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=92fd9be5" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js?v=e031e9a9"></script>
+      <script src="../../_static/doctools.js?v=888ff710"></script>
+      <script src="../../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            The Phorce
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">The Phorce</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">Parametrization.optimizers</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for Parametrization.optimizers</h1><div class="highlight"><pre>
+<span></span><span class="c1">#### package imports ####</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">System.paths</span> <span class="kn">import</span> <span class="o">*</span>
+
+<div class="viewcode-block" id="Optimizer"><a class="viewcode-back" href="../../The_Phorce.Parametrization.html#Parametrization.optimizers.Optimizer">[docs]</a><span class="k">class</span> <span class="nc">Optimizer</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Creates the optimizer for the parametrization problem.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    opt_method : str</span>
+<span class="sd">        Name of the optimizer to be created. Available optimizers are &quot;scipy_local&quot; (as in all local scipy optimizers),</span>
+<span class="sd">        &quot;scipy_global&quot; (as in all global scipy optimizers), &quot;bayesian&quot; (ML-informed from the boss package), </span>
+<span class="sd">        &quot;cma&quot; (CMA-ES (Covariance Matrix Adaptation Evolution Strategy)), and &quot;pso&quot; (Particle swarm optimization).</span>
+<span class="sd">    opt_settings : dict</span>
+<span class="sd">        dictionary containing the optimizer-specific settings. See the respective docs for info.</span>
+<span class="sd">    max_iterations : int</span>
+<span class="sd">        maximum optimization steps the optimizer should take, default = 10000</span>
+<span class="sd">    tolerance : float</span>
+<span class="sd">        change value below which the optimizer is supposed to be converged, default = 1e-8</span>
+<span class="sd">    constraints : list of tuples</span>
+<span class="sd">        gets passed on from System.Molecular_system.constraints to the optimizer if it supports either bounds or a constraint function.</span>
+<span class="sd">        Otherwise, a penalty term is added to the objective function.</span>
+<span class="sd">        Default = None</span>
+<span class="sd">    enforce_constraints : bool</span>
+<span class="sd">        Default = False, applies penalty term to objective function for scipy Nelder-Mead</span>
+<span class="sd">    f : Parametrization.parametrization.Objective_function object</span>
+<span class="sd">        Objective function</span>
+<span class="sd">    parameters : numpy array </span>
+<span class="sd">        Parameters that are going to be optimized (extracted from ff_optimizable using parametrization.Parametrization)</span>
+<span class="sd">    scipy_optimization : scipy.optimize object</span>
+<span class="sd">        specific optimizer, sometimes handy to check status &amp; output</span>
+<span class="sd">    cma_optimization : pycma object</span>
+<span class="sd">        specific optimizer, sometimes handy to check status &amp; output</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">optimizers</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;scipy_local&quot;</span><span class="p">,</span>
+                  <span class="s2">&quot;scipy_global&quot;</span><span class="p">,</span>
+                  <span class="s2">&quot;bayesian&quot;</span><span class="p">,</span>
+                  <span class="s2">&quot;cma&quot;</span><span class="p">,</span>
+                  <span class="s2">&quot;pso&quot;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">opt_method</span><span class="p">,</span> <span class="n">opt_settings</span><span class="p">,</span> <span class="n">max_iterations</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">,</span> <span class="n">constraints</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+
+        <span class="k">assert</span> <span class="n">opt_method</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimizers</span><span class="p">,</span> <span class="s1">&#39;optimizer of type </span><span class="si">{}</span><span class="s1"> not implemented&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">opt_method</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">opt_method</span> <span class="o">=</span> <span class="n">opt_method</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">opt_settings</span> <span class="o">=</span> <span class="n">opt_settings</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_iterations</span> <span class="o">=</span> <span class="n">max_iterations</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tolerance</span> <span class="o">=</span> <span class="n">tolerance</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span> <span class="o">=</span> <span class="n">constraints</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">enforce_constraints</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">iterations</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="c1"># other attributes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">f</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1"># optimizer objetcs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scipy_optimization</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cma_optimization</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="Optimizer.constraints_func"><a class="viewcode-back" href="../../The_Phorce.Parametrization.html#Parametrization.optimizers.Optimizer.constraints_func">[docs]</a>    <span class="k">def</span> <span class="nf">constraints_func</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parameters</span><span class="p">):</span>
+
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Penalty function for constrained optimization which is handed to the optimizer directly if supported or added to the objective function.</span>
+<span class="sd">        Checks if parameters are within bounds and if not adds penalty.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;Cannot construct constraints function from empty bounds&#39;</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">parameters</span><span class="p">),</span> <span class="s1">&#39;number of bounds and number of parameters do not match&#39;</span>
+
+        <span class="n">within_bounds</span> <span class="o">=</span> <span class="p">(</span><span class="n">parameters</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">[:,</span><span class="mi">0</span><span class="p">])</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">parameters</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">[:,</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">penalty</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">~</span><span class="n">within_bounds</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">iterations</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">iterations</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="k">return</span> <span class="n">penalty</span></div>
+    
+<div class="viewcode-block" id="Optimizer.penalize_objective_function"><a class="viewcode-back" href="../../The_Phorce.Parametrization.html#Parametrization.optimizers.Optimizer.penalize_objective_function">[docs]</a>    <span class="k">def</span> <span class="nf">penalize_objective_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parameters</span><span class="p">):</span>
+
+        <span class="n">penalized_obj_func_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">f</span><span class="p">(</span><span class="n">parameters</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraints_func</span><span class="p">(</span><span class="n">parameters</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">penalized_obj_func_value</span></div>
+
+<div class="viewcode-block" id="Optimizer.optimize_with_scipy_local"><a class="viewcode-back" href="../../The_Phorce.Parametrization.html#Parametrization.optimizers.Optimizer.optimize_with_scipy_local">[docs]</a>    <span class="k">def</span> <span class="nf">optimize_with_scipy_local</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        see https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html</span>
+<span class="sd">        Nelder-Mead is recommended, Powell or COBYLA could work, too. Set the specific optimizer thru </span>
+<span class="sd">        Opti = Optimizer(&#39;scipy_local&#39;, {&#39;method&#39;: &#39;Nelder-Mead&#39;}) during initialization of the Optimizer object.</span>
+
+<span class="sd">        Attributes</span>
+<span class="sd">        ----------</span>
+<span class="sd">        parameters : np.array</span>
+<span class="sd">            parameters that go into the function</span>
+<span class="sd">        opt_settings : dict</span>
+<span class="sd">            optimizer-speific settings</span>
+<span class="sd">        constraints : np.array</span>
+<span class="sd">            idk yet</span>
+<span class="sd">        tolerance : float</span>
+<span class="sd">            optimizer tolerance</span>
+<span class="sd">        f : parametrization.Parametrization.wrap_objective_function</span>
+<span class="sd">            Objective function wrapper</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        optimized_params, value </span>
+<span class="sd">            np.array containing the optimized force field params, objective function value</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="kn">from</span> <span class="nn">scipy.optimize</span> <span class="kn">import</span> <span class="n">minimize</span> <span class="k">as</span> <span class="n">scmin</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">opt_settings</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;tol&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">tolerance</span><span class="p">})</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">opt_settings</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;options&#39;</span> <span class="p">:</span> <span class="p">{</span><span class="s1">&#39;maxiter&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_iterations</span><span class="p">}})</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">opt_settings</span><span class="p">[</span><span class="s1">&#39;method&#39;</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;Nelder-Mead&#39;</span><span class="p">,</span> <span class="s1">&#39;Powell&#39;</span><span class="p">,</span> <span class="s1">&#39;L-BFGS-B&#39;</span><span class="p">,</span> <span class="s1">&#39;TNC&#39;</span><span class="p">,</span><span class="s1">&#39;SLSQP&#39;</span><span class="p">,</span> <span class="s1">&#39;trust-constr&#39;</span><span class="p">,</span> <span class="s1">&#39;SLSQP&#39;</span><span class="p">,</span> <span class="s1">&#39;trust-constr&#39;</span><span class="p">,</span> <span class="s1">&#39;COBYLA&#39;</span><span class="p">]:</span>
+                <span class="c1"># apply penalty term to objective function</span>
+                <span class="n">optimization</span> <span class="o">=</span> <span class="n">scmin</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span> <span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">penalize_objective_function</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">x0</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">opt_settings</span><span class="p">)</span>
+
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">opt_settings</span><span class="p">[</span><span class="s1">&#39;method&#39;</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;Powell&#39;</span><span class="p">,</span> <span class="s1">&#39;L-BFGS-B&#39;</span><span class="p">,</span> <span class="s1">&#39;TNC&#39;</span><span class="p">,</span><span class="s1">&#39;SLSQP&#39;</span><span class="p">,</span> <span class="s1">&#39;trust-constr&#39;</span><span class="p">,</span> <span class="s1">&#39;SLSQP&#39;</span><span class="p">,</span> <span class="s1">&#39;trust-constr&#39;</span><span class="p">,</span> <span class="s1">&#39;COBYLA&#39;</span><span class="p">]:</span>
+                <span class="c1"># apply bounds to optimizer</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">opt_settings</span><span class="p">[</span><span class="s1">&#39;method&#39;</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;Powell&#39;</span><span class="p">,</span> <span class="s1">&#39;L-BFGS-B&#39;</span><span class="p">,</span> <span class="s1">&#39;TNC&#39;</span><span class="p">,</span><span class="s1">&#39;SLSQP&#39;</span><span class="p">,</span> <span class="s1">&#39;trust-constr&#39;</span><span class="p">]:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">opt_settings</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;bounds&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">})</span>
+
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">opt_settings</span><span class="p">[</span><span class="s1">&#39;method&#39;</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;SLSQP&#39;</span><span class="p">,</span> <span class="s1">&#39;trust-constr&#39;</span><span class="p">]:</span>
+                        <span class="c1"># apply constraint func to optimizer, too</span>
+                        <span class="n">constraints</span> <span class="o">=</span> <span class="p">[{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;eq&#39;</span><span class="p">,</span> <span class="s1">&#39;fun&#39;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraints_func</span><span class="p">(</span><span class="n">x</span><span class="p">)}]</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">opt_settings</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;constraints&#39;</span><span class="p">:</span> <span class="n">constraints</span><span class="p">})</span>
+
+                <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">opt_settings</span><span class="p">[</span><span class="s1">&#39;method&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;COBYLA&#39;</span><span class="p">:</span>    
+                    <span class="c1"># apply only constraint func to optimzer</span>
+                    <span class="n">constraints</span> <span class="o">=</span> <span class="p">[{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;eq&#39;</span><span class="p">,</span> <span class="s1">&#39;fun&#39;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraints_func</span><span class="p">(</span><span class="n">x</span><span class="p">)}]</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">opt_settings</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;constraints&#39;</span><span class="p">:</span> <span class="n">constraints</span><span class="p">})</span>
+                <span class="c1"># call normal opt procedure</span>
+                <span class="n">optimization</span> <span class="o">=</span> <span class="n">scmin</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span> <span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">f</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">x0</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">opt_settings</span><span class="p">)</span>
+
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">opt_settings</span><span class="p">[</span><span class="s1">&#39;method&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;Nelder-Mead&#39;</span><span class="p">:</span>
+                <span class="c1"># apply bounds to optimizer (Nelder-Mead needs bounds outside the options dict)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">opt_settings</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;bounds&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraints</span><span class="p">})</span>
+
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">enforce_constraints</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+                    <span class="c1"># sometimes bounds are violated, enforce them via penalty term @ objective func</span>
+                    <span class="n">optimization</span> <span class="o">=</span> <span class="n">scmin</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span> <span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">penalize_objective_function</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">x0</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">opt_settings</span><span class="p">)</span>
+
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># call normal opt procedure</span>
+                    <span class="n">optimization</span> <span class="o">=</span> <span class="n">scmin</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span> <span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">f</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">x0</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">opt_settings</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># call normal opt procedure</span>
+            <span class="n">optimization</span> <span class="o">=</span> <span class="n">scmin</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span> <span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">f</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">x0</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">opt_settings</span><span class="p">)</span>
+
+        <span class="n">optimized_params</span> <span class="o">=</span> <span class="n">optimization</span><span class="o">.</span><span class="n">x</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">optimization</span><span class="o">.</span><span class="n">fun</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">scipy_optimization</span> <span class="o">=</span> <span class="n">optimization</span>
+
+        <span class="k">return</span> <span class="n">optimized_params</span><span class="p">,</span> <span class="n">value</span></div>
+    
+<div class="viewcode-block" id="Optimizer.optimize_with_scipy_global"><a class="viewcode-back" href="../../The_Phorce.Parametrization.html#Parametrization.optimizers.Optimizer.optimize_with_scipy_global">[docs]</a>    <span class="k">def</span> <span class="nf">optimize_with_scipy_global</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="c1">#TODO: test</span>
+
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        see https://docs.scipy.org/doc/scipy/reference/optimize.html</span>
+
+<span class="sd">        Attributes</span>
+<span class="sd">        -----------</span>
+
+<span class="sd">        parameters : np.array</span>
+<span class="sd">            parameters that go into the function</span>
+<span class="sd">        opt_settings : dict</span>
+<span class="sd">            nested dict of optimizer-speific settings, see above url</span>
+<span class="sd">        tolerance : float</span>
+<span class="sd">            optimizer tolerance</span>
+<span class="sd">        f : parametrization.Parametrization.wrap_objective_function</span>
+<span class="sd">            Objective function wrapper</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">import</span> <span class="nn">scipy.optimize</span> <span class="k">as</span> <span class="nn">s_opt</span>
+
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">opt_settings</span><span class="p">[</span><span class="s1">&#39;method&#39;</span><span class="p">]</span> <span class="ow">in</span> \
+            <span class="p">[</span><span class="s2">&quot;basinhopping&quot;</span><span class="p">,</span> <span class="s2">&quot;brute&quot;</span><span class="p">,</span> <span class="s2">&quot;differential_evolution&quot;</span><span class="p">,</span> <span class="s2">&quot;shgo&quot;</span><span class="p">,</span> <span class="s2">&quot;dual_annealing&quot;</span><span class="p">,</span> <span class="s2">&quot;direct&quot;</span><span class="p">],</span>\
+            <span class="s1">&#39;scipy global optimizer </span><span class="si">{}</span><span class="s1"> does not exist&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">opt_settings</span><span class="p">[</span><span class="s1">&#39;method&#39;</span><span class="p">])</span>
+        
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">opt_settings</span><span class="p">[</span><span class="s1">&#39;method&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;basinhopping&quot;</span><span class="p">:</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">opt_settings</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;options&#39;</span> <span class="p">:</span> <span class="p">{</span><span class="s1">&#39;niter&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_iterations</span><span class="p">}})</span>
+            
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">opt_settings</span><span class="p">[</span><span class="s1">&#39;local_method&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">minimizer_kwargs</span><span class="p">[</span><span class="s1">&#39;method&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">opt_settings</span><span class="p">[</span><span class="s1">&#39;local_method&#39;</span><span class="p">]</span>
+
+            <span class="k">elif</span> <span class="n">minimizer_kwargs</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">minimizer_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;method&#39;</span><span class="p">:</span> <span class="s1">&#39;Nelder-Mead&#39;</span><span class="p">}</span> <span class="c1"># local optimizer</span>
+
+            <span class="n">optimization</span> <span class="o">=</span> <span class="n">s_opt</span><span class="o">.</span><span class="n">basinhopping</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span> <span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">f</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">,</span> <span class="n">minimizer_kwargs</span><span class="o">=</span><span class="n">minimizer_kwargs</span><span class="p">,</span> <span class="n">niter</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">max_iterations</span><span class="p">)</span>
+
+            <span class="n">optimized_params</span> <span class="o">=</span> <span class="n">optimization</span><span class="o">.</span><span class="n">x</span> 
+            <span class="n">value</span> <span class="o">=</span> <span class="n">optimization</span><span class="o">.</span><span class="n">fun</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">opt_settings</span><span class="p">[</span><span class="s1">&#39;method&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;brute&quot;</span><span class="p">:</span>
+
+            <span class="n">optimization</span> <span class="o">=</span> <span class="n">s_opt</span><span class="o">.</span><span class="n">brute</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span> <span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">f</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">*</span><span class="mf">1e-3</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">*</span><span class="mf">1e1</span><span class="p">),</span> <span class="n">args</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">Ns</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">*</span><span class="mi">2</span><span class="p">),</span> <span class="n">full_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">workers</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">optimized_params</span> <span class="o">=</span> <span class="n">optimization</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">optimization</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">opt_settings</span><span class="p">[</span><span class="s1">&#39;method&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;differential_evolution&quot;</span><span class="p">:</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">opt_settings</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;options&#39;</span> <span class="p">:</span> <span class="p">{</span><span class="s1">&#39;maxiter&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_iterations</span><span class="p">}})</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">opt_settings</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;options&#39;</span> <span class="p">:</span> <span class="p">{</span><span class="s1">&#39;tol&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">tolerance</span><span class="p">}})</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">opt_settings</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;options&#39;</span> <span class="p">:</span> <span class="p">{</span><span class="s1">&#39;workers&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">}})</span>
+
+            <span class="n">optimization</span> <span class="o">=</span> <span class="n">s_opt</span><span class="o">.</span><span class="n">differential_evolution</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span> <span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">f</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">*</span><span class="mf">1e-3</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">*</span><span class="mf">1e1</span><span class="p">),</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">opt_settings</span><span class="p">[</span><span class="s1">&#39;options&#39;</span><span class="p">],</span> <span class="n">x0</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span> <span class="p">)</span>
+
+            <span class="n">optimized_params</span> <span class="o">=</span> <span class="n">optimization</span><span class="o">.</span><span class="n">x</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">optimization</span><span class="o">.</span><span class="n">fun</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">opt_settings</span><span class="p">[</span><span class="s1">&#39;method&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;shgo&quot;</span><span class="p">:</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">opt_settings</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;options&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;maxiter&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_iterations</span><span class="p">}})</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">opt_settings</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;options&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;f_tol&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">tolerance</span><span class="p">}})</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">opt_settings</span><span class="p">[</span><span class="s1">&#39;local_method&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">minimizer_kwargs</span><span class="p">[</span><span class="s1">&#39;method&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">opt_settings</span><span class="p">[</span><span class="s1">&#39;local_method&#39;</span><span class="p">]</span>
+
+            <span class="k">elif</span> <span class="n">minimizer_kwargs</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">minimizer_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;method&#39;</span><span class="p">:</span> <span class="s1">&#39;Nelder-Mead&#39;</span><span class="p">}</span> <span class="c1"># local optimizer</span>
+
+            <span class="n">optimization</span> <span class="o">=</span> <span class="n">s_opt</span><span class="o">.</span><span class="n">shgo</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span> <span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">f</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">*</span><span class="mf">1e-3</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">*</span><span class="mf">1e1</span><span class="p">),</span> <span class="n">args</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">minimizer_kwargs</span><span class="o">=</span><span class="n">minimizer_kwargs</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">opt_settings</span><span class="p">,</span> <span class="n">workers</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+
+            <span class="n">optimized_params</span> <span class="o">=</span> <span class="n">optimization</span><span class="o">.</span><span class="n">x</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">optimization</span><span class="o">.</span><span class="n">fun</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">opt_settings</span><span class="p">[</span><span class="s1">&#39;method&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;dual_annealing&quot;</span><span class="p">:</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">opt_settings</span><span class="p">[</span><span class="s1">&#39;local_method&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">minimizer_kwargs</span><span class="p">[</span><span class="s1">&#39;method&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">opt_settings</span><span class="p">[</span><span class="s1">&#39;local_method&#39;</span><span class="p">]</span>
+
+            <span class="k">elif</span> <span class="n">minimizer_kwargs</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">minimizer_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;method&#39;</span><span class="p">:</span> <span class="s1">&#39;Nelder-Mead&#39;</span><span class="p">}</span> <span class="c1"># local optimizer</span>
+
+            <span class="n">optimization</span> <span class="o">=</span> <span class="n">s_opt</span><span class="o">.</span><span class="n">dual_annealing</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span> <span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">f</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">*</span><span class="mf">1e-3</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">*</span><span class="mf">1e1</span><span class="p">),</span> <span class="n">args</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">maxiter</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">max_iterations</span><span class="p">,</span> <span class="n">minimizer_kwargs</span><span class="o">=</span><span class="n">minimizer_kwargs</span><span class="p">,</span> <span class="n">x0</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">)</span>
+
+            <span class="n">optimized_params</span> <span class="o">=</span> <span class="n">optimization</span><span class="o">.</span><span class="n">x</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">optimization</span><span class="o">.</span><span class="n">fun</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">opt_settings</span><span class="p">[</span><span class="s1">&#39;method&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;direct&quot;</span><span class="p">:</span>
+
+            <span class="n">optimization</span> <span class="o">=</span> <span class="n">s_opt</span><span class="o">.</span><span class="n">direct</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span> <span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">f</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">*</span><span class="mf">1e-3</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">*</span><span class="mf">1e1</span><span class="p">),</span> <span class="n">maxiter</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">max_iterations</span><span class="p">)</span>
+
+            <span class="n">optimized_params</span> <span class="o">=</span> <span class="n">optimization</span><span class="o">.</span><span class="n">x</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">optimization</span><span class="o">.</span><span class="n">fun</span>          
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">scipy_optimization</span> <span class="o">=</span> <span class="n">optimization</span>            
+
+        <span class="k">return</span> <span class="n">optimized_params</span><span class="p">,</span> <span class="n">value</span></div>
+
+
+<div class="viewcode-block" id="Optimizer.optimize_with_cma"><a class="viewcode-back" href="../../The_Phorce.Parametrization.html#Parametrization.optimizers.Optimizer.optimize_with_cma">[docs]</a>    <span class="k">def</span> <span class="nf">optimize_with_cma</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        see https://cma-es.github.io/apidocs-pycma/</span>
+<span class="sd">        CMA-ES is a stochastic optimizer for robust non-linear non-convex derivative- and function-value-free numerical optimization.</span>
+<span class="sd">        It is terribly slow but might offer a last resort solution.</span>
+
+<span class="sd">        Attributes</span>
+<span class="sd">        -----------</span>
+<span class="sd">        parameters : np.array</span>
+<span class="sd">            parameters that go into the function</span>
+<span class="sd">        opt_settings : dict</span>
+<span class="sd">            optimizer-speific settings, if you want to use fancy settings, add them to the &#39;pycma settings&#39; routine down below.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="kn">import</span> <span class="nn">cma</span>
+
+        <span class="n">sdev_of_params</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">)</span>
+
+        <span class="c1"># begin pycma settings</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">opt_settings</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;tolfun&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">tolerance</span><span class="p">})</span>
+        <span class="c1">#self.opt_settings.update({&#39;maxiter&#39;: self.max_iterations}) # the definition in the pycma docs is weird</span>
+
+        <span class="k">for</span> <span class="n">setting</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">opt_settings</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+
+            <span class="k">if</span> <span class="n">setting</span> <span class="o">==</span> <span class="s1">&#39;tolfun&#39;</span><span class="p">:</span> 
+
+                <span class="n">cma</span><span class="o">.</span><span class="n">CMAOptions</span><span class="p">()</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;tolfun&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tolerance</span><span class="p">)</span>
+
+            <span class="k">elif</span> <span class="n">setting</span> <span class="o">==</span> <span class="s1">&#39;maxiter&#39;</span><span class="p">:</span>
+
+                <span class="n">cma</span><span class="o">.</span><span class="n">CMAOptions</span><span class="p">()</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s1">&#39;maxiter&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_iterations</span><span class="p">)</span>
+        <span class="c1"># end pycma settings</span>
+        
+        <span class="k">assert</span> <span class="s1">&#39;method&#39;</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">opt_settings</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span> <span class="s1">&#39;No pycma method set.&#39;</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">opt_settings</span><span class="p">[</span><span class="s1">&#39;method&#39;</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;EvolutionStrategy&#39;</span><span class="p">,</span> <span class="s1">&#39;fmin2&#39;</span><span class="p">],</span> <span class="s1">&#39;pycma method </span><span class="si">{}</span><span class="s1"> not implemented.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">opt_settings</span><span class="p">[</span><span class="s1">&#39;method&#39;</span><span class="p">])</span>
+
+        <span class="c1"># the folloing is adapted from the pycma doc, not sure if it makes sense   </span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">opt_settings</span><span class="p">[</span><span class="s1">&#39;method&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;EvolutionStrategy&#39;</span><span class="p">:</span>
+
+            <span class="n">evo_strat</span> <span class="o">=</span> <span class="n">cma</span><span class="o">.</span><span class="n">CMAEvolutionStrategy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">,</span> <span class="n">sdev_of_params</span><span class="p">)</span>
+            <span class="n">evo_strat</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span> <span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">f</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">opt_settings</span><span class="p">[</span><span class="s1">&#39;method&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;fmin2&#39;</span><span class="p">:</span>
+
+            <span class="n">paramsout</span><span class="p">,</span> <span class="n">evo_strat</span> <span class="o">=</span> <span class="n">cma</span><span class="o">.</span><span class="n">fmin2</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">f</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">,</span> <span class="n">sdev_of_params</span><span class="p">)</span> <span class="c1"># paramsout yields the same solutions as method = EvolutionStrategy</span>
+            <span class="n">evo_strat</span> <span class="o">=</span> <span class="n">cma</span><span class="o">.</span><span class="n">CMAEvolutionStrategy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">,</span> <span class="n">sdev_of_params</span><span class="p">)</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">f</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+            <span class="c1"># this seems to run the optimizer twice and finds different solutions</span>
+
+        <span class="n">optimized_params</span> <span class="o">=</span> <span class="n">evo_strat</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">xbest</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">evo_strat</span><span class="o">.</span><span class="n">result</span><span class="o">.</span><span class="n">fbest</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">cma_optimization</span> <span class="o">=</span> <span class="n">evo_strat</span>
+
+        <span class="k">return</span> <span class="n">optimized_params</span><span class="p">,</span> <span class="n">value</span></div>
+
+
+<div class="viewcode-block" id="Optimizer.optimize_with_boss"><a class="viewcode-back" href="../../The_Phorce.Parametrization.html#Parametrization.optimizers.Optimizer.optimize_with_boss">[docs]</a>    <span class="k">def</span> <span class="nf">optimize_with_boss</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> <span class="c1">#TODO: test</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Bayesian optimizer. See https://cest-group.gitlab.io/boss/index.html.</span>
+<span class="sd">        Bounds are created automatically based on self.parameters.  </span>
+
+<span class="sd">        Attributes</span>
+<span class="sd">        ----------</span>
+<span class="sd">        parameters : np.array</span>
+<span class="sd">            parameters that go into the function</span>
+<span class="sd">        opt_settings : dict</span>
+<span class="sd">            optimizer-speific settings, {&#39;options&#39;: {&#39;bo_output&#39;: outputpath}} needs to be set. </span>
+<span class="sd">            Most BOMain keywords can be passed through the options dictionary. If yours is missing, implement it </span>
+<span class="sd">            down below like the others.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="kn">from</span> <span class="nn">boss.bo.bo_main</span> <span class="kn">import</span> <span class="n">BOMain</span>
+        <span class="kn">from</span> <span class="nn">boss.pp.pp_main</span> <span class="kn">import</span> <span class="n">PPMain</span>
+
+        <span class="k">if</span> <span class="s2">&quot;options&quot;</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">opt_settings</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+
+            <span class="k">if</span> <span class="s2">&quot;bo_outfile&quot;</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">opt_settings</span><span class="p">[</span><span class="s1">&#39;options&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+
+                <span class="n">bo_outfile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">opt_settings</span><span class="p">[</span><span class="s1">&#39;options&#39;</span><span class="p">][</span><span class="s1">&#39;bo_outfile&#39;</span><span class="p">]</span>
+                <span class="k">assert</span> <span class="n">Path</span><span class="p">(</span><span class="n">bo_outfile</span><span class="p">)</span><span class="o">.</span><span class="n">is_dir</span><span class="p">()</span> <span class="o">==</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;boss output filepath </span><span class="si">{}</span><span class="s1"> does not exist&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">bo_outfile</span><span class="p">)</span>
+                
+                <span class="k">if</span> <span class="n">bo_outfile</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;/&#39;</span><span class="p">:</span>
+                    <span class="n">bo_outfile</span> <span class="o">+=</span> <span class="s1">&#39;/&#39;</span>
+
+            <span class="k">else</span><span class="p">:</span> 
+                <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;please specify &#39;bo_output&#39;: outputpath in Optimizer.opt_settings[&#39;options&#39;].&quot;</span><span class="p">)</span>
+            
+            <span class="k">if</span> <span class="s1">&#39;kernel&#39;</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">opt_settings</span><span class="p">[</span><span class="s1">&#39;options&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+                <span class="n">bo_kernel</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">opt_settings</span><span class="p">[</span><span class="s1">&#39;options&#39;</span><span class="p">][</span><span class="s1">&#39;kernel&#39;</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">bo_kernel</span> <span class="o">=</span> <span class="s1">&#39;rbf&#39;</span>
+
+            <span class="k">if</span> <span class="s1">&#39;initpts&#39;</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">opt_settings</span><span class="p">[</span><span class="s1">&#39;options&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+                <span class="n">bo_initpts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">opt_settings</span><span class="p">[</span><span class="s1">&#39;options&#39;</span><span class="p">][</span><span class="s1">&#39;initpts&#39;</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">bo_initpts</span> <span class="o">=</span> <span class="mi">20</span>
+
+            <span class="k">if</span> <span class="s1">&#39;noise&#39;</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">opt_settings</span><span class="p">[</span><span class="s1">&#39;options&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+                <span class="n">bo_noise</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">opt_settings</span><span class="p">[</span><span class="s1">&#39;options&#39;</span><span class="p">][</span><span class="s1">&#39;noise&#39;</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">bo_noise</span> <span class="o">=</span> <span class="mf">1e-4</span>
+
+            <span class="k">if</span> <span class="s1">&#39;acqfn_name&#39;</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">opt_settings</span><span class="p">[</span><span class="s1">&#39;options&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+                <span class="n">bo_acqfn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">opt_settings</span><span class="p">[</span><span class="s1">&#39;options&#39;</span><span class="p">][</span><span class="s1">&#39;acqfn_name&#39;</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">bo_acqfn</span> <span class="o">=</span> <span class="s1">&#39;exploit&#39;</span>
+
+            <span class="k">if</span> <span class="s1">&#39;acqtol&#39;</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">opt_settings</span><span class="p">[</span><span class="s1">&#39;options&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+                <span class="n">bo_acqtol</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">opt_settings</span><span class="p">[</span><span class="s1">&#39;options&#39;</span><span class="p">][</span><span class="s1">&#39;acqtol&#39;</span><span class="p">]</span> 
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">bo_acqtol</span> <span class="o">=</span> <span class="mf">1e-3</span>
+
+        <span class="k">else</span><span class="p">:</span> 
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;please specify an output path for boss in Optimizer.opt_settings[&#39;options&#39;] = {&#39;bo_outfile&#39;: outputpath}.&quot;</span><span class="p">)</span>
+
+        <span class="n">bounds_low</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">),</span> <span class="mf">1e-3</span><span class="p">)</span>
+        <span class="n">bounds_high</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">),</span> <span class="mf">1e0</span><span class="p">)</span>
+        <span class="n">bounds_comb</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">bounds_low</span><span class="p">,</span> <span class="n">bounds_high</span><span class="p">))</span><span class="o">.</span><span class="n">T</span> 
+
+        <span class="n">optimization</span> <span class="o">=</span> <span class="n">BOMain</span><span class="p">(</span>
+            <span class="k">lambda</span> <span class="n">x</span> <span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">f</span><span class="p">(</span><span class="n">x</span><span class="p">),</span>
+            <span class="n">bounds</span> <span class="o">=</span> <span class="n">bounds_comb</span><span class="p">,</span>
+            <span class="n">noise</span> <span class="o">=</span> <span class="n">bo_noise</span><span class="p">,</span>
+            <span class="n">initpts</span> <span class="o">=</span> <span class="n">bo_initpts</span><span class="p">,</span>
+            <span class="n">iterpts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_iterations</span><span class="p">,</span>
+            <span class="n">kernel</span> <span class="o">=</span> <span class="n">bo_kernel</span><span class="p">,</span>
+            <span class="n">acqfn_name</span> <span class="o">=</span> <span class="n">bo_acqfn</span><span class="p">,</span>
+            <span class="n">acqtol</span> <span class="o">=</span> <span class="n">bo_acqtol</span><span class="p">,</span>
+            <span class="n">outfile</span> <span class="o">=</span> <span class="n">bo_outfile</span><span class="o">+</span><span class="s1">&#39;boss.out&#39;</span><span class="p">,</span>
+            <span class="n">rstfile</span> <span class="o">=</span> <span class="n">bo_outfile</span><span class="o">+</span><span class="s1">&#39;boss.rst&#39;</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="n">optimization_result</span> <span class="o">=</span> <span class="n">optimization</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">)</span>    
+        <span class="bp">self</span><span class="o">.</span><span class="n">bayesian_optimization</span> <span class="o">=</span> <span class="n">optimization_result</span> <span class="c1">#how does this look?</span>
+
+        <span class="n">params_acquisition</span> <span class="o">=</span> <span class="n">optimization_result</span><span class="o">.</span><span class="n">get_next_acq</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="c1">#?</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">optimization_result</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s2">&quot;Y&quot;</span><span class="p">,</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="c1">#does this work?</span>
+
+        <span class="n">postprocessing</span> <span class="o">=</span> <span class="n">PPMain</span><span class="p">(</span><span class="n">optimization_result</span><span class="p">,</span> <span class="n">pp_acq_funcs</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">pp_models</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> 
+        <span class="bp">self</span><span class="o">.</span><span class="n">bo_pp</span> <span class="o">=</span> <span class="n">postprocessing</span> <span class="c1">#do i need this?</span>
+
+        <span class="k">return</span> <span class="n">params_acquisition</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="n">value</span> <span class="c1">#idk</span></div>
+
+
+<div class="viewcode-block" id="Optimizer.optimize_with_pso"><a class="viewcode-back" href="../../The_Phorce.Parametrization.html#Parametrization.optimizers.Optimizer.optimize_with_pso">[docs]</a>    <span class="k">def</span> <span class="nf">optimize_with_pso</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> 
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Particle swarm optimizer. Beware this feature is experimental. Choose hyperparameters carefully. Set them by</span>
+<span class="sd">        c1, c2, w, n_particles = Optimizer.opt_settings.values() after having initialized the Optimizer object and before running </span>
+<span class="sd">        the parametrization loop.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        c1, c2, w : float</span>
+<span class="sd">            Hyperparameters used in particle swarm optimization, defaults: c1=0.1, c2=0.1, w=0.4</span>
+<span class="sd">        n_particles : int</span>
+<span class="sd">            number of swarm particles to be generated, default = 50</span>
+
+<span class="sd">        Attributes</span>
+<span class="sd">        ----------</span>
+<span class="sd">        parameters : np.array</span>
+<span class="sd">            parameters that go into the function</span>
+<span class="sd">        f : </span>
+<span class="sd">            input function (wrapped objective function)</span>
+<span class="sd">        max_iterations : int</span>
+<span class="sd">            limits the number of iterations</span>
+<span class="sd">        tolerance </span>
+<span class="sd">            below which change the optimization is defined as converged</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        optimized_params : np.array </span>
+<span class="sd">            contains the optimized force field params</span>
+<span class="sd">        value : float</span>
+<span class="sd">            value of the input function self.f</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="p">[</span><span class="s1">&#39;c1&#39;</span><span class="p">,</span> <span class="s1">&#39;c2&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="s1">&#39;n_particles&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">opt_settings</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span> <span class="s1">&#39;pso optimizer needs c1, c2, w, n_particles as opt_settings&#39;</span>
+
+        <span class="n">c1</span><span class="p">,</span> <span class="n">c2</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">n_particles</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">opt_settings</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;PSO hyperparameters: c1 = </span><span class="si">{}</span><span class="s1">, c2 = </span><span class="si">{}</span><span class="s1">, w = </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">c1</span><span class="p">,</span> <span class="n">c2</span><span class="p">,</span> <span class="n">w</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;n_particles set to </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">n_particles</span><span class="p">))</span>
+
+        <span class="kn">import</span> <span class="nn">random</span>
+
+        <span class="c1"># create particles</span>
+
+        <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
+
+        <span class="n">particle_positions0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_particles</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">)))</span> <span class="c1">#init array</span>
+        <span class="n">func_value_particles0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_particles</span><span class="p">))</span> <span class="c1">#init array</span>
+
+        <span class="k">for</span> <span class="n">particle</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_particles</span><span class="p">):</span> 
+            <span class="c1"># fill array</span>
+            <span class="n">distorted_positions</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">choices</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">)))</span>
+            <span class="n">particle_positions0</span><span class="p">[</span><span class="n">particle</span><span class="p">]</span> <span class="o">=</span> <span class="n">distorted_positions</span>
+
+        <span class="n">particle_velocities0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">size</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.1</span>
+        <span class="n">particle_positions1</span> <span class="o">=</span> <span class="n">particle_positions0</span> <span class="o">+</span> <span class="n">particle_velocities0</span>
+
+        <span class="c1"># evaluate initial data</span>
+        <span class="n">func</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">parameters</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">f</span><span class="p">(</span><span class="n">parameters</span><span class="p">)</span> 
+   
+        <span class="k">for</span> <span class="n">particle</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_particles</span><span class="p">):</span>
+            <span class="c1"># fill array</span>
+            <span class="n">func_value_particles0</span><span class="p">[</span><span class="n">particle</span><span class="p">]</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="n">particle_positions0</span><span class="p">[</span><span class="n">particle</span><span class="p">])</span>
+
+        <span class="n">best_positions0</span> <span class="o">=</span> <span class="n">particle_positions0</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">func_value_particles0</span><span class="p">)]</span>
+
+        <span class="c1"># initial data</span>
+        <span class="n">particle_positions_prev</span> <span class="o">=</span> <span class="n">particle_positions0</span>
+        <span class="n">particle_positions_current</span> <span class="o">=</span> <span class="n">particle_positions1</span>
+        <span class="n">particle_velocities_prev</span> <span class="o">=</span> <span class="n">particle_velocities0</span>
+        <span class="n">func_value_particles_prev</span> <span class="o">=</span> <span class="n">func_value_particles0</span>
+        <span class="n">best_position_prev</span> <span class="o">=</span> <span class="n">best_positions0</span>
+
+        <span class="n">change</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="mf">1.</span><span class="p">)</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">while</span> <span class="p">(</span><span class="n">i</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_iterations</span> <span class="ow">and</span> <span class="n">change</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">tolerance</span> <span class="ow">and</span> <span class="n">change</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+            <span class="c1"># random numbers r1, r2 for velocity generation</span>
+            <span class="n">r1</span><span class="p">,</span> <span class="n">r2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+
+            <span class="c1"># generate new velocities</span>
+            <span class="n">particle_velocities_current</span> <span class="o">=</span> <span class="n">w</span> <span class="o">*</span> <span class="n">particle_velocities_prev</span> <span class="o">+</span> \
+                                  <span class="n">c1</span> <span class="o">*</span> <span class="n">r1</span> <span class="o">*</span> <span class="p">(</span><span class="n">particle_positions_current</span> <span class="o">-</span> <span class="n">particle_positions_prev</span><span class="p">)</span> <span class="o">+</span> \
+                                  <span class="n">c2</span> <span class="o">*</span> <span class="n">r2</span> <span class="o">*</span> <span class="p">(</span><span class="o">-</span><span class="n">particle_positions_prev</span> <span class="o">+</span> <span class="n">best_position_prev</span><span class="p">)</span>
+
+            <span class="c1"># move particles</span>
+            <span class="n">particle_positions_new</span> <span class="o">=</span> <span class="n">particle_positions_current</span> <span class="o">+</span> <span class="n">particle_velocities_current</span>
+
+            <span class="c1"># reassign vars</span>
+            <span class="n">particle_positions_prev</span> <span class="o">=</span> <span class="n">particle_positions_current</span>
+            <span class="n">particle_positions_current</span> <span class="o">=</span> <span class="n">particle_positions_new</span>
+            <span class="n">func_value_particles_current</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_particles</span><span class="p">))</span>
+
+            <span class="c1"># evaluate old and new positions</span>
+            <span class="k">for</span> <span class="n">particle</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_particles</span><span class="p">):</span>
+                <span class="n">func_value_particles_prev</span><span class="p">[</span><span class="n">particle</span><span class="p">]</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="n">particle_positions_prev</span><span class="p">[</span><span class="n">particle</span><span class="p">])</span>
+                <span class="n">func_value_particles_current</span><span class="p">[</span><span class="n">particle</span><span class="p">]</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="n">particle_positions_current</span><span class="p">[</span><span class="n">particle</span><span class="p">])</span>
+
+            <span class="n">best_position_prev</span> <span class="o">=</span> <span class="n">particle_positions_prev</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">func_value_particles_prev</span><span class="p">)]</span>
+            <span class="n">min_func_prev</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">func_value_particles_prev</span><span class="p">)</span>
+            
+            <span class="c1"># update prev params by better ones from current</span>
+            <span class="n">particle_positions_prev</span><span class="p">[(</span><span class="n">func_value_particles_prev</span> <span class="o">&gt;=</span> <span class="n">func_value_particles_current</span><span class="p">)]</span> <span class="o">=</span> <span class="n">particle_positions_current</span><span class="p">[(</span><span class="n">func_value_particles_prev</span> <span class="o">&gt;=</span> <span class="n">func_value_particles_current</span><span class="p">)]</span>
+            <span class="c1"># find smallest values for both the new func value and the old func value</span>
+            <span class="n">func_opt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">func_value_particles_prev</span><span class="p">,</span> <span class="n">func_value_particles_current</span><span class="p">]),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="c1"># slice positions by smallest values for func -&gt; best positions</span>
+            <span class="n">best_position_current</span> <span class="o">=</span> <span class="n">particle_positions_prev</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">func_opt</span><span class="p">)]</span>
+            <span class="c1"># calc smallest func value</span>
+            <span class="n">min_func</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">func_opt</span><span class="p">)</span>
+            
+            <span class="c1"># assure progress</span>
+            <span class="n">change</span> <span class="o">=</span> <span class="n">min_func_prev</span> <span class="o">-</span> <span class="n">min_func</span>
+
+            <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+        
+        <span class="c1">#optimized_params = particle_positions</span>
+        <span class="c1">#value = func</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">min_func</span>
+        <span class="n">optimized_params</span> <span class="o">=</span> <span class="n">best_position_current</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;PSO found the best solution at obj_func(</span><span class="si">{}</span><span class="s2">)=</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">optimized_params</span><span class="p">,</span> <span class="n">value</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">optimized_params</span><span class="p">,</span> <span class="n">value</span></div>
+
+<div class="viewcode-block" id="Optimizer.run_optimizer"><a class="viewcode-back" href="../../The_Phorce.Parametrization.html#Parametrization.optimizers.Optimizer.run_optimizer">[docs]</a>    <span class="k">def</span> <span class="nf">run_optimizer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">parameters</span><span class="p">,</span> <span class="n">constraints</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        f : Parametrization.parametrization.Parametrization object</span>
+<span class="sd">            Objective function</span>
+<span class="sd">        parameters : numpy array </span>
+<span class="sd">            Parameters that are going to be optimized (extracted from ff_optimizable)</span>
+<span class="sd">        constraints :</span>
+<span class="sd">            Optimization constraints, default = None</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        optimized_params : np.array </span>
+<span class="sd">            contains the optimized force field params</span>
+<span class="sd">        value : float </span>
+<span class="sd">            value of self.f</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">f</span> <span class="o">=</span> <span class="n">f</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="n">parameters</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">contsraints</span> <span class="o">=</span> <span class="n">constraints</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;###################################################################################&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span>
+            <span class="s2">&quot;#                         STARTING &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">opt_method</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">+</span> <span class="s2">&quot; OPTIMIZER                            &quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;###################################################################################&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">opt_method</span> <span class="o">==</span> <span class="s2">&quot;scipy_local&quot;</span><span class="p">:</span>
+
+            <span class="n">optimized_params</span><span class="p">,</span> <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimize_with_scipy_local</span><span class="p">()</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">opt_method</span> <span class="o">==</span> <span class="s2">&quot;scipy_global&quot;</span><span class="p">:</span>
+
+            <span class="n">optimized_params</span><span class="p">,</span> <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimize_with_scipy_global</span><span class="p">()</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">opt_method</span> <span class="o">==</span> <span class="s1">&#39;cma&#39;</span><span class="p">:</span>
+
+            <span class="n">optimized_params</span><span class="p">,</span> <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimize_with_cma</span><span class="p">()</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">opt_method</span> <span class="o">==</span> <span class="s1">&#39;bayesian&#39;</span><span class="p">:</span>
+
+            <span class="n">optimized_params</span><span class="p">,</span> <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimize_with_boss</span><span class="p">()</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">opt_method</span> <span class="o">==</span> <span class="s1">&#39;pso&#39;</span><span class="p">:</span>
+
+            <span class="n">optimized_params</span><span class="p">,</span> <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimize_with_pso</span><span class="p">()</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;###################################################################################&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span>
+            <span class="s2">&quot;#                         &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">opt_method</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">+</span> <span class="s2">&quot; OPTIMIZER FINISHED                            &quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;###################################################################################&quot;</span><span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;optimized parameters:&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">optimized_params</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;objective function value:&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">optimized_params</span><span class="p">,</span> <span class="n">value</span></div></div>
+
+
+
+
+
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Viktoria Korn.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
