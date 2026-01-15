@@ -1,0 +1,23 @@
+The\_Phorce package
+===================
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   ASE_interface
+   Coord_Toolz
+   Direct_cp2k_calculation
+   OMM_interface
+   Parametrization
+   System
+
+Module contents
+---------------
+
+.. automodule:: The_Phorce
+   :members:
+   :undoc-members:
+   :show-inheritance:
