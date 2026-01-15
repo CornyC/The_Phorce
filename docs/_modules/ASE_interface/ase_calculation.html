@@ -1,1 +1,303 @@
 
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ASE_interface.ase_calculation &mdash; The Phorce 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=92fd9be5" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js?v=e031e9a9"></script>
+      <script src="../../_static/doctools.js?v=888ff710"></script>
+      <script src="../../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            The Phorce
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">The Phorce</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">ASE_interface.ase_calculation</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for ASE_interface.ase_calculation</h1><div class="highlight"><pre>
+<span></span><span class="c1">#### package imports ####</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">ase</span>
+<span class="kn">from</span> <span class="nn">ase.optimize</span> <span class="kn">import</span> <span class="n">LBFGS</span>
+<span class="kn">from</span> <span class="nn">ase.calculators.cp2k</span> <span class="kn">import</span> <span class="n">CP2K</span>
+<span class="kn">from</span> <span class="nn">ase.constraints</span> <span class="kn">import</span> <span class="n">FixInternals</span>
+
+<span class="c1">#### run the QM calculation ####</span>
+
+<div class="viewcode-block" id="ASE_system"><a class="viewcode-back" href="../../The_Phorce.ASE_interface.html#ASE_interface.ase_calculation.ASE_system">[docs]</a><span class="k">class</span> <span class="nc">ASE_system</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Prepares and runs the QM calculation.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    atom_symbols: ASE atoms.symbols object</span>
+<span class="sd">        contains short identifiers for atom types</span>
+<span class="sd">    positions: numpy array</span>
+<span class="sd">        coordinates of one sampled structure</span>
+<span class="sd">    cell_dimensions: numpy array of shape (3,)</span>
+<span class="sd">        length of 3 cell edges in Angström</span>
+<span class="sd">    pbc: boolean numpy array of shape (3,)</span>
+<span class="sd">        Enabled/disabled periodic boundary conditions in x,y,z direction</span>
+<span class="sd">    dihedral_freeze : list of list of int, default=None</span>
+<span class="sd">        List of lists of wherein each inner list should contain 4 integers defining a torsion to be kept fixed.</span>
+<span class="sd">    ase_constraints : list of ASE constraints, default=None</span>
+<span class="sd">        List of ASE constraints to be applied during the scans.</span>
+<span class="sd">        More information: https://wiki.fysik.dtu.dk/ase/ase/constraints.html</span>
+<span class="sd">    shake_threshold : float</span>
+<span class="sd">        Threshold of the SHAKE algorithm (constrains water vibrations)</span>
+<span class="sd">    optimizer : any ase.optimizer, default=:obj:`ase.optimize.lbfgs.LBFGS*`</span>
+<span class="sd">        ASE optimizer instance. For more info see: https://wiki.fysik.dtu.dk/ase/ase/optimize.html</span>
+<span class="sd">    opt_fmax : float, default=1e-2</span>
+<span class="sd">        The convergence criterion to stop the optimization is that the force on all individual atoms</span>
+<span class="sd">        should be less than `fmax`.</span>
+<span class="sd">    opt_log_file : str, default=&quot;-&quot;</span>
+<span class="sd">        File where optimization log will be stored. Use &#39;-&#39; for stdout.</span>
+<span class="sd">    opt_traj_prefix : str, default=&quot;traj_&quot;</span>
+<span class="sd">        Prefix given to the pickle file used to store the trajectory during optimization.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    atoms : ASE atoms object</span>
+<span class="sd">        contains symbols, positions, cell, pbc, calculator (see ASE doc)</span>
+<span class="sd">    energy : float</span>
+<span class="sd">        single-point energy of molecule in water obtained from DFT calculation in kJ/mol</span>
+<span class="sd">    forces : numpy array</span>
+<span class="sd">        forces an each atom as obtained from DFT calculation in kJ/mol/nm</span>
+<span class="sd">    opt_coords : numpy array</span>
+<span class="sd">        positions of atoms after DFT geometry optimization in nm</span>
+<span class="sd">    energy_gp : np.array</span>
+<span class="sd">        single-point energy of molecule in gas phase obtained from DFT calculation in kJ/mol</span>
+<span class="sd">    forces_gp : np.array</span>
+<span class="sd">        forces an each atom of gas-phase molecule as obtained from DFT calculation in kJ/mol/nm</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">symbols</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">positions</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>  <span class="n">cell_dimensions</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pbc</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">calculator</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">dihedral_freeze</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ase_constraints</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">shake_threshold</span><span class="o">=</span><span class="mf">1e-7</span><span class="p">,</span> <span class="n">optimizer</span><span class="o">=</span><span class="n">LBFGS</span><span class="p">,</span> <span class="n">opt_fmax</span><span class="o">=</span><span class="mf">1e-2</span><span class="p">,</span>
+                 <span class="n">opt_log_file</span><span class="o">=</span><span class="s2">&quot;-&quot;</span><span class="p">,</span> <span class="n">opt_traj_prefix</span><span class="o">=</span><span class="s2">&quot;traj_&quot;</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">symbols</span> <span class="o">=</span> <span class="n">symbols</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">positions</span> <span class="o">=</span> <span class="n">positions</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cell</span> <span class="o">=</span> <span class="n">cell_dimensions</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pbc</span> <span class="o">=</span> <span class="n">pbc</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pbc</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">cell</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;Periodic boundary conditions set but no cell dimensions given.&#39;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">calculator</span> <span class="o">=</span> <span class="n">calculator</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dihedral_freeze</span> <span class="o">=</span> <span class="n">dihedral_freeze</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ase_constraints</span> <span class="o">=</span> <span class="n">ase_constraints</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_shake_threshold</span> <span class="o">=</span> <span class="n">shake_threshold</span>
+
+        <span class="c1"># ASE optimizer variables</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_optimizer</span> <span class="o">=</span> <span class="n">optimizer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_opt_fmax</span> <span class="o">=</span> <span class="n">opt_fmax</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_opt_logfile</span> <span class="o">=</span> <span class="n">opt_log_file</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_opt_traj_prefix</span> <span class="o">=</span> <span class="n">opt_traj_prefix</span>
+
+        <span class="c1"># data params</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">energy</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">forces</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">opt_coords</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">energy_gp</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">forces_gp</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="ASE_system.construct_atoms_object"><a class="viewcode-back" href="../../The_Phorce.ASE_interface.html#ASE_interface.ase_calculation.ASE_system.construct_atoms_object">[docs]</a>    <span class="k">def</span> <span class="nf">construct_atoms_object</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        constructs the ASE atoms object from the element symbols, coordinates, periodic boundary conditions, and cell info.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">atoms</span> <span class="o">=</span> <span class="n">ase</span><span class="o">.</span><span class="n">Atoms</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">symbols</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">positions</span><span class="p">)</span>
+        <span class="n">atoms</span><span class="o">.</span><span class="n">set_cell</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cell</span><span class="p">)</span>
+        <span class="n">atoms</span><span class="o">.</span><span class="n">set_pbc</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pbc</span><span class="p">)</span>
+        <span class="n">atoms</span><span class="o">.</span><span class="n">set_calculator</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">calculator</span><span class="p">)</span>
+        <span class="n">atoms</span><span class="o">.</span><span class="n">center</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span> <span class="o">=</span> <span class="n">atoms</span></div>
+
+<div class="viewcode-block" id="ASE_system.run_calculation"><a class="viewcode-back" href="../../The_Phorce.ASE_interface.html#ASE_interface.ase_calculation.ASE_system.run_calculation">[docs]</a>    <span class="k">def</span> <span class="nf">run_calculation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">run_type</span><span class="o">=</span><span class="s1">&#39;single_point&#39;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        runs the ASE quantum calculation</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        run_type : str, default = &#39;single_point&#39;</span>
+<span class="sd">            options are &#39;single-point&#39; (no geometry optimization), &#39;optimization&#39; (runs a geometry optimization),</span>
+<span class="sd">            or &#39;gas_phase&#39; (single-point w/o water)</span>
+
+<span class="sd">        Attributes</span>
+<span class="sd">        ----------</span>
+<span class="sd">            energies : np.array</span>
+<span class="sd">                quantum energies</span>
+<span class="sd">            forces : np.array</span>
+<span class="sd">                quantum forces</span>
+<span class="sd">            opt_coords : np.array</span>
+<span class="sd">                if &#39;optimization&#39; is chosen</span>
+<span class="sd">            energy_gp : np.array</span>
+<span class="sd">                if &#39;gas_phase&#39; is chosen</span>
+<span class="sd">            forces_gp : np.array</span>
+<span class="sd">                if &#39;gas_phase&#39; is chosen</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">assert</span> <span class="n">run_type</span> <span class="ow">in</span> <span class="p">[</span><span class="n">systype</span> <span class="k">for</span> <span class="n">systype</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;single_point&#39;</span><span class="p">,</span> <span class="s1">&#39;optmization&#39;</span><span class="p">]],</span> <span class="s2">&quot;Run type </span><span class="si">{}</span><span class="s2"> is&quot;</span> \
+                                                                                <span class="s2">&quot; not implemented.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">run_type</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">run_type</span> <span class="o">==</span> <span class="s1">&#39;single_point&#39;</span><span class="p">:</span>
+
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;#############################################################&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;#           Running Single Point Calculation                #&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;#############################################################&#39;</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">energy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">get_potential_energy</span><span class="p">()</span> <span class="o">*</span> <span class="mf">96.48530749925794</span>  <span class="c1"># eV to kJ/mol</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">forces</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">get_forces</span><span class="p">()</span> <span class="o">*</span> <span class="mf">96.48530749925794</span> <span class="o">*</span> <span class="mf">10.0</span>  <span class="c1"># eV/A to kJ/mol/nm</span>
+
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;#############################################################&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;#           Single Point Calculation successful             #&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;#############################################################&#39;</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">run_type</span> <span class="o">==</span> <span class="s1">&#39;optimization&#39;</span><span class="p">:</span>
+
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;#############################################################&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;#             Running Geometry Optimization                 #&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;#############################################################&#39;</span><span class="p">)</span>
+            <span class="kn">from</span> <span class="nn">ase.io</span> <span class="kn">import</span> <span class="n">read</span><span class="p">,</span> <span class="n">write</span>
+
+            <span class="n">constraints_list</span><span class="o">=</span><span class="p">[]</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dihedral_freeze</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">dihedrals_to_fix</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">for</span> <span class="n">dihedral</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">dihedral_freeze</span><span class="p">:</span>
+                    <span class="n">dihedrals_to_fix</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">get_dihedral</span><span class="p">(</span><span class="o">*</span><span class="n">dihedral</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mf">180.0</span><span class="p">,</span> <span class="n">dihedral</span><span class="p">])</span>
+
+                <span class="n">constraint</span> <span class="o">=</span> <span class="n">FixInternals</span><span class="p">(</span><span class="n">bonds</span><span class="o">=</span><span class="p">[],</span> <span class="n">angles</span><span class="o">=</span><span class="p">[],</span> <span class="n">dihedrals</span><span class="o">=</span><span class="n">dihedrals_to_fix</span><span class="p">,</span>
+                                          <span class="n">epsilon</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_shake_threshold</span><span class="p">)</span>
+                <span class="n">constraints_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">constraint</span><span class="p">)</span>
+
+            <span class="c1"># Apply any ASE constraints</span>
+            <span class="c1"># More information: https://wiki.fysik.dtu.dk/ase/ase/constraints.html</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ase_constraints</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">constraint</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ase_constraints</span><span class="p">:</span>
+                    <span class="n">constraints_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">constraint</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">constraints_list</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">set_constraint</span><span class="p">(</span><span class="n">constraints_list</span><span class="p">)</span>
+
+            <span class="n">opt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_optimizer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="p">,</span> <span class="n">trajectory</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_opt_traj_prefix</span><span class="o">+</span><span class="s2">&quot;.traj&quot;</span><span class="p">,</span> <span class="n">logfile</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_opt_logfile</span><span class="p">)</span>
+            <span class="n">opt</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">fmax</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_opt_fmax</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dihedral_freeze</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">constraints</span>
+
+            <span class="c1"># Get data</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">energy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">get_potential_energy</span><span class="p">()</span> <span class="o">*</span> <span class="mf">96.48530749925794</span>  <span class="c1"># eV to kJ/mol</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">forces</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">get_forces</span><span class="p">()</span> <span class="o">*</span> <span class="mf">96.48530749925794</span> <span class="o">*</span> <span class="mf">10.0</span> <span class="c1"># eV/A to kJ/mol/nm (what OMM uses)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">opt_coords</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">get_positions</span><span class="p">()</span> <span class="o">*</span> <span class="mf">0.1</span> <span class="c1"># Angstrom to nm</span>
+
+
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;#############################################################&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;#           Geometry Optimization successful                #&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;#############################################################&#39;</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">run_type</span> <span class="o">==</span> <span class="s1">&#39;gas_phase&#39;</span><span class="p">:</span>
+
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;#############################################################&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;#           Running Single Point Calculation                #&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;#                      in gas phase                         #&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;#############################################################&#39;</span><span class="p">)</span>
+
+            <span class="k">assert</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">pbc</span> <span class="o">==</span> <span class="p">([</span><span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">])</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">cell</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;Remove pbc, &#39;</span> \
+                                                                                                      <span class="s1">&#39;cell, and H2O &#39;</span> \
+                                                                                                      <span class="s1">&#39;to run a gas &#39;</span> \
+                                                                                                      <span class="s1">&#39;phase calc.&#39;</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">energy_gp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">get_potential_energy</span><span class="p">()</span> <span class="o">*</span> <span class="mf">96.48530749925794</span>  <span class="c1"># eV to kJ/mol</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">forces_gp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms</span><span class="o">.</span><span class="n">get_forces</span><span class="p">()</span> <span class="o">*</span> <span class="mf">96.48530749925794</span> <span class="o">*</span> <span class="mf">10.0</span>  <span class="c1"># eV/A to kJ/mol/nm</span>
+
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;#############################################################&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;#           Single Point Calculation successful             #&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;#############################################################&#39;</span><span class="p">)</span></div></div>
+
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Viktoria Korn.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
