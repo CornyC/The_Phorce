@@ -1,0 +1,693 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OMM_interface &mdash; The Phorce 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=92fd9be5" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=e031e9a9"></script>
+      <script src="_static/doctools.js?v=888ff710"></script>
+      <script src="_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Parametrization" href="Parametrization.html" />
+    <link rel="prev" title="Direct_cp2k_calculation" href="Direct_cp2k_calculation.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            The Phorce
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">The_Phorce</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="ASE_interface.html">ASE_interface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Coord_Toolz.html">Coord_Toolz</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Direct_cp2k_calculation.html">Direct_cp2k_calculation</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">OMM_interface</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-OMM_interface.openmm">OMM_interface.openmm module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#OMM_interface.openmm.OpenMM_system"><code class="docutils literal notranslate"><span class="pre">OpenMM_system</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-OMM_interface">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="Parametrization.html">Parametrization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="System.html">System</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">The Phorce</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">The_Phorce</a></li>
+      <li class="breadcrumb-item active">OMM_interface</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/OMM_interface.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="the-phorce-omm-interface-package">
+<h1>OMM_interface<a class="headerlink" href="#the-phorce-omm-interface-package" title="Permalink to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading"></a></h2>
+</section>
+<section id="module-OMM_interface.openmm">
+<span id="the-phorce-omm-interface-openmm-module"></span><h2>OMM_interface.openmm module<a class="headerlink" href="#module-OMM_interface.openmm" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="OMM_interface.openmm.OpenMM_system">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">OMM_interface.openmm.</span></span><span class="sig-name descname"><span class="pre">OpenMM_system</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">topology_format</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">top_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">topology</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">crd_format</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">crd_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">charmm_param_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xml_files</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pbc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cell</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">angles</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/OMM_interface/openmm.html#OpenMM_system"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#OMM_interface.openmm.OpenMM_system" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Creates the OpenMM System
+<a class="reference external" href="http://docs.openmm.org/latest/api-python/generated/openmm.openmm.System.html?highlight=getforces#openmm.openmm.System">http://docs.openmm.org/latest/api-python/generated/openmm.openmm.System.html?highlight=getforces#openmm.openmm.System</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>topology_format</strong> (<em>str</em><em>, </em><em>optional</em><em>, </em><em>default=None</em>) – Available options are “AMBER”, “GROMACS”, “CHARMM”, or “XML”.</p></li>
+<li><p><strong>top_file</strong> (<em>str</em><em>, </em><em>optional</em><em>, </em><em>default=None</em>) – Path to the AMBER, GROMACS or CHARMM topology file.</p></li>
+<li><p><strong>topology</strong> (<em>OpenMM topology object</em><em>, </em><em>optional</em>) – Set OpenMM topology manually</p></li>
+<li><p><strong>crd_format</strong> (<em>str</em>) – Available options are “AMBER”, “GROMACS”, “CHARMM”, or “PDB”.</p></li>
+<li><p><strong>crd_file</strong> (<em>str</em><em>, </em><em>optional</em><em>, </em><em>default=None</em>) – Path to the AMBER, GROMACS or CHARMM coordinates file.</p></li>
+<li><p><strong>charmm_param_file</strong> (<em>str</em>) – Path to the CHARMM param file (CHARMM stream file with .str extension).
+Register the main CHARMM param stream file for your molecule here and if needed
+have it read in other .str/.rtf files ;-)</p></li>
+<li><p><strong>xml_files</strong> (<em>list</em><em> of </em><em>str</em><em>, </em><em>optional</em><em>, </em><em>default=None</em>) – Path to the .xml OpenMM topology files.</p></li>
+<li><p><strong>pbc</strong> (<em>bool</em>) – Whether periodic boundary conditions are to be used or not</p></li>
+<li><p><strong>cell</strong> (<em>list</em><em> of </em><em>length 3</em>) – cell edge lengths in nm</p></li>
+<li><p><strong>angles</strong> (<em>list</em><em> of </em><em>length 3</em>) – cell angles in degree</p></li>
+<li><p><strong>platform_name</strong> (<em>str</em><em>, </em><em>default='CUDA'</em>) – name of the platform; either ‘CUDA’,’OpenCL’,’CPU’</p></li>
+<li><p><strong>platform_properties</strong> (<em>dict</em>) – CUDA needs Precision and DeviceIndex to be set
+OpenCL needs Precision, DeviveIndex, and OpenCLPlatformIndex to be set
+CPU needs Precision and DeviceIndex</p></li>
+<li><p><strong>integrator</strong> (<em>openmm object</em><em>, </em><em>default=openmm.LangevinIntegrator</em>) – MD integrator</p></li>
+<li><p><strong>integrator_params</strong> (<em>dict</em>) – Keyword arguments passed to the integrator</p></li>
+<li><p><strong>create_system_params</strong> (<em>dict</em>) – Keyword arguments passed to the top.createSystem instance</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMM_interface.openmm.OpenMM_system.top">
+<span class="sig-name descname"><span class="pre">top</span></span><a class="headerlink" href="#OMM_interface.openmm.OpenMM_system.top" title="Permalink to this definition"></a></dt>
+<dd><p>either AmberPrmtopFile, GromacsTopFile, CharmmPsfFile, or openmm native ForceField</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>openmm object</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMM_interface.openmm.OpenMM_system.top_params">
+<span class="sig-name descname"><span class="pre">top_params</span></span><a class="headerlink" href="#OMM_interface.openmm.OpenMM_system.top_params" title="Permalink to this definition"></a></dt>
+<dd><p>CharmmParameterSet</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>openmm object</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMM_interface.openmm.OpenMM_system.crd">
+<span class="sig-name descname"><span class="pre">crd</span></span><a class="headerlink" href="#OMM_interface.openmm.OpenMM_system.crd" title="Permalink to this definition"></a></dt>
+<dd><p>one of AmberInpcrdFile, GromacsGroFile, CharmmCrdFile, PDBFile</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>openmm object</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMM_interface.openmm.OpenMM_system.platform">
+<span class="sig-name descname"><span class="pre">platform</span></span><a class="headerlink" href="#OMM_interface.openmm.OpenMM_system.platform" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>openmm.openmm.Platform</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMM_interface.openmm.OpenMM_system.system">
+<span class="sig-name descname"><span class="pre">system</span></span><a class="headerlink" href="#OMM_interface.openmm.OpenMM_system.system" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>openmm.openmm.System</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMM_interface.openmm.OpenMM_system.context">
+<span class="sig-name descname"><span class="pre">context</span></span><a class="headerlink" href="#OMM_interface.openmm.OpenMM_system.context" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>openmm.openmm.Context</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMM_interface.openmm.OpenMM_system.force_groups">
+<span class="sig-name descname"><span class="pre">force_groups</span></span><a class="headerlink" href="#OMM_interface.openmm.OpenMM_system.force_groups" title="Permalink to this definition"></a></dt>
+<dd><p>keys see self.force_groups_dict, values are lists of openmm’s force group indices</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMM_interface.openmm.OpenMM_system.extracted_ff">
+<span class="sig-name descname"><span class="pre">extracted_ff</span></span><a class="headerlink" href="#OMM_interface.openmm.OpenMM_system.extracted_ff" title="Permalink to this definition"></a></dt>
+<dd><p>keys see self.force_groups, values are lists of np.recarrays containing the force field params</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMM_interface.openmm.OpenMM_system.ff_optimizable">
+<span class="sig-name descname"><span class="pre">ff_optimizable</span></span><a class="headerlink" href="#OMM_interface.openmm.OpenMM_system.ff_optimizable" title="Permalink to this definition"></a></dt>
+<dd><p>contains force groups and their parameters that should be optimized</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMM_interface.openmm.OpenMM_system.custom_nb_params">
+<span class="sig-name descname"><span class="pre">custom_nb_params</span></span><a class="headerlink" href="#OMM_interface.openmm.OpenMM_system.custom_nb_params" title="Permalink to this definition"></a></dt>
+<dd><p>triggered if NBFIX present. Contains rmin(=r/sigma; nm), epsilon (kJ/mol)(in GMX/OMM units), and atom type (str)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMM_interface.openmm.OpenMM_system.nbfix">
+<span class="sig-name descname"><span class="pre">nbfix</span></span><a class="headerlink" href="#OMM_interface.openmm.OpenMM_system.nbfix" title="Permalink to this definition"></a></dt>
+<dd><p>triggered if NBFIX is present. Contains r_min (nm) and epsilon (kJ/mol) (GMX/OMM units),
+atom type 1, atom type 2 (str), and index</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMM_interface.openmm.OpenMM_system.force_groups_dict">
+<span class="sig-name descname"><span class="pre">force_groups_dict</span></span><a class="headerlink" href="#OMM_interface.openmm.OpenMM_system.force_groups_dict" title="Permalink to this definition"></a></dt>
+<dd><p>{‘HarmonicBondForce’: [],
+‘HarmonicAngleForce’: [],
+‘PeriodicTorsionForce’: [],
+‘NonbondedForce’: [],
+‘CustomBondForce’: [],
+‘CustomAngleForce’: [],
+‘CustomTorsionForce’: []
+‘CustomNonbondedForce’: [],
+“CMAPTorsionForce”: [],
+“NBException”: [],
+“CMMotionremover”: []}</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMM_interface.openmm.OpenMM_system.charges">
+<span class="sig-name descname"><span class="pre">charges</span></span><a class="headerlink" href="#OMM_interface.openmm.OpenMM_system.charges" title="Permalink to this definition"></a></dt>
+<dd><p>mm charges of all atoms in the openmm system</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#OMM_interface.openmm.OpenMM_system.create_force_field_optimizable" title="OMM_interface.openmm.OpenMM_system.create_force_field_optimizable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_force_field_optimizable</span></code></a>([opt_bonds, ...])</p></td>
+<td><p>creates a writable dictionary to store the parameters that are to be optimized</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#OMM_interface.openmm.OpenMM_system.create_openmm_system" title="OMM_interface.openmm.OpenMM_system.create_openmm_system"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_openmm_system</span></code></a>()</p></td>
+<td><p>creates the OpenMM system object</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#OMM_interface.openmm.OpenMM_system.extract_forcefield" title="OMM_interface.openmm.OpenMM_system.extract_forcefield"><code class="xref py py-obj docutils literal notranslate"><span class="pre">extract_forcefield</span></code></a>()</p></td>
+<td><p>Extracts all the force field params from the OpenMM system.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#OMM_interface.openmm.OpenMM_system.get_charges" title="OMM_interface.openmm.OpenMM_system.get_charges"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_charges</span></code></a>()</p></td>
+<td><p>extracts the classical charges from the OpenMM system</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#OMM_interface.openmm.OpenMM_system.import_molecular_system" title="OMM_interface.openmm.OpenMM_system.import_molecular_system"><code class="xref py py-obj docutils literal notranslate"><span class="pre">import_molecular_system</span></code></a>()</p></td>
+<td><p>reads in coords and topology</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#OMM_interface.openmm.OpenMM_system.read_extracted_ff" title="OMM_interface.openmm.OpenMM_system.read_extracted_ff"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_extracted_ff</span></code></a>([input_path])</p></td>
+<td><p>Read in an already existing/previously extracted extracted.ff file</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#OMM_interface.openmm.OpenMM_system.run_calculation" title="OMM_interface.openmm.OpenMM_system.run_calculation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">run_calculation</span></code></a>(positions)</p></td>
+<td><p>calculates classical energies and forces</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#OMM_interface.openmm.OpenMM_system.set_integrator" title="OMM_interface.openmm.OpenMM_system.set_integrator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_integrator</span></code></a>()</p></td>
+<td><p>sets the OpenMM MD integrator object</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#OMM_interface.openmm.OpenMM_system.set_openmm_context" title="OMM_interface.openmm.OpenMM_system.set_openmm_context"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_openmm_context</span></code></a>()</p></td>
+<td><p>sets the OpenMM context object by checking constraints, reading the initial coordinates and bundling it all up w/ the integrator and platform (a.k.a.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#OMM_interface.openmm.OpenMM_system.set_parameters" title="OMM_interface.openmm.OpenMM_system.set_parameters"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_parameters</span></code></a>()</p></td>
+<td><p>writes the optimized parameters to the OpenMM system</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#OMM_interface.openmm.OpenMM_system.set_platform" title="OMM_interface.openmm.OpenMM_system.set_platform"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_platform</span></code></a>()</p></td>
+<td><p>sets the computational platform for OpenMM, GPU is preferred (muuuuch faster)</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#OMM_interface.openmm.OpenMM_system.write_extracted_ff" title="OMM_interface.openmm.OpenMM_system.write_extracted_ff"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_extracted_ff</span></code></a>([output_path])</p></td>
+<td><p>writes the extracted force field parameters from the OpenMM system to file</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#OMM_interface.openmm.OpenMM_system.write_ff_optimizable" title="OMM_interface.openmm.OpenMM_system.write_ff_optimizable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_ff_optimizable</span></code></a>([output_path, file_name])</p></td>
+<td><p>writes the optimized force field parameters from the OpenMM system to file</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#OMM_interface.openmm.OpenMM_system.write_ommsys2xml" title="OMM_interface.openmm.OpenMM_system.write_ommsys2xml"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_ommsys2xml</span></code></a>([output_path, fname])</p></td>
+<td><p>Method that writes the OpenMM system stored in self.system to an XML file.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="OMM_interface.openmm.OpenMM_system.create_force_field_optimizable">
+<span class="sig-name descname"><span class="pre">create_force_field_optimizable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">opt_bonds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">opt_angles</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">opt_torsions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">opt_charges</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">opt_lj</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/OMM_interface/openmm.html#OpenMM_system.create_force_field_optimizable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#OMM_interface.openmm.OpenMM_system.create_force_field_optimizable" title="Permalink to this definition"></a></dt>
+<dd><p>creates a writable dictionary to store the parameters that are to be optimized</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>opt_bonds</strong> (<em>bool</em>) – Flag that signals whether the bond parameters will be optimized.</p></li>
+<li><p><strong>opt_angles</strong> (<em>bool</em>) – Flag that signals whether the angle parameters will be optimized.</p></li>
+<li><p><strong>opt_torsions</strong> (<em>bool</em>) – Flag that signals whether the dihedral parameters will be optimized.</p></li>
+<li><p><strong>opt_charges</strong> (<em>bool</em>) – Flag that signals whether the charges will be optimized.</p></li>
+<li><p><strong>opt_lj</strong> (<em>bool</em>) – Flag that signals whether the Lennard-Jones parameter will be optimized.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id0">
+<span class="sig-name descname"><span class="pre">ff_optimizable</span></span><a class="headerlink" href="#id0" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="OMM_interface.openmm.OpenMM_system.create_openmm_system">
+<span class="sig-name descname"><span class="pre">create_openmm_system</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/OMM_interface/openmm.html#OpenMM_system.create_openmm_system"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#OMM_interface.openmm.OpenMM_system.create_openmm_system" title="Permalink to this definition"></a></dt>
+<dd><p>creates the OpenMM system object</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMM_interface.openmm.OpenMM_system.topology_format">
+<span class="sig-name descname"><span class="pre">topology_format</span></span><a class="headerlink" href="#OMM_interface.openmm.OpenMM_system.topology_format" title="Permalink to this definition"></a></dt>
+<dd><p>necessary bc OpenMM calls different functions to build the system based on the input formats</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="OMM_interface.openmm.OpenMM_system.extract_forcefield">
+<span class="sig-name descname"><span class="pre">extract_forcefield</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/OMM_interface/openmm.html#OpenMM_system.extract_forcefield"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#OMM_interface.openmm.OpenMM_system.extract_forcefield" title="Permalink to this definition"></a></dt>
+<dd><p>Extracts all the force field params from the OpenMM system.
+So far, HarmonicBondforce, HarmonicAngleForce, PeriodicTotrsionForce, and NonbondedForce are defined. NBExceptions
+do not work at the moment as they would require a Context update (terribly slow) in the parametrization loop
+(see <a class="reference external" href="https://github.com/openmm/openmm/issues/252">https://github.com/openmm/openmm/issues/252</a>).
+WARNING: Static implementation for only one CustomNonbondedForce in the OpenMM system. If there are more, this will not work.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id1">
+<span class="sig-name descname"><span class="pre">system</span></span><a class="headerlink" href="#id1" title="Permalink to this definition"></a></dt>
+<dd><p>OpenMM system object</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMM_interface.openmm.OpenMM_system.force_group_idx_omm">
+<span class="sig-name descname"><span class="pre">force_group_idx_omm</span></span><a class="headerlink" href="#OMM_interface.openmm.OpenMM_system.force_group_idx_omm" title="Permalink to this definition"></a></dt>
+<dd><p>stores openmm force group number</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMM_interface.openmm.OpenMM_system.forces_indices">
+<span class="sig-name descname"><span class="pre">forces_indices</span></span><a class="headerlink" href="#OMM_interface.openmm.OpenMM_system.forces_indices" title="Permalink to this definition"></a></dt>
+<dd><p>force group dict that lists the omm force groups and indices</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="OMM_interface.openmm.OpenMM_system.get_charges">
+<span class="sig-name descname"><span class="pre">get_charges</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/OMM_interface/openmm.html#OpenMM_system.get_charges"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#OMM_interface.openmm.OpenMM_system.get_charges" title="Permalink to this definition"></a></dt>
+<dd><p>extracts the classical charges from the OpenMM system</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id2">
+<span class="sig-name descname"><span class="pre">extracted_ff</span></span><a class="headerlink" href="#id2" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id3">
+<span class="sig-name descname"><span class="pre">charges</span></span><a class="headerlink" href="#id3" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="OMM_interface.openmm.OpenMM_system.import_molecular_system">
+<span class="sig-name descname"><span class="pre">import_molecular_system</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/OMM_interface/openmm.html#OpenMM_system.import_molecular_system"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#OMM_interface.openmm.OpenMM_system.import_molecular_system" title="Permalink to this definition"></a></dt>
+<dd><p>reads in coords and topology</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id4">
+<span class="sig-name descname"><span class="pre">topology_format</span></span><a class="headerlink" href="#id4" title="Permalink to this definition"></a></dt>
+<dd><p>type of topology file, each MD software has its own :(</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMM_interface.openmm.OpenMM_system.top_file">
+<span class="sig-name descname"><span class="pre">top_file</span></span><a class="headerlink" href="#OMM_interface.openmm.OpenMM_system.top_file" title="Permalink to this definition"></a></dt>
+<dd><p>path to the topol file</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMM_interface.openmm.OpenMM_system.pbc">
+<span class="sig-name descname"><span class="pre">pbc</span></span><a class="headerlink" href="#OMM_interface.openmm.OpenMM_system.pbc" title="Permalink to this definition"></a></dt>
+<dd><p>whether to use periodic boundary conditions</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMM_interface.openmm.OpenMM_system.crd_format">
+<span class="sig-name descname"><span class="pre">crd_format</span></span><a class="headerlink" href="#OMM_interface.openmm.OpenMM_system.crd_format" title="Permalink to this definition"></a></dt>
+<dd><p>.pdb is kind of a standard, nonetheless GROMACS also has .gro and CHARMM and AMBER have .crd</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMM_interface.openmm.OpenMM_system.topology">
+<span class="sig-name descname"><span class="pre">topology</span></span><a class="headerlink" href="#OMM_interface.openmm.OpenMM_system.topology" title="Permalink to this definition"></a></dt>
+<dd><p>OpenMM topology object</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id5">
+<span class="sig-name descname"><span class="pre">crd</span></span><a class="headerlink" href="#id5" title="Permalink to this definition"></a></dt>
+<dd><p>OpenMM coordinates object</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="OMM_interface.openmm.OpenMM_system.read_extracted_ff">
+<span class="sig-name descname"><span class="pre">read_extracted_ff</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/OMM_interface/openmm.html#OpenMM_system.read_extracted_ff"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#OMM_interface.openmm.OpenMM_system.read_extracted_ff" title="Permalink to this definition"></a></dt>
+<dd><p>Read in an already existing/previously extracted extracted.ff file</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>input_path</strong> (<em>str</em><em>, </em><em>optional</em><em>, </em><em>default=None</em>) – path where the extracted.ff file containing previously extracted force field parameters is stored</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="OMM_interface.openmm.OpenMM_system.run_calculation">
+<span class="sig-name descname"><span class="pre">run_calculation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">positions</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/OMM_interface/openmm.html#OpenMM_system.run_calculation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#OMM_interface.openmm.OpenMM_system.run_calculation" title="Permalink to this definition"></a></dt>
+<dd><p>calculates classical energies and forces</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>positions</strong> – OpenMM coordinates object (OMM &lt;Vec3&gt; format) or numpy array, in nanometers</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id6">
+<span class="sig-name descname"><span class="pre">context</span></span><a class="headerlink" href="#id6" title="Permalink to this definition"></a></dt>
+<dd><p>OpenMM system context object</p>
+</dd></dl>
+
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>potential energies and forces (both numpy arrays)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>epot, forces</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="OMM_interface.openmm.OpenMM_system.set_integrator">
+<span class="sig-name descname"><span class="pre">set_integrator</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/OMM_interface/openmm.html#OpenMM_system.set_integrator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#OMM_interface.openmm.OpenMM_system.set_integrator" title="Permalink to this definition"></a></dt>
+<dd><p>sets the OpenMM MD integrator object</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMM_interface.openmm.OpenMM_system.integrator_params">
+<span class="sig-name descname"><span class="pre">integrator_params</span></span><a class="headerlink" href="#OMM_interface.openmm.OpenMM_system.integrator_params" title="Permalink to this definition"></a></dt>
+<dd><p>“settings” to be used with the integrator</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="OMM_interface.openmm.OpenMM_system.set_openmm_context">
+<span class="sig-name descname"><span class="pre">set_openmm_context</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/OMM_interface/openmm.html#OpenMM_system.set_openmm_context"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#OMM_interface.openmm.OpenMM_system.set_openmm_context" title="Permalink to this definition"></a></dt>
+<dd><p>sets the OpenMM context object by checking constraints, reading the initial coordinates and bundling it all
+up w/ the integrator and platform (a.k.a. prepares the mdrun/classical calculation)</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id7">
+<span class="sig-name descname"><span class="pre">system</span></span><a class="headerlink" href="#id7" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>openmm.openmm.System object</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMM_interface.openmm.OpenMM_system.integrator">
+<span class="sig-name descname"><span class="pre">integrator</span></span><a class="headerlink" href="#OMM_interface.openmm.OpenMM_system.integrator" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>openmm.openmm.Integrator object</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id8">
+<span class="sig-name descname"><span class="pre">platform</span></span><a class="headerlink" href="#id8" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>openmm.openmm.Platform object</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="OMM_interface.openmm.OpenMM_system.platform_properties">
+<span class="sig-name descname"><span class="pre">platform_properties</span></span><a class="headerlink" href="#OMM_interface.openmm.OpenMM_system.platform_properties" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>openmm.openmm.Platform settings of type dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id9">
+<span class="sig-name descname"><span class="pre">crd</span></span><a class="headerlink" href="#id9" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>OpenMM coordinates object</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="OMM_interface.openmm.OpenMM_system.set_parameters">
+<span class="sig-name descname"><span class="pre">set_parameters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/OMM_interface/openmm.html#OpenMM_system.set_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#OMM_interface.openmm.OpenMM_system.set_parameters" title="Permalink to this definition"></a></dt>
+<dd><p>writes the optimized parameters to the OpenMM system</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id10">
+<span class="sig-name descname"><span class="pre">ff_optimizable</span></span><a class="headerlink" href="#id10" title="Permalink to this definition"></a></dt>
+<dd><p>dictionary containing the optimizable force field parameters</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id11">
+<span class="sig-name descname"><span class="pre">system</span></span><a class="headerlink" href="#id11" title="Permalink to this definition"></a></dt>
+<dd><p>OpenMM system object</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="OMM_interface.openmm.OpenMM_system.set_platform">
+<span class="sig-name descname"><span class="pre">set_platform</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/OMM_interface/openmm.html#OpenMM_system.set_platform"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#OMM_interface.openmm.OpenMM_system.set_platform" title="Permalink to this definition"></a></dt>
+<dd><p>sets the computational platform for OpenMM, GPU is preferred (muuuuch faster)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="OMM_interface.openmm.OpenMM_system.write_extracted_ff">
+<span class="sig-name descname"><span class="pre">write_extracted_ff</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/OMM_interface/openmm.html#OpenMM_system.write_extracted_ff"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#OMM_interface.openmm.OpenMM_system.write_extracted_ff" title="Permalink to this definition"></a></dt>
+<dd><p>writes the extracted force field parameters from the OpenMM system to file</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>output_path</strong> (<em>str</em><em>, </em><em>optional</em><em>, </em><em>default=None</em>) – path where the .ff files containing the force field parameters are written</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="OMM_interface.openmm.OpenMM_system.write_ff_optimizable">
+<span class="sig-name descname"><span class="pre">write_ff_optimizable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/OMM_interface/openmm.html#OpenMM_system.write_ff_optimizable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#OMM_interface.openmm.OpenMM_system.write_ff_optimizable" title="Permalink to this definition"></a></dt>
+<dd><p>writes the optimized force field parameters from the OpenMM system to file</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>output_path</strong> (<em>str</em><em>, </em><em>optional</em><em>, </em><em>default=None</em>) – path where the .ff files containing the force field parameters are written</p></li>
+<li><p><strong>file_name</strong> (<em>str</em><em>, </em><em>optional</em><em>, </em><em>default=None</em>) – filename of …._opt.ff</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="OMM_interface.openmm.OpenMM_system.write_ommsys2xml">
+<span class="sig-name descname"><span class="pre">write_ommsys2xml</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'.'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'omm_system'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/OMM_interface/openmm.html#OpenMM_system.write_ommsys2xml"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#OMM_interface.openmm.OpenMM_system.write_ommsys2xml" title="Permalink to this definition"></a></dt>
+<dd><p>Method that writes the OpenMM system stored in self.system to an XML file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>output_path</strong> (<em>str</em><em>, </em><em>optional</em><em>, </em><em>default='.'</em>) – path where the .xml file containing the system is written</p></li>
+<li><p><strong>fname</strong> (<em>str</em><em>, </em><em>optional</em><em>, </em><em>default='omm_system'</em>) – filename of the .xml file</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>‘True’ if file was closed successfully. ‘False’ otherwise.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-OMM_interface">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-OMM_interface" title="Permalink to this heading"></a></h2>
+<p>OpenMM interface subpackage</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="Direct_cp2k_calculation.html" class="btn btn-neutral float-left" title="Direct_cp2k_calculation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="Parametrization.html" class="btn btn-neutral float-right" title="Parametrization" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Viktoria Korn.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

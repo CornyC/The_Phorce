@@ -1,0 +1,687 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Parametrization &mdash; The Phorce 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=92fd9be5" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=e031e9a9"></script>
+      <script src="_static/doctools.js?v=888ff710"></script>
+      <script src="_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="System" href="System.html" />
+    <link rel="prev" title="OMM_interface" href="OMM_interface.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            The Phorce
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">The_Phorce</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="ASE_interface.html">ASE_interface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Coord_Toolz.html">Coord_Toolz</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Direct_cp2k_calculation.html">Direct_cp2k_calculation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="OMM_interface.html">OMM_interface</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Parametrization</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-Parametrization.optimizers">Parametrization.optimizers module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#Parametrization.optimizers.Optimizer"><code class="docutils literal notranslate"><span class="pre">Optimizer</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-Parametrization.parametrization">Parametrization.parametrization module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#Parametrization.parametrization.Parametrization"><code class="docutils literal notranslate"><span class="pre">Parametrization</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-Parametrization">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="System.html">System</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">The Phorce</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">The_Phorce</a></li>
+      <li class="breadcrumb-item active">Parametrization</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/Parametrization.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="the-phorce-parametrization-package">
+<h1>Parametrization<a class="headerlink" href="#the-phorce-parametrization-package" title="Permalink to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading"></a></h2>
+</section>
+<section id="module-Parametrization.optimizers">
+<span id="the-phorce-parametrization-optimizers-module"></span><h2>Parametrization.optimizers module<a class="headerlink" href="#module-Parametrization.optimizers" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="Parametrization.optimizers.Optimizer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">Parametrization.optimizers.</span></span><span class="sig-name descname"><span class="pre">Optimizer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">opt_method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">opt_settings</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_iterations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tolerance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-08</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constraints</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Parametrization/optimizers.html#Optimizer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#Parametrization.optimizers.Optimizer" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Creates the optimizer for the parametrization problem.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>opt_method</strong> (<em>str</em>) – Name of the optimizer to be created. Available optimizers are “scipy_local” (as in all local scipy optimizers),
+“scipy_global” (as in all global scipy optimizers), “bayesian” (ML-informed from the boss),
+“cma” (CMA-ES (Covariance Matrix Adaptation Evolution Strategy)), and “pso” (Particle swarm optimization).</p></li>
+<li><p><strong>opt_settings</strong> (<em>dict</em>) – dictionary containing the optimizer-specific settings. See the respective docs for info.</p></li>
+<li><p><strong>max_iterations</strong> (<em>int</em>) – maximum optimization steps the optimizer should take, default = 10000</p></li>
+<li><p><strong>tolerance</strong> (<em>float</em>) – change value below which the optimizer is supposed to be converged, default = 1e-8</p></li>
+<li><p><strong>constraints</strong> (<em>list</em><em> of </em><em>tuples</em>) – gets passed on from System.Molecular_system.constraints to the optimizer if it supports either bounds or a constraint function.
+Otherwise, a penalty term is added to the objective function.
+Default = None</p></li>
+<li><p><strong>enforce_constraints</strong> (<em>bool</em>) – Default = False, applies penalty term to objective function for scipy Nelder-Mead</p></li>
+<li><p><strong>f</strong> (<em>Parametrization.parametrization.Objective_function object</em>) – Objective function</p></li>
+<li><p><strong>parameters</strong> (<em>numpy array</em>) – Parameters that are going to be optimized (extracted from ff_optimizable using parametrization.Parametrization)</p></li>
+<li><p><strong>scipy_optimization</strong> (<em>scipy.optimize object</em>) – specific optimizer, sometimes handy to check status &amp; output</p></li>
+<li><p><strong>cma_optimization</strong> (<em>pycma object</em>) – specific optimizer, sometimes handy to check status &amp; output</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#Parametrization.optimizers.Optimizer.constraints_func" title="Parametrization.optimizers.Optimizer.constraints_func"><code class="xref py py-obj docutils literal notranslate"><span class="pre">constraints_func</span></code></a>(parameters)</p></td>
+<td><p>Penalty function for constrained optimization which is handed to the optimizer directly if supported or added to the objective function.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#Parametrization.optimizers.Optimizer.optimize_with_boss" title="Parametrization.optimizers.Optimizer.optimize_with_boss"><code class="xref py py-obj docutils literal notranslate"><span class="pre">optimize_with_boss</span></code></a>()</p></td>
+<td><p>Bayesian optimizer.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#Parametrization.optimizers.Optimizer.optimize_with_cma" title="Parametrization.optimizers.Optimizer.optimize_with_cma"><code class="xref py py-obj docutils literal notranslate"><span class="pre">optimize_with_cma</span></code></a>()</p></td>
+<td><p>see <a class="reference external" href="https://cma-es.github.io/apidocs-pycma/">https://cma-es.github.io/apidocs-pycma/</a> CMA-ES is a stochastic optimizer for robust non-linear non-convex derivative- and function-value-free numerical optimization.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#Parametrization.optimizers.Optimizer.optimize_with_pso" title="Parametrization.optimizers.Optimizer.optimize_with_pso"><code class="xref py py-obj docutils literal notranslate"><span class="pre">optimize_with_pso</span></code></a>()</p></td>
+<td><p>Particle swarm optimizer.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#Parametrization.optimizers.Optimizer.optimize_with_scipy_global" title="Parametrization.optimizers.Optimizer.optimize_with_scipy_global"><code class="xref py py-obj docutils literal notranslate"><span class="pre">optimize_with_scipy_global</span></code></a>()</p></td>
+<td><p>see <a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/optimize.html">https://docs.scipy.org/doc/scipy/reference/optimize.html</a></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#Parametrization.optimizers.Optimizer.optimize_with_scipy_local" title="Parametrization.optimizers.Optimizer.optimize_with_scipy_local"><code class="xref py py-obj docutils literal notranslate"><span class="pre">optimize_with_scipy_local</span></code></a>()</p></td>
+<td><p>see <a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html">https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html</a> Nelder-Mead is recommended, Powell or COBYLA could work, too.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#Parametrization.optimizers.Optimizer.run_optimizer" title="Parametrization.optimizers.Optimizer.run_optimizer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">run_optimizer</span></code></a>(f, parameters[, constraints])</p></td>
+<td><p><dl class="field-list simple">
+<dt class="field-odd">param f<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Objective function</p>
+</dd>
+</dl>
+</p></td>
+</tr>
+</tbody>
+</table>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><strong>penalize_objective_function</strong></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="Parametrization.optimizers.Optimizer.constraints_func">
+<span class="sig-name descname"><span class="pre">constraints_func</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameters</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Parametrization/optimizers.html#Optimizer.constraints_func"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#Parametrization.optimizers.Optimizer.constraints_func" title="Permalink to this definition"></a></dt>
+<dd><p>Penalty function for constrained optimization which is handed to the optimizer directly if supported or added to the objective function.
+Checks if parameters are within bounds and if not adds penalty.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Parametrization.optimizers.Optimizer.optimize_with_boss">
+<span class="sig-name descname"><span class="pre">optimize_with_boss</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/Parametrization/optimizers.html#Optimizer.optimize_with_boss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#Parametrization.optimizers.Optimizer.optimize_with_boss" title="Permalink to this definition"></a></dt>
+<dd><p>Bayesian optimizer. See <a class="reference external" href="https://cest-group.gitlab.io/boss/index.html">https://cest-group.gitlab.io/boss/index.html</a>.
+Bounds are created automatically based on self.parameters.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="Parametrization.optimizers.Optimizer.parameters">
+<span class="sig-name descname"><span class="pre">parameters</span></span><a class="headerlink" href="#Parametrization.optimizers.Optimizer.parameters" title="Permalink to this definition"></a></dt>
+<dd><p>parameters that go into the function</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="Parametrization.optimizers.Optimizer.opt_settings">
+<span class="sig-name descname"><span class="pre">opt_settings</span></span><a class="headerlink" href="#Parametrization.optimizers.Optimizer.opt_settings" title="Permalink to this definition"></a></dt>
+<dd><p>optimizer-speific settings, {‘options’: {‘bo_output’: outputpath}} needs to be set.
+Most BOMain keywords can be passed through the options dictionary. If yours is missing, implement it
+down below like the others.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Parametrization.optimizers.Optimizer.optimize_with_cma">
+<span class="sig-name descname"><span class="pre">optimize_with_cma</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/Parametrization/optimizers.html#Optimizer.optimize_with_cma"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#Parametrization.optimizers.Optimizer.optimize_with_cma" title="Permalink to this definition"></a></dt>
+<dd><p>see <a class="reference external" href="https://cma-es.github.io/apidocs-pycma/">https://cma-es.github.io/apidocs-pycma/</a>
+CMA-ES is a stochastic optimizer for robust non-linear non-convex derivative- and function-value-free numerical optimization.
+It is terribly slow but might offer a last resort solution.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id0">
+<span class="sig-name descname"><span class="pre">parameters</span></span><a class="headerlink" href="#id0" title="Permalink to this definition"></a></dt>
+<dd><p>parameters that go into the function</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id1">
+<span class="sig-name descname"><span class="pre">opt_settings</span></span><a class="headerlink" href="#id1" title="Permalink to this definition"></a></dt>
+<dd><p>optimizer-speific settings, if you want to use fancy settings, add them to the ‘pycma settings’ routine down below.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Parametrization.optimizers.Optimizer.optimize_with_pso">
+<span class="sig-name descname"><span class="pre">optimize_with_pso</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/Parametrization/optimizers.html#Optimizer.optimize_with_pso"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#Parametrization.optimizers.Optimizer.optimize_with_pso" title="Permalink to this definition"></a></dt>
+<dd><p>Particle swarm optimizer. Beware this feature is experimental. Choose hyperparameters carefully. Set them by
+c1, c2, w, n_particles = Optimizer.opt_settings.values() after having initialized the Optimizer object and before running
+the parametrization loop.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>c1</strong> (<em>float</em>) – Hyperparameters used in particle swarm optimization, defaults: c1=0.1, c2=0.1, w=0.4</p></li>
+<li><p><strong>c2</strong> (<em>float</em>) – Hyperparameters used in particle swarm optimization, defaults: c1=0.1, c2=0.1, w=0.4</p></li>
+<li><p><strong>w</strong> (<em>float</em>) – Hyperparameters used in particle swarm optimization, defaults: c1=0.1, c2=0.1, w=0.4</p></li>
+<li><p><strong>n_particles</strong> (<em>int</em>) – number of swarm particles to be generated, default = 50</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id2">
+<span class="sig-name descname"><span class="pre">parameters</span></span><a class="headerlink" href="#id2" title="Permalink to this definition"></a></dt>
+<dd><p>parameters that go into the function</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="Parametrization.optimizers.Optimizer.f">
+<span class="sig-name descname"><span class="pre">f</span></span><a class="headerlink" href="#Parametrization.optimizers.Optimizer.f" title="Permalink to this definition"></a></dt>
+<dd><p>input function (wrapped objective function)</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="Parametrization.optimizers.Optimizer.max_iterations">
+<span class="sig-name descname"><span class="pre">max_iterations</span></span><a class="headerlink" href="#Parametrization.optimizers.Optimizer.max_iterations" title="Permalink to this definition"></a></dt>
+<dd><p>limits the number of iterations</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="Parametrization.optimizers.Optimizer.tolerance">
+<span class="sig-name descname"><span class="pre">tolerance</span></span><a class="headerlink" href="#Parametrization.optimizers.Optimizer.tolerance" title="Permalink to this definition"></a></dt>
+<dd><p>below which change the optimization is defined as converged</p>
+</dd></dl>
+
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><ul class="simple">
+<li><p><strong>optimized_params</strong> (<em>np.array</em>) – contains the optimized force field params</p></li>
+<li><p><strong>value</strong> (<em>float</em>) – value of the input function self.f</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Parametrization.optimizers.Optimizer.optimize_with_scipy_global">
+<span class="sig-name descname"><span class="pre">optimize_with_scipy_global</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/Parametrization/optimizers.html#Optimizer.optimize_with_scipy_global"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#Parametrization.optimizers.Optimizer.optimize_with_scipy_global" title="Permalink to this definition"></a></dt>
+<dd><p>see <a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/optimize.html">https://docs.scipy.org/doc/scipy/reference/optimize.html</a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id3">
+<span class="sig-name descname"><span class="pre">parameters</span></span><a class="headerlink" href="#id3" title="Permalink to this definition"></a></dt>
+<dd><p>parameters that go into the function</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id4">
+<span class="sig-name descname"><span class="pre">opt_settings</span></span><a class="headerlink" href="#id4" title="Permalink to this definition"></a></dt>
+<dd><p>nested dict of optimizer-speific settings, see above url</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id5">
+<span class="sig-name descname"><span class="pre">tolerance</span></span><a class="headerlink" href="#id5" title="Permalink to this definition"></a></dt>
+<dd><p>optimizer tolerance</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id6">
+<span class="sig-name descname"><span class="pre">f</span></span><a class="headerlink" href="#id6" title="Permalink to this definition"></a></dt>
+<dd><p>Objective function wrapper</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>parametrization.Parametrization.wrap_objective_function</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Parametrization.optimizers.Optimizer.optimize_with_scipy_local">
+<span class="sig-name descname"><span class="pre">optimize_with_scipy_local</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/Parametrization/optimizers.html#Optimizer.optimize_with_scipy_local"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#Parametrization.optimizers.Optimizer.optimize_with_scipy_local" title="Permalink to this definition"></a></dt>
+<dd><p>see <a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html">https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html</a>
+Nelder-Mead is recommended, Powell or COBYLA could work, too. Set the specific optimizer thru
+Opti = Optimizer(‘scipy_local’, {‘method’: ‘Nelder-Mead’}) during initialization of the Optimizer object.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id7">
+<span class="sig-name descname"><span class="pre">parameters</span></span><a class="headerlink" href="#id7" title="Permalink to this definition"></a></dt>
+<dd><p>parameters that go into the function</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id8">
+<span class="sig-name descname"><span class="pre">opt_settings</span></span><a class="headerlink" href="#id8" title="Permalink to this definition"></a></dt>
+<dd><p>optimizer-speific settings</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="Parametrization.optimizers.Optimizer.constraints">
+<span class="sig-name descname"><span class="pre">constraints</span></span><a class="headerlink" href="#Parametrization.optimizers.Optimizer.constraints" title="Permalink to this definition"></a></dt>
+<dd><p>idk yet</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id9">
+<span class="sig-name descname"><span class="pre">tolerance</span></span><a class="headerlink" href="#id9" title="Permalink to this definition"></a></dt>
+<dd><p>optimizer tolerance</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id10">
+<span class="sig-name descname"><span class="pre">f</span></span><a class="headerlink" href="#id10" title="Permalink to this definition"></a></dt>
+<dd><p>Objective function wrapper</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>parametrization.Parametrization.wrap_objective_function</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array containing the optimized force field params, objective function value</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>optimized_params, value</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="Parametrization.optimizers.Optimizer.optimizers">
+<span class="sig-name descname"><span class="pre">optimizers</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['scipy_local',</span> <span class="pre">'scipy_global',</span> <span class="pre">'bayesian',</span> <span class="pre">'cma',</span> <span class="pre">'pso']</span></em><a class="headerlink" href="#Parametrization.optimizers.Optimizer.optimizers" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Parametrization.optimizers.Optimizer.penalize_objective_function">
+<span class="sig-name descname"><span class="pre">penalize_objective_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameters</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Parametrization/optimizers.html#Optimizer.penalize_objective_function"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#Parametrization.optimizers.Optimizer.penalize_objective_function" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Parametrization.optimizers.Optimizer.run_optimizer">
+<span class="sig-name descname"><span class="pre">run_optimizer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">f</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parameters</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constraints</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Parametrization/optimizers.html#Optimizer.run_optimizer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#Parametrization.optimizers.Optimizer.run_optimizer" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>f</strong> (<em>Parametrization.parametrization.Parametrization object</em>) – Objective function</p></li>
+<li><p><strong>parameters</strong> (<em>numpy array</em>) – Parameters that are going to be optimized (extracted from ff_optimizable)</p></li>
+<li><p><strong>constraints</strong> – Optimization constraints, default = None</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>optimized_params</strong> (<em>np.array</em>) – contains the optimized force field params</p></li>
+<li><p><strong>value</strong> (<em>float</em>) – value of self.f</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-Parametrization.parametrization">
+<span id="the-phorce-parametrization-parametrization-module"></span><h2>Parametrization.parametrization module<a class="headerlink" href="#module-Parametrization.parametrization" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="Parametrization.parametrization.Parametrization">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">Parametrization.parametrization.</span></span><span class="sig-name descname"><span class="pre">Parametrization</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">molecular_system</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">term_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constraints</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Parametrization/parametrization.html#Parametrization"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#Parametrization.parametrization.Parametrization" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Parametrizes your molecular system.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>molecular_system</strong> (<em>system.FMolecular_system object</em>) – Contains properties of the molecular system that is to be parametrized</p></li>
+<li><p><strong>term_type</strong> (<em>str</em>) – ‘energy’ or ‘force’ or ‘force &amp; energy’; determines which terms go into the objective function
+Additionally, ‘force_i’ can be used to enable an individal variance computation for each conformation (some sort of wheighing).
+‘force_c’ computes the variance over all conformations and uses the same value for each conformation in the objective function.
+This is the default setting also used in ‘force’ and ‘force &amp; energy’.</p></li>
+<li><p><strong>optimizer</strong> (<em>Parametrization.optimiizers.Optimizer object</em>) – Contains optimizer type and specific settings</p></li>
+<li><p><strong>constraints</strong> (<em>str</em>) – Applies manual ‘man’ or automatic ‘auto’ bounds directly or indirectly to the optimization
+sets self.bounds</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="Parametrization.parametrization.Parametrization.parameters">
+<span class="sig-name descname"><span class="pre">parameters</span></span><a class="headerlink" href="#Parametrization.parametrization.Parametrization.parameters" title="Permalink to this definition"></a></dt>
+<dd><p>contains optimized, scaled &amp; vectorized parameters</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>1d array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="Parametrization.parametrization.Parametrization.bounds">
+<span class="sig-name descname"><span class="pre">bounds</span></span><a class="headerlink" href="#Parametrization.parametrization.Parametrization.bounds" title="Permalink to this definition"></a></dt>
+<dd><p>upper and lower limit for parameters if the optimization is constrained.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list of tuples</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ValueError</strong> – If parameter_type not supported</p></li>
+<li><p><strong>NotImplementedError</strong> – If automatic bounds for a certain atom’s charge are not implemented
+If automatic constraints are chsoen for force groups other than NonbondedForce and CustomNonbondedForce</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#Parametrization.parametrization.Parametrization.calc_force_std_dev" title="Parametrization.parametrization.Parametrization.calc_force_std_dev"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calc_force_std_dev</span></code></a>()</p></td>
+<td><p>calculates the standard deviation of forces</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#Parametrization.parametrization.Parametrization.calculate_classical_energies_forces" title="Parametrization.parametrization.Parametrization.calculate_classical_energies_forces"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calculate_classical_energies_forces</span></code></a>()</p></td>
+<td><p>calculates all classical energies and forces using OpenMM for the molecular_system</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#Parametrization.parametrization.Parametrization.calculate_classical_net_forces" title="Parametrization.parametrization.Parametrization.calculate_classical_net_forces"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calculate_classical_net_forces</span></code></a>()</p></td>
+<td><p>calculates classical net forces (if more than one molecule/ molecule is solvated)</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#Parametrization.parametrization.Parametrization.evaluate_obj_func_energy" title="Parametrization.parametrization.Parametrization.evaluate_obj_func_energy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">evaluate_obj_func_energy</span></code></a>()</p></td>
+<td><p>calculates the value of the objective function using the format required by the selected optimizer</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#Parametrization.parametrization.Parametrization.evaluate_obj_func_force" title="Parametrization.parametrization.Parametrization.evaluate_obj_func_force"><code class="xref py py-obj docutils literal notranslate"><span class="pre">evaluate_obj_func_force</span></code></a>([method])</p></td>
+<td><p>calculates the value of the objective function using the format required by the selected optimizer</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#Parametrization.parametrization.Parametrization.parametrize" title="Parametrization.parametrization.Parametrization.parametrize"><code class="xref py py-obj docutils literal notranslate"><span class="pre">parametrize</span></code></a>(parameters)</p></td>
+<td><p>Feeds the objective function wrapper and the parameters to the selected optimizer.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#Parametrization.parametrization.Parametrization.wrap_objective_function" title="Parametrization.parametrization.Parametrization.wrap_objective_function"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wrap_objective_function</span></code></a>(parameters)</p></td>
+<td><p>Abstract function that calculates the value of the objective function based on the parameters</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="Parametrization.parametrization.Parametrization.calc_force_std_dev">
+<span class="sig-name descname"><span class="pre">calc_force_std_dev</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/Parametrization/parametrization.html#Parametrization.calc_force_std_dev"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#Parametrization.parametrization.Parametrization.calc_force_std_dev" title="Permalink to this definition"></a></dt>
+<dd><p>calculates the standard deviation of forces</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>force_std_dev</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Parametrization.parametrization.Parametrization.calculate_classical_energies_forces">
+<span class="sig-name descname"><span class="pre">calculate_classical_energies_forces</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/Parametrization/parametrization.html#Parametrization.calculate_classical_energies_forces"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#Parametrization.parametrization.Parametrization.calculate_classical_energies_forces" title="Permalink to this definition"></a></dt>
+<dd><p>calculates all classical energies and forces using OpenMM for the molecular_system</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="Parametrization.parametrization.Parametrization.emm">
+<span class="sig-name descname"><span class="pre">emm</span></span><a class="headerlink" href="#Parametrization.parametrization.Parametrization.emm" title="Permalink to this definition"></a></dt>
+<dd><p>calssical energies of [‘all’] system</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Parametrization.parametrization.Parametrization.calculate_classical_net_forces">
+<span class="sig-name descname"><span class="pre">calculate_classical_net_forces</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/Parametrization/parametrization.html#Parametrization.calculate_classical_net_forces"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#Parametrization.parametrization.Parametrization.calculate_classical_net_forces" title="Permalink to this definition"></a></dt>
+<dd><p>calculates classical net forces (if more than one molecule/ molecule is solvated)</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="Parametrization.parametrization.Parametrization.fmm">
+<span class="sig-name descname"><span class="pre">fmm</span></span><a class="headerlink" href="#Parametrization.parametrization.Parametrization.fmm" title="Permalink to this definition"></a></dt>
+<dd><p>calssical forces (net)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Parametrization.parametrization.Parametrization.evaluate_obj_func_energy">
+<span class="sig-name descname"><span class="pre">evaluate_obj_func_energy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/Parametrization/parametrization.html#Parametrization.evaluate_obj_func_energy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#Parametrization.parametrization.Parametrization.evaluate_obj_func_energy" title="Permalink to this definition"></a></dt>
+<dd><dl class="simple">
+<dt>calculates the value of the objective function using the format required by the selected optimizer</dt><dd><p>n_conf        (ΔE - &lt;ΔE&gt;)²</p>
+</dd>
+<dt>O =   Σ  ω_{conf} ————</dt><dd><p>conf         Var(E^{QM})</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>value of the objective function in the format of the selected optimizer</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>obj_f_e</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ValueError</strong> – If Optimizer of type {} not implemented</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Parametrization.parametrization.Parametrization.evaluate_obj_func_force">
+<span class="sig-name descname"><span class="pre">evaluate_obj_func_force</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'const_variance'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Parametrization/parametrization.html#Parametrization.evaluate_obj_func_force"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#Parametrization.parametrization.Parametrization.evaluate_obj_func_force" title="Permalink to this definition"></a></dt>
+<dd><dl class="simple">
+<dt>calculates the value of the objective function using the format required by the selected optimizer</dt><dd><p>1            n_atoms n_conf              <a href="#id11"><span class="problematic" id="id12">|</span></a>ΔF|²</p>
+</dd>
+<dt>O = —————-     Σ     Σ     ω_{conf} ————</dt><dd><p>3n_atoms n_confs   atom   conf             Var(F^{QM})</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>method</strong> (<em>str</em><em>, </em><em>default='const_variance'</em>) – “const_variance”, or “indiv_variance”. “const_variance” computes the variance over the ntire qm dataset,
+“indiv_variance” does so over each conformation (introduces a kind of weight)</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>value of the objective function in the format of the selected optimizer</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>obj_f_f</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If Optimizer of type {} not implemented</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Parametrization.parametrization.Parametrization.parametrize">
+<span class="sig-name descname"><span class="pre">parametrize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameters</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Parametrization/parametrization.html#Parametrization.parametrize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#Parametrization.parametrization.Parametrization.parametrize" title="Permalink to this definition"></a></dt>
+<dd><p>Feeds the objective function wrapper and the parameters to the selected optimizer.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Parametrization.parametrization.Parametrization.wrap_objective_function">
+<span class="sig-name descname"><span class="pre">wrap_objective_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameters</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Parametrization/parametrization.html#Parametrization.wrap_objective_function"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#Parametrization.parametrization.Parametrization.wrap_objective_function" title="Permalink to this definition"></a></dt>
+<dd><p>Abstract function that calculates the value of the objective function based on the parameters</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>parameters</strong> (<em>1d array</em>) – Selected scaled and vectorized parameters from molecular_system.scaled_parameters</p></li>
+<li><p><strong>molecular_system</strong> (<em>system.Molecular_system object</em>) – </p></li>
+<li><p><strong>term_type</strong> (<em>str</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>obj_f_value</strong> – value of objective funtion as float</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-Parametrization">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-Parametrization" title="Permalink to this heading"></a></h2>
+<p>Subpackage that does the actual parametrization</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="OMM_interface.html" class="btn btn-neutral float-left" title="OMM_interface" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="System.html" class="btn btn-neutral float-right" title="System" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Viktoria Korn.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

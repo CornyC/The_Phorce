@@ -1,0 +1,312 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ASE_interface &mdash; The Phorce 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=92fd9be5" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=e031e9a9"></script>
+      <script src="_static/doctools.js?v=888ff710"></script>
+      <script src="_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Coord_Toolz" href="Coord_Toolz.html" />
+    <link rel="prev" title="The_Phorce" href="modules.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            The Phorce
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">The_Phorce</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">ASE_interface</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-ASE_interface.ase_calculation">ASE_interface.ase_calculation module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#ASE_interface.ase_calculation.ASE_system"><code class="docutils literal notranslate"><span class="pre">ASE_system</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-ASE_interface">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="Coord_Toolz.html">Coord_Toolz</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Direct_cp2k_calculation.html">Direct_cp2k_calculation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="OMM_interface.html">OMM_interface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Parametrization.html">Parametrization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="System.html">System</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">The Phorce</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">The_Phorce</a></li>
+      <li class="breadcrumb-item active">ASE_interface</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/ASE_interface.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="the-phorce-ase-interface-package">
+<h1>ASE_interface<a class="headerlink" href="#the-phorce-ase-interface-package" title="Permalink to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading"></a></h2>
+</section>
+<section id="module-ASE_interface.ase_calculation">
+<span id="the-phorce-ase-interface-ase-calculation-module"></span><h2>ASE_interface.ase_calculation module<a class="headerlink" href="#module-ASE_interface.ase_calculation" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="ASE_interface.ase_calculation.ASE_system">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ASE_interface.ase_calculation.</span></span><span class="sig-name descname"><span class="pre">ASE_system</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symbols=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">positions=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cell_dimensions=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pbc=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calculator=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dihedral_freeze=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ase_constraints=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shake_threshold=1e-07</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer=&lt;class</span> <span class="pre">'ase.optimize.lbfgs.LBFGS'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">opt_fmax=0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">opt_log_file='-'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">opt_traj_prefix='traj_'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ASE_interface/ase_calculation.html#ASE_system"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ASE_interface.ase_calculation.ASE_system" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Prepares and runs the QM calculation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>atom_symbols</strong> (<em>ASE atoms.symbols object</em>) – contains short identifiers for atom types</p></li>
+<li><p><strong>positions</strong> (<em>numpy array</em>) – coordinates of one sampled structure</p></li>
+<li><p><strong>cell_dimensions</strong> (<em>numpy array</em><em> of </em><em>shape</em><em> (</em><em>3</em><em>,</em><em>)</em>) – length of 3 cell edges in Angström</p></li>
+<li><p><strong>pbc</strong> (<em>boolean numpy array</em><em> of </em><em>shape</em><em> (</em><em>3</em><em>,</em><em>)</em>) – Enabled/disabled periodic boundary conditions in x,y,z direction</p></li>
+<li><p><strong>dihedral_freeze</strong> (<em>list</em><em> of </em><em>list</em><em> of </em><em>int</em><em>, </em><em>default=None</em>) – List of lists of wherein each inner list should contain 4 integers defining a torsion to be kept fixed.</p></li>
+<li><p><strong>ase_constraints</strong> (<em>list</em><em> of </em><em>ASE constraints</em><em>, </em><em>default=None</em>) – List of ASE constraints to be applied during the scans.
+More information: <a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/constraints.html">https://wiki.fysik.dtu.dk/ase/ase/constraints.html</a></p></li>
+<li><p><strong>shake_threshold</strong> (<em>float</em>) – Threshold of the SHAKE algorithm (constrains water vibrations)</p></li>
+<li><p><strong>optimizer</strong> (any ase.optimizer, default=:obj:<cite>ase.optimize.lbfgs.LBFGS*</cite>) – ASE optimizer instance. For more info see: <a class="reference external" href="https://wiki.fysik.dtu.dk/ase/ase/optimize.html">https://wiki.fysik.dtu.dk/ase/ase/optimize.html</a></p></li>
+<li><p><strong>opt_fmax</strong> (<em>float</em><em>, </em><em>default=1e-2</em>) – The convergence criterion to stop the optimization is that the force on all individual atoms
+should be less than <cite>fmax</cite>.</p></li>
+<li><p><strong>opt_log_file</strong> (<em>str</em><em>, </em><em>default=&quot;-&quot;</em>) – File where optimization log will be stored. Use ‘-’ for stdout.</p></li>
+<li><p><strong>opt_traj_prefix</strong> (str, default=”<a href="#id4"><span class="problematic" id="id5">traj_</span></a>”) – Prefix given to the pickle file used to store the trajectory during optimization.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ASE_interface.ase_calculation.ASE_system.atoms">
+<span class="sig-name descname"><span class="pre">atoms</span></span><a class="headerlink" href="#ASE_interface.ase_calculation.ASE_system.atoms" title="Permalink to this definition"></a></dt>
+<dd><p>contains symbols, positions, cell, pbc, calculator (see ASE doc)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ASE atoms object</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ASE_interface.ase_calculation.ASE_system.energy">
+<span class="sig-name descname"><span class="pre">energy</span></span><a class="headerlink" href="#ASE_interface.ase_calculation.ASE_system.energy" title="Permalink to this definition"></a></dt>
+<dd><p>single-point energy of molecule in water obtained from DFT calculation in kJ/mol</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ASE_interface.ase_calculation.ASE_system.forces">
+<span class="sig-name descname"><span class="pre">forces</span></span><a class="headerlink" href="#ASE_interface.ase_calculation.ASE_system.forces" title="Permalink to this definition"></a></dt>
+<dd><p>forces an each atom as obtained from DFT calculation in kJ/mol/nm</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ASE_interface.ase_calculation.ASE_system.opt_coords">
+<span class="sig-name descname"><span class="pre">opt_coords</span></span><a class="headerlink" href="#ASE_interface.ase_calculation.ASE_system.opt_coords" title="Permalink to this definition"></a></dt>
+<dd><p>positions of atoms after DFT geometry optimization in nm</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ASE_interface.ase_calculation.ASE_system.energy_gp">
+<span class="sig-name descname"><span class="pre">energy_gp</span></span><a class="headerlink" href="#ASE_interface.ase_calculation.ASE_system.energy_gp" title="Permalink to this definition"></a></dt>
+<dd><p>single-point energy of molecule in gas phase obtained from DFT calculation in kJ/mol</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ASE_interface.ase_calculation.ASE_system.forces_gp">
+<span class="sig-name descname"><span class="pre">forces_gp</span></span><a class="headerlink" href="#ASE_interface.ase_calculation.ASE_system.forces_gp" title="Permalink to this definition"></a></dt>
+<dd><p>forces an each atom of gas-phase molecule as obtained from DFT calculation in kJ/mol/nm</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ASE_interface.ase_calculation.ASE_system.construct_atoms_object" title="ASE_interface.ase_calculation.ASE_system.construct_atoms_object"><code class="xref py py-obj docutils literal notranslate"><span class="pre">construct_atoms_object</span></code></a>()</p></td>
+<td><p>constructs the ASE atoms object from the element symbols, coordinates, periodic boundary conditions, and cell info.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ASE_interface.ase_calculation.ASE_system.run_calculation" title="ASE_interface.ase_calculation.ASE_system.run_calculation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">run_calculation</span></code></a>([run_type])</p></td>
+<td><p>runs the ASE quantum calculation</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="ASE_interface.ase_calculation.ASE_system.construct_atoms_object">
+<span class="sig-name descname"><span class="pre">construct_atoms_object</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ASE_interface/ase_calculation.html#ASE_system.construct_atoms_object"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ASE_interface.ase_calculation.ASE_system.construct_atoms_object" title="Permalink to this definition"></a></dt>
+<dd><p>constructs the ASE atoms object from the element symbols, coordinates, periodic boundary conditions, and cell info.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ASE_interface.ase_calculation.ASE_system.run_calculation">
+<span class="sig-name descname"><span class="pre">run_calculation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">run_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'single_point'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ASE_interface/ase_calculation.html#ASE_system.run_calculation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ASE_interface.ase_calculation.ASE_system.run_calculation" title="Permalink to this definition"></a></dt>
+<dd><p>runs the ASE quantum calculation</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>run_type</strong> (<em>str</em><em>, </em><em>default = 'single_point'</em>) – options are ‘single-point’ (no geometry optimization), ‘optimization’ (runs a geometry optimization),
+or ‘gas_phase’ (single-point w/o water)</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ASE_interface.ase_calculation.ASE_system.energies">
+<span class="sig-name descname"><span class="pre">energies</span></span><a class="headerlink" href="#ASE_interface.ase_calculation.ASE_system.energies" title="Permalink to this definition"></a></dt>
+<dd><p>quantum energies</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id0">
+<span class="sig-name descname"><span class="pre">forces</span></span><a class="headerlink" href="#id0" title="Permalink to this definition"></a></dt>
+<dd><p>quantum forces</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id1">
+<span class="sig-name descname"><span class="pre">opt_coords</span></span><a class="headerlink" href="#id1" title="Permalink to this definition"></a></dt>
+<dd><p>if ‘optimization’ is chosen</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id2">
+<span class="sig-name descname"><span class="pre">energy_gp</span></span><a class="headerlink" href="#id2" title="Permalink to this definition"></a></dt>
+<dd><p>if ‘gas_phase’ is chosen</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id3">
+<span class="sig-name descname"><span class="pre">forces_gp</span></span><a class="headerlink" href="#id3" title="Permalink to this definition"></a></dt>
+<dd><p>if ‘gas_phase’ is chosen</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-ASE_interface">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-ASE_interface" title="Permalink to this heading"></a></h2>
+<p>AtomicSimulationEnvironment interface subpackage</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="modules.html" class="btn btn-neutral float-left" title="The_Phorce" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="Coord_Toolz.html" class="btn btn-neutral float-right" title="Coord_Toolz" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Viktoria Korn.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

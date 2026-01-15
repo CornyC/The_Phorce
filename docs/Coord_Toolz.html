@@ -1,0 +1,352 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Coord_Toolz &mdash; The Phorce 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=92fd9be5" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=e031e9a9"></script>
+      <script src="_static/doctools.js?v=888ff710"></script>
+      <script src="_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Direct_cp2k_calculation" href="Direct_cp2k_calculation.html" />
+    <link rel="prev" title="ASE_interface" href="ASE_interface.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            The Phorce
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">The_Phorce</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="ASE_interface.html">ASE_interface</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Coord_Toolz</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-Coord_Toolz.mdanalysis">Coord_Toolz.mdanalysis module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#Coord_Toolz.mdanalysis.MDA_reader"><code class="docutils literal notranslate"><span class="pre">MDA_reader</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Coord_Toolz.mdanalysis.collect_optimized_structures"><code class="docutils literal notranslate"><span class="pre">collect_optimized_structures()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Coord_Toolz.mdanalysis.get_coords"><code class="docutils literal notranslate"><span class="pre">get_coords()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Coord_Toolz.mdanalysis.merge_atoms_positions"><code class="docutils literal notranslate"><span class="pre">merge_atoms_positions()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Coord_Toolz.mdanalysis.write_single_pdb"><code class="docutils literal notranslate"><span class="pre">write_single_pdb()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Coord_Toolz.mdanalysis.write_traj"><code class="docutils literal notranslate"><span class="pre">write_traj()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-Coord_Toolz">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="Direct_cp2k_calculation.html">Direct_cp2k_calculation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="OMM_interface.html">OMM_interface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Parametrization.html">Parametrization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="System.html">System</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">The Phorce</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">The_Phorce</a></li>
+      <li class="breadcrumb-item active">Coord_Toolz</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/Coord_Toolz.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="the-phorce-coord-toolz-package">
+<h1>Coord_Toolz<a class="headerlink" href="#the-phorce-coord-toolz-package" title="Permalink to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading"></a></h2>
+</section>
+<section id="module-Coord_Toolz.mdanalysis">
+<span id="the-phorce-coord-toolz-mdanalysis-module"></span><h2>Coord_Toolz.mdanalysis module<a class="headerlink" href="#module-Coord_Toolz.mdanalysis" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="Coord_Toolz.mdanalysis.MDA_reader">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">Coord_Toolz.mdanalysis.</span></span><span class="sig-name descname"><span class="pre">MDA_reader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">universe</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Coord_Toolz/mdanalysis.html#MDA_reader"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#Coord_Toolz.mdanalysis.MDA_reader" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Reads in sampled structures trajectory and topology. Coordinates in Angström. Allows for manipulations of atoms.
+Input upon initialization can be empty or a predefined MDAnalysis Universe:
+Example: MDR = MDA_reader(MDAnalysis.core.universe.Universe) or MDR = MDA_reader()</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>all</strong> (<em>MDAnalysis.core.universe.Universe object</em>) – Contains all atoms and their names &amp; identifiers, positions, forces…(check MDAnalysis doc)</p></li>
+<li><p><strong>nosol</strong> (<em>MDAnalysis.core.groups.AtomGroup</em>) – Contains atom selection of universe that represents the molecule to parametrize w/o solvent or ions. Enables
+calculation of forces between molecule and solvent.</p></li>
+<li><p><strong>mol1</strong> (<em>MDAnalysis.core.groups.AtomGroup</em>) – Contains atom selection of universe that represents molecule1 (w/ solvent if solvent in ‘all’) without molecule2.
+Enables calculation of net forces between molecules.</p></li>
+<li><p><strong>mol2</strong> (<em>MDAnalysis.core.groups.AtomGroup</em>) – Contains atom selection of universe that represents molecule2 (w/ solvent if solvent in ‘all’) without molecule1.
+Enables calculation of net forces between molecules.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#Coord_Toolz.mdanalysis.MDA_reader.delete_one_molecule" title="Coord_Toolz.mdanalysis.MDA_reader.delete_one_molecule"><code class="xref py py-obj docutils literal notranslate"><span class="pre">delete_one_molecule</span></code></a>(selection)</p></td>
+<td><p>'Deletes' atoms based on the MDAnalysis atom selection algebra.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#Coord_Toolz.mdanalysis.MDA_reader.remove_water_ions" title="Coord_Toolz.mdanalysis.MDA_reader.remove_water_ions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">remove_water_ions</span></code></a>([atomgroup])</p></td>
+<td><p>Removes water molecules and ions from system and saves it to self.universes['nosol'].</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#Coord_Toolz.mdanalysis.MDA_reader.set_crd_input" title="Coord_Toolz.mdanalysis.MDA_reader.set_crd_input"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_crd_input</span></code></a>([crd_input])</p></td>
+<td><p>Calls the MDAnalysis coordinate file reader and sets the mda.Universe from it.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#Coord_Toolz.mdanalysis.MDA_reader.set_traj_input" title="Coord_Toolz.mdanalysis.MDA_reader.set_traj_input"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_traj_input</span></code></a>([top, traj])</p></td>
+<td><p>Calls the MDAnalysis trajectory reader and creates the mda.Universe from it.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="Coord_Toolz.mdanalysis.MDA_reader.delete_one_molecule">
+<span class="sig-name descname"><span class="pre">delete_one_molecule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">selection</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Coord_Toolz/mdanalysis.html#MDA_reader.delete_one_molecule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#Coord_Toolz.mdanalysis.MDA_reader.delete_one_molecule" title="Permalink to this definition"></a></dt>
+<dd><p>‘Deletes’ atoms based on the MDAnalysis atom selection algebra. Returns only selected atoms.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>selection</strong> (<em>str</em>) – e.g. ‘resname not MP0’ or ‘resid not 2’ (inverse selection to remove in these examples residue MP0/2)</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>remaining_molecules</strong> – mda.Universe of selected atoms</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>mda.Universe</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Coord_Toolz.mdanalysis.MDA_reader.remove_water_ions">
+<span class="sig-name descname"><span class="pre">remove_water_ions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atomgroup</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Coord_Toolz/mdanalysis.html#MDA_reader.remove_water_ions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#Coord_Toolz.mdanalysis.MDA_reader.remove_water_ions" title="Permalink to this definition"></a></dt>
+<dd><p>Removes water molecules and ions from system and saves it to self.universes[‘nosol’].
+feel free to add entries from your FF here :)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>atomgroup</strong> (<em>MDAnalysis.core.groups.AtomGroup</em>) – Should contain all atoms of universe</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="Coord_Toolz.mdanalysis.MDA_reader.universes">
+<span class="sig-name descname"><span class="pre">universes</span></span><span class="sig-paren">[</span><span class="sig-paren">]</span><a class="headerlink" href="#Coord_Toolz.mdanalysis.MDA_reader.universes" title="Permalink to this definition"></a></dt>
+<dd><p>Contains atom selection of universe that represents the molecule to parametrize w/o solvent or ions. Enables
+calculation of forces between molecule and solvent.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>MDAnalysis.core.groups.AtomGroup</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Coord_Toolz.mdanalysis.MDA_reader.set_crd_input">
+<span class="sig-name descname"><span class="pre">set_crd_input</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">crd_input</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Coord_Toolz/mdanalysis.html#MDA_reader.set_crd_input"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#Coord_Toolz.mdanalysis.MDA_reader.set_crd_input" title="Permalink to this definition"></a></dt>
+<dd><p>Calls the MDAnalysis coordinate file reader and sets the mda.Universe from it.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>crd_input</strong> (<em>str</em>) – path to coordinate file</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id0">
+<span class="sig-name descname"><span class="pre">universes</span></span><span class="sig-paren">[</span><span class="sig-paren">]</span><a class="headerlink" href="#id0" title="Permalink to this definition"></a></dt>
+<dd><p>Contains all atoms and their names &amp; identifiers, positions, forces…(check MDAnalysis doc)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>MDAnalysis.core.universe.Universe object</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="Coord_Toolz.mdanalysis.MDA_reader.set_traj_input">
+<span class="sig-name descname"><span class="pre">set_traj_input</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">top</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">traj</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Coord_Toolz/mdanalysis.html#MDA_reader.set_traj_input"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#Coord_Toolz.mdanalysis.MDA_reader.set_traj_input" title="Permalink to this definition"></a></dt>
+<dd><p>Calls the MDAnalysis trajectory reader and creates the mda.Universe from it.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>top</strong> (<em>str</em>) – path to topology file, can also be a .pdb</p></li>
+<li><p><strong>traj</strong> (<em>str</em>) – path to trajectory file</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id1">
+<span class="sig-name descname"><span class="pre">universes</span></span><span class="sig-paren">[</span><span class="sig-paren">]</span><a class="headerlink" href="#id1" title="Permalink to this definition"></a></dt>
+<dd><p>Contains all atoms and their names &amp; identifiers, positions, forces…(check MDAnalysis doc)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>MDAnalysis.core.universe.Universe object</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="Coord_Toolz.mdanalysis.collect_optimized_structures">
+<span class="sig-prename descclassname"><span class="pre">Coord_Toolz.mdanalysis.</span></span><span class="sig-name descname"><span class="pre">collect_optimized_structures</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_structures</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outputpath</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">topol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Coord_Toolz/mdanalysis.html#collect_optimized_structures"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#Coord_Toolz.mdanalysis.collect_optimized_structures" title="Permalink to this definition"></a></dt>
+<dd><p>Merge the DFT-optimized coordinates back into one trajectory and write ‘em to file as multiframe .pdb, .xyz, and .dcd</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n_structures</strong> (<em>int</em>) – number of structures</p></li>
+<li><p><strong>directory</strong> (<em>str</em><em> (</em><em>path</em><em>)</em>) – </p></li>
+<li><p><strong>poject_name</strong> (<em>str</em>) – </p></li>
+<li><p><strong>outputpath</strong> (<em>str</em><em> (</em><em>path</em><em>)</em>) – </p></li>
+<li><p><strong>topol</strong> (<em>str</em><em> (</em><em>path+filename</em><em>)</em>) – (path to) pdb ‘topology’</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="Coord_Toolz.mdanalysis.get_coords">
+<span class="sig-prename descclassname"><span class="pre">Coord_Toolz.mdanalysis.</span></span><span class="sig-name descname"><span class="pre">get_coords</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atomgroup</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Coord_Toolz/mdanalysis.html#get_coords"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#Coord_Toolz.mdanalysis.get_coords" title="Permalink to this definition"></a></dt>
+<dd><p>Get positions of multiframe trajectory as numpy array</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>atomgroup</strong> (<em>MDAnalysis.core.groups.AtomGroup</em>) – Contains atom selection of universe</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>trajcoords</strong> – np.array (3d) of selected atom coordinates</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="Coord_Toolz.mdanalysis.merge_atoms_positions">
+<span class="sig-prename descclassname"><span class="pre">Coord_Toolz.mdanalysis.</span></span><span class="sig-name descname"><span class="pre">merge_atoms_positions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coords</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">atomgroups</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Coord_Toolz/mdanalysis.html#merge_atoms_positions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#Coord_Toolz.mdanalysis.merge_atoms_positions" title="Permalink to this definition"></a></dt>
+<dd><p>Re-merge atom group info with positions numpy array</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>atomgroups</strong> (<em>MDAnalysis.core.groups.AtomGroup</em>) – Contains atom selection of universe</p></li>
+<li><p><strong>coords</strong> (<em>3D numpy array</em>) – Position coordinates of a trajectory</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>u</strong> – mda.Universe of atoms and their coords</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>mda.Universe</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="Coord_Toolz.mdanalysis.write_single_pdb">
+<span class="sig-prename descclassname"><span class="pre">Coord_Toolz.mdanalysis.</span></span><span class="sig-name descname"><span class="pre">write_single_pdb</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atomgroup</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pdb_filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pdb_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Coord_Toolz/mdanalysis.html#write_single_pdb"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#Coord_Toolz.mdanalysis.write_single_pdb" title="Permalink to this definition"></a></dt>
+<dd><p>write single-frame pdb to file</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>atomgroup</strong> (<em>MDAnalysis.core.groups.AtomGroup</em>) – Contains atom selection of universe</p></li>
+<li><p><strong>pdb_filename</strong> (<em>str</em>) – output filename of pdb file</p></li>
+<li><p><strong>pdb_path</strong> (<em>str</em>) – path to directory of pdb output</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="Coord_Toolz.mdanalysis.write_traj">
+<span class="sig-prename descclassname"><span class="pre">Coord_Toolz.mdanalysis.</span></span><span class="sig-name descname"><span class="pre">write_traj</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atomgroup</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outpath</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Coord_Toolz/mdanalysis.html#write_traj"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#Coord_Toolz.mdanalysis.write_traj" title="Permalink to this definition"></a></dt>
+<dd><p>write multiframe trajectory to file as .xyz and .xtc</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>atomgroup</strong> (<em>MDAnalysis.core.groups.AtomGroup</em>) – Contains atom selection of universe</p></li>
+<li><p><strong>filename</strong> (<em>str</em>) – output filename of trajectory</p></li>
+<li><p><strong>outpath</strong> (<em>str</em>) – path to directory of trajectory output</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-Coord_Toolz">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-Coord_Toolz" title="Permalink to this heading"></a></h2>
+<p>MDAnalysis interface subpackage</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="ASE_interface.html" class="btn btn-neutral float-left" title="ASE_interface" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="Direct_cp2k_calculation.html" class="btn btn-neutral float-right" title="Direct_cp2k_calculation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Viktoria Korn.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
