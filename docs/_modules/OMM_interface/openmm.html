@@ -1,1 +1,1234 @@
 
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OMM_interface.openmm &mdash; The Phorce 0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=92fd9be5" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js?v=e031e9a9"></script>
+      <script src="../../_static/doctools.js?v=888ff710"></script>
+      <script src="../../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            The Phorce
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">The Phorce</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">OMM_interface.openmm</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for OMM_interface.openmm</h1><div class="highlight"><pre>
+<span></span><span class="c1">#### package imports ####</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">openmm.unit</span> <span class="k">as</span> <span class="nn">unit</span>
+<span class="kn">import</span> <span class="nn">openmm</span>
+<span class="kn">import</span> <span class="nn">openmm.app</span> <span class="k">as</span> <span class="nn">app</span>
+<span class="kn">from</span> <span class="nn">openmm.app</span> <span class="kn">import</span> <span class="n">forcefield</span> <span class="k">as</span> <span class="n">ff</span>
+<span class="kn">import</span> <span class="nn">copy</span><span class="o">,</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">fnmatch</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">System.paths</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">sqrt</span>
+
+
+<span class="c1">#### Setting up the OpenMM System ####</span>
+
+<div class="viewcode-block" id="OpenMM_system"><a class="viewcode-back" href="../../The_Phorce.OMM_interface.html#OMM_interface.openmm.OpenMM_system">[docs]</a><span class="k">class</span> <span class="nc">OpenMM_system</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Creates the OpenMM System</span>
+<span class="sd">    http://docs.openmm.org/latest/api-python/generated/openmm.openmm.System.html?highlight=getforces#openmm.openmm.System</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    topology_format : str, optional, default=None</span>
+<span class="sd">        Available options are &quot;AMBER&quot;, &quot;GROMACS&quot;, &quot;CHARMM&quot;, or &quot;XML&quot;.</span>
+<span class="sd">    top_file : str, optional, default=None</span>
+<span class="sd">        Path to the AMBER, GROMACS or CHARMM topology file.</span>
+<span class="sd">    topology : OpenMM topology object, optional</span>
+<span class="sd">        Set OpenMM topology manually</span>
+<span class="sd">    crd_format : str</span>
+<span class="sd">        Available options are &quot;AMBER&quot;, &quot;GROMACS&quot;, &quot;CHARMM&quot;, or &quot;PDB&quot;.</span>
+<span class="sd">    crd_file : str, optional, default=None</span>
+<span class="sd">        Path to the AMBER, GROMACS or CHARMM coordinates file.</span>
+<span class="sd">    charmm_param_file : str</span>
+<span class="sd">        Path to the CHARMM param file (CHARMM stream file with .str extension). </span>
+<span class="sd">        Register the main CHARMM param stream file for your molecule here and if needed </span>
+<span class="sd">        have it read in other .str/.rtf files ;-)</span>
+<span class="sd">    xml_files : list of str, optional, default=None</span>
+<span class="sd">        Path to the .xml OpenMM topology files.</span>
+<span class="sd">    pbc : bool</span>
+<span class="sd">        Whether periodic boundary conditions are to be used or not</span>
+<span class="sd">    cell : list of length 3</span>
+<span class="sd">        cell edge lengths in nm</span>
+<span class="sd">    angles : list of length 3</span>
+<span class="sd">        cell angles in degree</span>
+<span class="sd">    platform_name : str, default=&#39;CUDA&#39;</span>
+<span class="sd">        name of the platform; either &#39;CUDA&#39;,&#39;OpenCL&#39;,&#39;CPU&#39;</span>
+<span class="sd">    platform_properties : dict</span>
+<span class="sd">        CUDA needs Precision and DeviceIndex to be set</span>
+<span class="sd">        OpenCL needs Precision, DeviveIndex, and OpenCLPlatformIndex to be set</span>
+<span class="sd">        CPU needs Precision and DeviceIndex</span>
+<span class="sd">    integrator : openmm object, default=openmm.LangevinIntegrator</span>
+<span class="sd">        MD integrator</span>
+<span class="sd">    integrator_params : dict</span>
+<span class="sd">        Keyword arguments passed to the integrator</span>
+<span class="sd">    create_system_params : dict</span>
+<span class="sd">        Keyword arguments passed to the top.createSystem instance</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    top : openmm object</span>
+<span class="sd">        either AmberPrmtopFile, GromacsTopFile, CharmmPsfFile, or openmm native ForceField</span>
+<span class="sd">    top_params : openmm object</span>
+<span class="sd">        CharmmParameterSet</span>
+<span class="sd">    crd : openmm object</span>
+<span class="sd">        one of AmberInpcrdFile, GromacsGroFile, CharmmCrdFile, PDBFile</span>
+<span class="sd">    platform : openmm.openmm.Platform</span>
+<span class="sd">    system : openmm.openmm.System</span>
+<span class="sd">    context : openmm.openmm.Context</span>
+<span class="sd">    force_groups : dict</span>
+<span class="sd">        keys see self.force_groups_dict, values are lists of openmm&#39;s force group indices</span>
+<span class="sd">    extracted_ff : dict</span>
+<span class="sd">        keys see self.force_groups, values are lists of np.recarrays containing the force field params</span>
+<span class="sd">    ff_optimizable : dict</span>
+<span class="sd">        contains force groups and their parameters that should be optimized</span>
+<span class="sd">    custom_nb_params : np.array</span>
+<span class="sd">        triggered if NBFIX present. Contains rmin(=r/sigma; nm), epsilon (kJ/mol)(in GMX/OMM units), and atom type (str)</span>
+<span class="sd">    nbfix : np.array</span>
+<span class="sd">        triggered if NBFIX is present. Contains r_min (nm) and epsilon (kJ/mol) (GMX/OMM units), </span>
+<span class="sd">        atom type 1, atom type 2 (str), and index </span>
+<span class="sd">    force_groups_dict : dict</span>
+<span class="sd">                                {&#39;HarmonicBondForce&#39;: [],</span>
+<span class="sd">                                &#39;HarmonicAngleForce&#39;: [],</span>
+<span class="sd">                                &#39;PeriodicTorsionForce&#39;: [],</span>
+<span class="sd">                                &#39;NonbondedForce&#39;: [],</span>
+<span class="sd">                                &#39;CustomBondForce&#39;: [],</span>
+<span class="sd">                                &#39;CustomAngleForce&#39;: [],</span>
+<span class="sd">                                &#39;CustomTorsionForce&#39;: []</span>
+<span class="sd">                                &#39;CustomNonbondedForce&#39;: [],</span>
+<span class="sd">                                &quot;CMAPTorsionForce&quot;: [],</span>
+<span class="sd">                                &quot;NBException&quot;: [],</span>
+<span class="sd">                                &quot;CMMotionremover&quot;: []}</span>
+<span class="sd">    charges : np.array</span>
+<span class="sd">        mm charges of all atoms in the openmm system</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">topology_format</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">top_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">topology</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">crd_format</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">crd_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">charmm_param_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">xml_files</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pbc</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">cell</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">angles</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+
+        <span class="c1"># Files to read in</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">topology_format</span> <span class="o">=</span> <span class="n">topology_format</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">top_file</span> <span class="o">=</span> <span class="n">top_file</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">topology</span> <span class="o">=</span> <span class="n">topology</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">crd_format</span> <span class="o">=</span> <span class="n">crd_format</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">crd_file</span> <span class="o">=</span> <span class="n">crd_file</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">charmm_param_file</span> <span class="o">=</span> <span class="n">charmm_param_file</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">xml_files</span> <span class="o">=</span> <span class="n">xml_files</span>
+
+        <span class="c1"># Box definitions (x, y, z are nanometers; the angles are degrees)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pbc</span> <span class="o">=</span> <span class="n">pbc</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cell</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">angles</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">angles</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+
+        <span class="c1"># OpenMM essential object instances</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">platform_name</span> <span class="o">=</span> <span class="s1">&#39;CUDA&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">platform_properties</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Precision&#39;</span><span class="p">:</span> <span class="s1">&#39;single&#39;</span><span class="p">,</span> <span class="s1">&#39;DeviceIndex&#39;</span><span class="p">:</span> <span class="s1">&#39;0&#39;</span><span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">integrator</span> <span class="o">=</span> <span class="n">openmm</span><span class="o">.</span><span class="n">LangevinIntegrator</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">integrator_params</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;temperature&#39;</span><span class="p">:</span> <span class="mf">310.0</span> <span class="o">*</span> <span class="n">unit</span><span class="o">.</span><span class="n">kelvin</span><span class="p">,</span> <span class="s1">&#39;stepSize&#39;</span><span class="p">:</span> <span class="mf">0.001</span> <span class="o">*</span> <span class="n">unit</span><span class="o">.</span><span class="n">picoseconds</span><span class="p">,</span>
+                                  <span class="s1">&#39;frictionCoeff&#39;</span><span class="p">:</span> <span class="mf">2.0</span> <span class="o">/</span> <span class="n">unit</span><span class="o">.</span><span class="n">picoseconds</span><span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">create_system_params</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;nonbondedMethod&#39;</span><span class="p">:</span> <span class="n">app</span><span class="o">.</span><span class="n">PME</span><span class="p">,</span> <span class="s1">&#39;nonbondedCutoff&#39;</span><span class="p">:</span> <span class="mf">1.2</span> <span class="o">*</span> <span class="n">unit</span><span class="o">.</span><span class="n">nanometer</span><span class="p">,</span>
+                                         <span class="s1">&#39;switchDistance&#39;</span><span class="p">:</span> <span class="mf">0.7</span> <span class="o">*</span> <span class="n">unit</span><span class="o">.</span><span class="n">nanometer</span><span class="p">,</span> <span class="s1">&#39;constraints&#39;</span><span class="p">:</span> <span class="n">app</span><span class="o">.</span><span class="n">HBonds</span><span class="p">,</span>
+                                         <span class="s1">&#39;rigidWater&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;temperature&#39;</span><span class="p">:</span> <span class="mf">310.0</span> <span class="o">*</span> <span class="n">unit</span><span class="o">.</span><span class="n">kelvin</span><span class="p">}</span>
+
+        <span class="c1"># other params (required to create sys)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">top</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">top_params</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">crd</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">platform</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">system</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">context</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># other params (required to extract FF)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">force_groups</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">extracted_ff</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ff_optimizable</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">force_groups_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;HarmonicBondForce&#39;</span><span class="p">:</span> <span class="p">[],</span>
+                                  <span class="s1">&#39;HarmonicAngleForce&#39;</span><span class="p">:</span> <span class="p">[],</span>
+                                  <span class="s1">&#39;PeriodicTorsionForce&#39;</span><span class="p">:</span> <span class="p">[],</span>
+                                  <span class="s1">&#39;NonbondedForce&#39;</span><span class="p">:</span> <span class="p">[],</span>
+                                  <span class="s1">&#39;CustomBondForce&#39;</span><span class="p">:</span> <span class="p">[],</span>
+                                  <span class="s1">&#39;CustomAngleForce&#39;</span><span class="p">:</span> <span class="p">[],</span>
+                                  <span class="s1">&#39;CustomTorsionForce&#39;</span><span class="p">:</span> <span class="p">[],</span>
+                                  <span class="s1">&#39;CustomNonbondedForce&#39;</span><span class="p">:</span> <span class="p">[],</span>
+                                  <span class="s2">&quot;CMAPTorsionForce&quot;</span><span class="p">:</span> <span class="p">[],</span>
+                                  <span class="s2">&quot;NBException&quot;</span><span class="p">:</span> <span class="p">[],</span>
+                                  <span class="s2">&quot;CMMotionremover&quot;</span><span class="p">:</span> <span class="p">[]}</span>
+
+        <span class="c1"># data params</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">charges</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="OpenMM_system.import_molecular_system"><a class="viewcode-back" href="../../The_Phorce.OMM_interface.html#OMM_interface.openmm.OpenMM_system.import_molecular_system">[docs]</a>    <span class="k">def</span> <span class="nf">import_molecular_system</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        reads in coords and topology</span>
+
+<span class="sd">        Attributes</span>
+<span class="sd">        -----------</span>
+<span class="sd">        topology_format : str</span>
+<span class="sd">            type of topology file, each MD software has its own :(</span>
+<span class="sd">        top_file : str</span>
+<span class="sd">            path to the topol file</span>
+<span class="sd">        pbc : bool</span>
+<span class="sd">            whether to use periodic boundary conditions</span>
+<span class="sd">        crd_format : str</span>
+<span class="sd">            .pdb is kind of a standard, nonetheless GROMACS also has .gro and CHARMM and AMBER have .crd</span>
+<span class="sd">        topology </span>
+<span class="sd">            OpenMM topology object</span>
+<span class="sd">        crd </span>
+<span class="sd">            OpenMM coordinates object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">topology_format</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;AMBER&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">topology</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">top</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">AmberPrmtopFile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">top_file</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">topology</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">top</span><span class="o">.</span><span class="n">topology</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">topology_format</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;GROMACS&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">topology</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pbc</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+                    <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">angles</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">angles</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">angles</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="mf">90.</span><span class="p">,</span>\
+                        <span class="s2">&quot;Only rectangular and cubic boxes are supported.&quot;</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">top</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">GromacsTopFile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">top_file</span><span class="p">,</span> <span class="n">periodicBoxVectors</span><span class="o">=</span><span class="p">(</span><span class="n">openmm</span><span class="o">.</span><span class="n">Vec3</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cell</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">),</span>
+                                                                                <span class="n">openmm</span><span class="o">.</span><span class="n">Vec3</span><span class="p">(</span><span class="mf">0.</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cell</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mf">0.</span><span class="p">),</span>
+                                                                                <span class="n">openmm</span><span class="o">.</span><span class="n">Vec3</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cell</span><span class="p">[</span><span class="mi">2</span><span class="p">])))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">top</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">GromacsTopFile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">top_file</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">topology</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">top</span><span class="o">.</span><span class="n">topology</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">topology_format</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;CHARMM&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">topology</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">top</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">CharmmPsfFile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">top_file</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pbc</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">top</span><span class="o">.</span><span class="n">setBox</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cell</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">cell</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">cell</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
+                                    <span class="n">alpha</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">angles</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">unit</span><span class="o">.</span><span class="n">degree</span><span class="p">,</span> <span class="n">beta</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">angles</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="n">unit</span><span class="o">.</span><span class="n">degree</span><span class="p">,</span>
+                                    <span class="n">gamma</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">angles</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">*</span><span class="n">unit</span><span class="o">.</span><span class="n">degree</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">topology</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">top</span><span class="o">.</span><span class="n">topology</span>
+
+                <span class="n">p</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;/top_all36_cgenff.rtf&#39;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">top_params</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">CharmmParameterSet</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;/top_all36_cgenff.rtf&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;/par_all36_cgenff.prm&#39;</span><span class="p">,</span>
+                                                       <span class="nb">str</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;/toppar_water_ions.str&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">charmm_param_file</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">topology_format</span> <span class="o">==</span> <span class="s2">&quot;OpenMM&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">topology</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">top</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">ForceField</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">xml_files</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Topology format </span><span class="si">{}</span><span class="s2"> is not currently supported.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">topology_format</span><span class="p">))</span>
+
+        <span class="c1"># Read coordinate file</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">crd_format</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;AMBER&quot;</span><span class="p">:</span>
+            <span class="n">crd</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">AmberInpcrdFile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">crd_file</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">crd_format</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;GROMACS&quot;</span><span class="p">:</span>
+            <span class="n">crd</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">GromacsGroFile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">crd_file</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">crd_format</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;CHARMM&quot;</span><span class="p">:</span>
+            <span class="n">crd</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">CharmmCrdFile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">crd_file</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">crd_format</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;PDB&quot;</span><span class="p">:</span>
+            <span class="n">crd</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">PDBFile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">crd_file</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Coordinate format </span><span class="si">{}</span><span class="s2"> is not currently supported.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">crd_format</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">crd</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">crd</span> <span class="o">=</span> <span class="n">crd</span></div>
+
+<div class="viewcode-block" id="OpenMM_system.set_integrator"><a class="viewcode-back" href="../../The_Phorce.OMM_interface.html#OMM_interface.openmm.OpenMM_system.set_integrator">[docs]</a>    <span class="k">def</span> <span class="nf">set_integrator</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        sets the OpenMM MD integrator object</span>
+
+<span class="sd">        Attributes</span>
+<span class="sd">        ----------</span>
+<span class="sd">        integrator_params</span>
+<span class="sd">            &quot;settings&quot; to be used with the integrator</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">integrator</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">integrator</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">integrator_params</span><span class="p">[</span><span class="s1">&#39;temperature&#39;</span><span class="p">],</span>
+                                          <span class="bp">self</span><span class="o">.</span><span class="n">integrator_params</span><span class="p">[</span><span class="s2">&quot;frictionCoeff&quot;</span><span class="p">],</span>
+                                          <span class="bp">self</span><span class="o">.</span><span class="n">integrator_params</span><span class="p">[</span><span class="s2">&quot;stepSize&quot;</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="OpenMM_system.set_platform"><a class="viewcode-back" href="../../The_Phorce.OMM_interface.html#OMM_interface.openmm.OpenMM_system.set_platform">[docs]</a>    <span class="k">def</span> <span class="nf">set_platform</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        sets the computational platform for OpenMM, GPU is preferred (muuuuch faster)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">platform</span> <span class="o">=</span> <span class="n">openmm</span><span class="o">.</span><span class="n">Platform</span><span class="o">.</span><span class="n">getPlatformByName</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">platform_name</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="OpenMM_system.create_openmm_system"><a class="viewcode-back" href="../../The_Phorce.OMM_interface.html#OMM_interface.openmm.OpenMM_system.create_openmm_system">[docs]</a>    <span class="k">def</span> <span class="nf">create_openmm_system</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        creates the OpenMM system object</span>
+
+<span class="sd">        Attributes</span>
+<span class="sd">        ----------</span>
+<span class="sd">        topology_format :</span>
+<span class="sd">            necessary bc OpenMM calls different functions to build the system based on the input formats</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">topology_format</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;CHARMM&quot;</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">top_params</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;please run import_molecular_system method first&#39;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">system</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">top</span><span class="o">.</span><span class="n">createSystem</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">top_params</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">create_system_params</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">topology_format</span> <span class="o">==</span> <span class="s2">&quot;OpenMM&quot;</span><span class="p">:</span>
+            <span class="n">molecule</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">crd</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">system</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">top</span><span class="o">.</span><span class="n">createSystem</span><span class="p">(</span><span class="n">molecule</span><span class="o">.</span><span class="n">topology</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">create_system_params</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pbc</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">setDefaultPeriodicBoxVectors</span><span class="p">(</span><span class="n">openmm</span><span class="o">.</span><span class="n">Vec3</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cell</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">),</span>
+                                                         <span class="n">openmm</span><span class="o">.</span><span class="n">Vec3</span><span class="p">(</span><span class="mf">0.</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cell</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mf">0.</span><span class="p">),</span>
+                                                         <span class="n">openmm</span><span class="o">.</span><span class="n">Vec3</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cell</span><span class="p">[</span><span class="mi">2</span><span class="p">]))</span>
+
+
+        <span class="k">elif</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">topology_format</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;AMBER&quot;</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">topology_format</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;GROMACS&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">system</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">top</span><span class="o">.</span><span class="n">createSystem</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">create_system_params</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="OpenMM_system.set_openmm_context"><a class="viewcode-back" href="../../The_Phorce.OMM_interface.html#OMM_interface.openmm.OpenMM_system.set_openmm_context">[docs]</a>    <span class="k">def</span> <span class="nf">set_openmm_context</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> 
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        sets the OpenMM context object by checking constraints, reading the initial coordinates and bundling it all</span>
+<span class="sd">        up w/ the integrator and platform (a.k.a. prepares the mdrun/classical calculation)</span>
+
+<span class="sd">        Attributes</span>
+<span class="sd">        ----------</span>
+<span class="sd">        system : openmm.openmm.System object</span>
+<span class="sd">        integrator : openmm.openmm.Integrator object</span>
+<span class="sd">        platform : openmm.openmm.Platform object</span>
+<span class="sd">        platform_properties : openmm.openmm.Platform settings of type dict</span>
+<span class="sd">        crd : OpenMM coordinates object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Number of constraints: &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">getNumConstraints</span><span class="p">())</span><span class="o">+</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">constraints settings: &#39;</span>
+              <span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">create_system_params</span><span class="p">[</span><span class="s1">&#39;constraints&#39;</span><span class="p">])</span><span class="o">+</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">make sure these are correct before setting context&#39;</span><span class="p">)</span>
+
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        CHARMM PSF files have &#39;bonds&#39; btwn H atoms of water. OpenMM deletes them, but applies constraints all the same</span>
+<span class="sd">        if constraints=HBonds is set. These false constraints (every 3rd one) have to be removed before setting the </span>
+<span class="sd">        context or it will fail. </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_system_params</span><span class="p">[</span><span class="s1">&#39;constraints&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">getNumConstraints</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;something wrong w/ the constraints&#39;</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">context</span> <span class="o">=</span> <span class="n">openmm</span><span class="o">.</span><span class="n">Context</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">integrator</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">platform</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">platform_properties</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">setPositions</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">crd</span><span class="o">.</span><span class="n">positions</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_system_params</span><span class="p">[</span><span class="s1">&#39;constraints&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">app</span><span class="o">.</span><span class="n">HBonds</span><span class="p">:</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">context</span> <span class="o">=</span> <span class="n">openmm</span><span class="o">.</span><span class="n">Context</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">integrator</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">platform</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">platform_properties</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">setPositions</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">crd</span><span class="o">.</span><span class="n">positions</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="OpenMM_system.run_calculation"><a class="viewcode-back" href="../../The_Phorce.OMM_interface.html#OMM_interface.openmm.OpenMM_system.run_calculation">[docs]</a>    <span class="k">def</span> <span class="nf">run_calculation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">positions</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        calculates classical energies and forces</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        positions  </span>
+<span class="sd">            OpenMM coordinates object (OMM &lt;Vec3&gt; format) or numpy array, in nanometers</span>
+
+<span class="sd">        Attributes</span>
+<span class="sd">        ----------</span>
+<span class="sd">        context  </span>
+<span class="sd">            OpenMM system context object</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        epot, forces</span>
+<span class="sd">            potential energies and forces (both numpy arrays)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">context</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;please run OpenMM_system.set_opnemm_context first.&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">setPositions</span><span class="p">(</span><span class="n">positions</span><span class="p">)</span>
+
+
+        <span class="n">epot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">getState</span><span class="p">(</span><span class="n">getEnergy</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">getPotentialEnergy</span><span class="p">()</span><span class="o">.</span><span class="n">_value</span> <span class="c1">#kJ/mol</span>
+        <span class="n">forces</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">getState</span><span class="p">(</span><span class="n">getForces</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">getForces</span><span class="p">(</span><span class="n">asNumpy</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">_value</span> <span class="c1"># in kJ/mol/nm</span>
+
+
+        <span class="k">return</span> <span class="n">epot</span><span class="p">,</span> <span class="n">forces</span></div>
+    
+    <span class="k">def</span> <span class="nf">_extract_CustomNonbondedForce</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Automatically triggered if sigma == 1 and epsilon == 0 in NonbondedForce.</span>
+<span class="sd">        In case some atom type used in the system has a NBFIX specified, OpenMM reads, stores, and handles the </span>
+<span class="sd">        nonbonded parameters differently. This function imports them and formats the in line with the traditional nonbonded parameters</span>
+<span class="sd">        so that they reach the optimizer in the correct format. Code partially stolen from OpenMM&#39;s charmmpsffile.py</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">lj_index_list</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span> <span class="k">for</span> <span class="n">atom</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">top</span><span class="o">.</span><span class="n">atom_list</span><span class="p">]</span>
+        <span class="n">num_lj_types</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">lj_r_sigma</span><span class="p">,</span> <span class="n">lj_epsilon</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span> 
+        <span class="bp">self</span><span class="o">.</span><span class="n">lj_type_list</span><span class="p">,</span> <span class="n">atomtypes_list</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        looks like:</span>
+<span class="sd">        vars(lj_type_list[0]) = {&#39;name&#39;: &#39;CG331&#39;,</span>
+<span class="sd">                                    &#39;number&#39;: -1,</span>
+<span class="sd">                                    &#39;mass&#39;: Quantity(value=12.011, unit=dalton),</span>
+<span class="sd">                                    &#39;atomic_number&#39;: 6,</span>
+<span class="sd">                                    &#39;epsilon&#39;: -0.078,</span>
+<span class="sd">                                    &#39;rmin&#39;: 2.05,</span>
+<span class="sd">                                    &#39;epsilon_14&#39;: -0.01,</span>
+<span class="sd">                                    &#39;rmin_14&#39;: 1.9,</span>
+<span class="sd">                                    &#39;nbfix&#39;: {},</span>
+<span class="sd">                                    &#39;nbthole&#39;: {}}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">atom</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">top</span><span class="o">.</span><span class="n">atom_list</span><span class="p">):</span>
+
+            <span class="n">atomtype</span> <span class="o">=</span> <span class="n">atom</span><span class="o">.</span><span class="n">type</span> 
+
+            <span class="k">if</span> <span class="n">lj_index_list</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
+                <span class="k">continue</span>
+
+            <span class="n">num_lj_types</span> <span class="o">+=</span><span class="mi">1</span>
+            <span class="n">lj_index_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">num_lj_types</span>
+            <span class="n">ljtype</span> <span class="o">=</span> <span class="p">(</span><span class="n">atomtype</span><span class="o">.</span><span class="n">rmin</span><span class="p">,</span> <span class="n">atomtype</span><span class="o">.</span><span class="n">epsilon</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">lj_type_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">atomtype</span><span class="p">)</span> <span class="c1"># collects dicts of atomtypes and params </span>
+            <span class="n">atomtypes_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">atomtype</span><span class="o">.</span><span class="n">name</span><span class="p">)</span> <span class="c1"># collects strs of atomtypes</span>
+            <span class="n">lj_r_sigma</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">atomtype</span><span class="o">.</span><span class="n">rmin</span><span class="p">))</span> <span class="c1"># rmin is r/sigma in Angström</span>
+            <span class="n">lj_epsilon</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">atomtype</span><span class="o">.</span><span class="n">epsilon</span><span class="p">))</span> <span class="c1"># epsilon in kcal/mol</span>
+
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">top</span><span class="o">.</span><span class="n">atom_list</span><span class="p">)):</span>
+
+                <span class="n">atomtype2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">top</span><span class="o">.</span><span class="n">atom_list</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">type</span>
+
+                <span class="k">if</span> <span class="n">lj_index_list</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span> 
+                    <span class="k">continue</span> <span class="c1"># already assigned</span>
+
+                <span class="k">if</span> <span class="n">atomtype2</span> <span class="ow">is</span> <span class="n">atomtype</span><span class="p">:</span>
+                    <span class="n">lj_index_list</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">num_lj_types</span>
+
+                <span class="k">elif</span> <span class="ow">not</span> <span class="n">atomtype</span><span class="o">.</span><span class="n">nbfix</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">atomtype</span><span class="o">.</span><span class="n">nbthole</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">atomtype2</span><span class="o">.</span><span class="n">nbfix</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">atomtype2</span><span class="o">.</span><span class="n">nbthole</span><span class="p">:</span>
+                    <span class="c1"># Only non-NBFIXed and non-NBTholed atom types can be compressed</span>
+                    <span class="n">ljtype2</span> <span class="o">=</span> <span class="p">(</span><span class="n">atomtype2</span><span class="o">.</span><span class="n">rmin</span><span class="p">,</span> <span class="n">atomtype2</span><span class="o">.</span><span class="n">epsilon</span><span class="p">)</span>
+
+                    <span class="k">if</span> <span class="n">ljtype</span> <span class="o">==</span> <span class="n">ljtype2</span><span class="p">:</span>
+                        <span class="n">lj_index_list</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">num_lj_types</span>
+
+        <span class="c1"># Conversion factors from CHARMM to OpenMM/Gromacs/SI units</span>
+        <span class="n">length_conv</span> <span class="o">=</span> <span class="n">unit</span><span class="o">.</span><span class="n">angstrom</span><span class="o">.</span><span class="n">conversion_factor_to</span><span class="p">(</span><span class="n">unit</span><span class="o">.</span><span class="n">nanometer</span><span class="p">)</span>
+        <span class="n">ene_conv</span> <span class="o">=</span> <span class="n">unit</span><span class="o">.</span><span class="n">kilocalorie_per_mole</span><span class="o">.</span><span class="n">conversion_factor_to</span><span class="p">(</span><span class="n">unit</span><span class="o">.</span><span class="n">kilojoule_per_mole</span><span class="p">)</span>
+
+        <span class="c1"># construct instances for atomtype-based custom nb params</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">custom_nb_params</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">lj_r_sigma</span><span class="p">,</span> <span class="n">lj_epsilon</span><span class="p">,</span> <span class="n">atomtypes_list</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;object&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">custom_nb_params</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">custom_nb_params</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float&#39;</span><span class="p">)</span> <span class="o">*</span> <span class="n">length_conv</span> <span class="c1">#CAREFUL only converts unit -&gt; compatibility w/ acoef&amp;bcoef</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">custom_nb_params</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">custom_nb_params</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float&#39;</span><span class="p">)</span> <span class="o">*</span> <span class="n">ene_conv</span> <span class="c1">#CAREFUL only converts unit -&gt; compatibility w/ acoef&amp;bcoef</span>
+
+        <span class="n">nbfix_rij</span><span class="p">,</span> <span class="n">nbfix_wdij</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+        <span class="n">nbfix_atype1</span><span class="p">,</span> <span class="n">nbfix_atype2</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lj_type_list</span><span class="p">)):</span>
+
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lj_type_list</span><span class="p">)):</span>
+
+                <span class="n">atomtype_j</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lj_type_list</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">name</span>
+
+                <span class="k">try</span><span class="p">:</span>
+
+                    <span class="c1">#has NBFIX</span>
+                    <span class="n">rij</span><span class="p">,</span> <span class="n">wdij</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lj_type_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">nbfix</span><span class="p">[</span><span class="n">atomtype_j</span><span class="p">][:</span><span class="mi">2</span><span class="p">]</span>
+                    <span class="n">atype1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lj_type_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">name</span>
+                    <span class="n">atype2</span> <span class="o">=</span> <span class="n">atomtype_j</span>
+
+                    <span class="n">nbfix_rij</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rij</span><span class="p">)</span>
+                    <span class="n">nbfix_wdij</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">wdij</span><span class="p">)</span>
+                    <span class="n">nbfix_atype1</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">atype1</span><span class="p">)</span>
+                    <span class="n">nbfix_atype2</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">atype2</span><span class="p">)</span>
+
+                <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+
+                    <span class="c1"># no NBFIX</span>
+                    <span class="k">continue</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">nbfix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">nbfix_rij</span><span class="p">,</span> <span class="n">nbfix_wdij</span><span class="p">,</span> <span class="n">nbfix_atype1</span><span class="p">,</span> <span class="n">nbfix_atype2</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;object&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nbfix</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nbfix</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float&#39;</span><span class="p">)</span> <span class="o">*</span> <span class="n">length_conv</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nbfix</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nbfix</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float&#39;</span><span class="p">)</span> <span class="o">*</span> <span class="n">ene_conv</span>
+
+
+<div class="viewcode-block" id="OpenMM_system.extract_forcefield"><a class="viewcode-back" href="../../The_Phorce.OMM_interface.html#OMM_interface.openmm.OpenMM_system.extract_forcefield">[docs]</a>    <span class="k">def</span> <span class="nf">extract_forcefield</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Extracts all the force field params from the OpenMM system. </span>
+<span class="sd">        So far, HarmonicBondforce, HarmonicAngleForce, PeriodicTotrsionForce, and NonbondedForce are defined. NBExceptions</span>
+<span class="sd">        do not work at the moment as they would require a Context update (terribly slow) in the parametrization loop</span>
+<span class="sd">        (see https://github.com/openmm/openmm/issues/252).</span>
+<span class="sd">        WARNING: Static implementation for only one CustomNonbondedForce in the OpenMM system. If there are more, this will not work.</span>
+
+
+<span class="sd">        Attributes</span>
+<span class="sd">        ----------</span>
+<span class="sd">        system  </span>
+<span class="sd">            OpenMM system object</span>
+<span class="sd">        force_group_idx_omm : list</span>
+<span class="sd">            stores openmm force group number</span>
+<span class="sd">        forces_indices : dict</span>
+<span class="sd">            force group dict that lists the omm force groups and indices</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">system</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;OpenMM system not set.&#39;</span>
+
+        <span class="c1"># stores openmm force group number</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">force_group_idx_omm</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c1"># force group dict that lists the omm force groups and indices</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">forces_indices</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="n">force_idx</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">forces</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">getForces</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">force</span> <span class="ow">in</span> <span class="n">forces</span><span class="p">:</span>
+
+            <span class="c1"># Get force group name</span>
+            <span class="n">force_key</span> <span class="o">=</span> <span class="n">force</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span>
+            <span class="c1"># Get force group number</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">force_group_idx_omm</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">force</span><span class="o">.</span><span class="n">getForceGroup</span><span class="p">())</span>
+
+            <span class="k">if</span> <span class="n">force_key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">forces_indices</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">forces_indices</span><span class="p">[</span><span class="n">force_key</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">forces_indices</span><span class="p">[</span><span class="n">force_key</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">force_idx</span><span class="p">)</span>
+            <span class="n">force_idx</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="c1"># dict w/ force group names and their omm indices</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">force_groups</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">forces_indices</span><span class="p">)</span>
+
+        <span class="c1"># grab all forces of all types from the openmm sys and file them in our extracted_ff</span>
+        <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">force_groups</span><span class="p">:</span>
+
+            <span class="n">force_key</span> <span class="o">=</span> <span class="n">group</span>
+
+            <span class="k">if</span> <span class="n">force_key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">extracted_ff</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">extracted_ff</span><span class="p">[</span><span class="n">force_key</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+            <span class="c1"># loop needed in case of tuple index for force group</span>
+            <span class="k">for</span> <span class="n">force_indices</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">force_groups</span><span class="p">[</span><span class="n">force_key</span><span class="p">]:</span>
+                <span class="n">ff_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">getForce</span><span class="p">(</span><span class="n">force_indices</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">force_key</span> <span class="o">==</span> <span class="s1">&#39;HarmonicBondForce&#39;</span><span class="p">:</span>
+
+                    <span class="c1"># create structured array to store ff bond term params</span>
+                    <span class="n">sub_force_field</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">recarray</span><span class="p">((</span><span class="n">ff_params</span><span class="o">.</span><span class="n">getNumBonds</span><span class="p">()),</span>
+                                                  <span class="n">formats</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;int&#39;</span><span class="p">,</span> <span class="s1">&#39;int&#39;</span><span class="p">,</span> <span class="s1">&#39;float&#39;</span><span class="p">,</span> <span class="s1">&#39;float&#39;</span><span class="p">],</span>
+                                                    <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;atom1&#39;</span><span class="p">,</span> <span class="s1">&#39;atom2&#39;</span><span class="p">,</span> <span class="s1">&#39;bond_length&#39;</span><span class="p">,</span> <span class="s1">&#39;force_constant&#39;</span><span class="p">])</span>
+
+                    <span class="c1"># do for every bond</span>
+                    <span class="k">for</span> <span class="n">bond_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ff_params</span><span class="o">.</span><span class="n">getNumBonds</span><span class="p">()):</span>
+
+                        <span class="c1"># extract atom indices, bond length /nm, and force constant /kJ/mol/nm^2</span>
+                        <span class="c1"># &amp; put &#39;em into the storage array</span>
+                        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">ff_params</span><span class="o">.</span><span class="n">getBondParameters</span><span class="p">(</span><span class="n">bond_index</span><span class="p">)):</span>
+                            <span class="c1"># omm returns value directly</span>
+                            <span class="k">if</span> <span class="n">i</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]:</span>
+                                <span class="n">sub_force_field</span><span class="p">[</span><span class="n">bond_index</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+                            <span class="c1"># omm returns value via _value method</span>
+                            <span class="k">elif</span> <span class="n">i</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]:</span>
+                                <span class="n">sub_force_field</span><span class="p">[</span><span class="n">bond_index</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">_value</span>
+
+                    <span class="c1"># Append sub_force_field to extracted_ff[force_key]</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">extracted_ff</span><span class="p">[</span><span class="n">force_key</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sub_force_field</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">force_key</span> <span class="o">==</span> <span class="s1">&#39;HarmonicAngleForce&#39;</span><span class="p">:</span>
+
+                    <span class="c1"># create structured array to store ff angle term params</span>
+                    <span class="n">sub_force_field</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">recarray</span><span class="p">((</span><span class="n">ff_params</span><span class="o">.</span><span class="n">getNumAngles</span><span class="p">()),</span>
+                                                  <span class="n">formats</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;int&#39;</span><span class="p">,</span> <span class="s1">&#39;int&#39;</span><span class="p">,</span> <span class="s1">&#39;int&#39;</span><span class="p">,</span> <span class="s1">&#39;float&#39;</span><span class="p">,</span> <span class="s1">&#39;float&#39;</span><span class="p">],</span>
+                                                    <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;atom1&#39;</span><span class="p">,</span> <span class="s1">&#39;atom2&#39;</span><span class="p">,</span> <span class="s1">&#39;atom3&#39;</span><span class="p">,</span> <span class="s1">&#39;angle&#39;</span><span class="p">,</span> <span class="s1">&#39;force_constant&#39;</span><span class="p">])</span>
+
+                    <span class="c1"># do for every angle</span>
+                    <span class="k">for</span> <span class="n">angle_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ff_params</span><span class="o">.</span><span class="n">getNumAngles</span><span class="p">()):</span>
+
+                        <span class="c1"># extract atom indices, angle /rad, and force constant /kJ/mol/rad^2</span>
+                        <span class="c1"># &amp; put &#39;em into the storage array</span>
+                        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">ff_params</span><span class="o">.</span><span class="n">getAngleParameters</span><span class="p">(</span><span class="n">angle_index</span><span class="p">)):</span>
+                            <span class="c1"># omm returns value directly</span>
+                            <span class="k">if</span> <span class="n">i</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]:</span>
+                                <span class="n">sub_force_field</span><span class="p">[</span><span class="n">angle_index</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+                            <span class="c1"># omm returns value via _value method</span>
+                            <span class="k">elif</span> <span class="n">i</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">]:</span>
+                                <span class="n">sub_force_field</span><span class="p">[</span><span class="n">angle_index</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">_value</span>
+
+                    <span class="c1"># Append sub_force_field to extracted_ff[force_key]</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">extracted_ff</span><span class="p">[</span><span class="n">force_key</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sub_force_field</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">force_key</span> <span class="o">==</span> <span class="s1">&#39;PeriodicTorsionForce&#39;</span><span class="p">:</span>
+
+                    <span class="c1"># create structured array to store ff torsion term params</span>
+                    <span class="n">sub_force_field</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">recarray</span><span class="p">((</span><span class="n">ff_params</span><span class="o">.</span><span class="n">getNumTorsions</span><span class="p">()),</span>
+                                                  <span class="n">formats</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;int&#39;</span><span class="p">,</span> <span class="s1">&#39;int&#39;</span><span class="p">,</span> <span class="s1">&#39;int&#39;</span><span class="p">,</span> <span class="s1">&#39;int&#39;</span><span class="p">,</span> <span class="s1">&#39;int&#39;</span><span class="p">,</span> <span class="s1">&#39;float&#39;</span><span class="p">,</span> <span class="s1">&#39;float&#39;</span><span class="p">],</span>
+                                                    <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;atom1&#39;</span><span class="p">,</span> <span class="s1">&#39;atom2&#39;</span><span class="p">,</span> <span class="s1">&#39;atom3&#39;</span><span class="p">,</span> <span class="s1">&#39;atom4&#39;</span><span class="p">,</span> <span class="s1">&#39;periodicity&#39;</span><span class="p">,</span> <span class="s1">&#39;phase&#39;</span><span class="p">,</span>
+                                                             <span class="s1">&#39;force_constant&#39;</span><span class="p">])</span>
+
+                    <span class="c1"># do for every torsion</span>
+                    <span class="k">for</span> <span class="n">torsion_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ff_params</span><span class="o">.</span><span class="n">getNumTorsions</span><span class="p">()):</span>
+
+                        <span class="c1"># extract atom indices, periodicity, phase /rad, and force constant /kJ/mol/rad^2</span>
+                        <span class="c1"># &amp; put &#39;em into the storage array</span>
+                        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">ff_params</span><span class="o">.</span><span class="n">getTorsionParameters</span><span class="p">(</span><span class="n">torsion_index</span><span class="p">)):</span>
+                            <span class="c1"># omm returns value directly</span>
+                            <span class="k">if</span> <span class="n">i</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">]:</span>
+                                <span class="n">sub_force_field</span><span class="p">[</span><span class="n">torsion_index</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+                            <span class="c1"># omm returns value via _value method</span>
+                            <span class="k">elif</span> <span class="n">i</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">]:</span>
+                                <span class="n">sub_force_field</span><span class="p">[</span><span class="n">torsion_index</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">_value</span>
+
+                    <span class="c1"># Append sub_force_field to extracted_ff[force_key]</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">extracted_ff</span><span class="p">[</span><span class="n">force_key</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sub_force_field</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">force_key</span> <span class="o">==</span> <span class="s1">&#39;NonbondedForce&#39;</span><span class="p">:</span>
+
+                    <span class="c1"># create structured array to store ff nonbonded term params</span>
+                    <span class="n">sub_force_field</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">recarray</span><span class="p">((</span><span class="n">ff_params</span><span class="o">.</span><span class="n">getNumParticles</span><span class="p">()),</span>
+                                                  <span class="n">formats</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;float&#39;</span><span class="p">,</span> <span class="s1">&#39;float&#39;</span><span class="p">,</span> <span class="s1">&#39;float&#39;</span><span class="p">],</span>
+                                                    <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;charge&#39;</span><span class="p">,</span> <span class="s1">&#39;lj_sigma&#39;</span><span class="p">,</span> <span class="s1">&#39;lj_eps&#39;</span><span class="p">])</span>
+
+                    <span class="c1"># do for every particle</span>
+                    <span class="k">for</span> <span class="n">particle_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ff_params</span><span class="o">.</span><span class="n">getNumParticles</span><span class="p">()):</span>
+
+                        <span class="c1"># extract charge, LJ sigma /nm, and LJ epsilon /kJ/mol</span>
+                        <span class="c1"># &amp; put &#39;em into the storage array</span>
+                        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">ff_params</span><span class="o">.</span><span class="n">getParticleParameters</span><span class="p">(</span><span class="n">particle_index</span><span class="p">)):</span>
+
+                            <span class="c1"># omm returns value via _value method</span>
+                            <span class="n">sub_force_field</span><span class="p">[</span><span class="n">particle_index</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">_value</span>
+
+                    <span class="c1"># Append sub_force_field to extracted_ff[force_key]</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">extracted_ff</span><span class="p">[</span><span class="n">force_key</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sub_force_field</span><span class="p">)</span>
+
+                    <span class="c1">#Check for NBFIX</span>
+                    <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">sub_force_field</span><span class="p">[</span><span class="s1">&#39;lj_sigma&#39;</span><span class="p">]))</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">sub_force_field</span><span class="p">[</span><span class="s1">&#39;lj_eps&#39;</span><span class="p">]))</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">sub_force_field</span><span class="p">[</span><span class="s1">&#39;lj_sigma&#39;</span><span class="p">])</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">sub_force_field</span><span class="p">[</span><span class="s1">&#39;lj_eps&#39;</span><span class="p">])</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+
+                            <span class="n">customnb</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">getForce</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">force_groups</span><span class="p">[</span><span class="s1">&#39;CustomNonbondedForce&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+                            <span class="n">acoeffunc</span> <span class="o">=</span> <span class="n">customnb</span><span class="o">.</span><span class="n">getTabulatedFunction</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                            <span class="n">bcoeffunc</span> <span class="o">=</span> <span class="n">customnb</span><span class="o">.</span><span class="n">getTabulatedFunction</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+                            <span class="n">num_coeffs</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">acoeffunc</span><span class="o">.</span><span class="n">getFunctionParameters</span><span class="p">()[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+
+                            <span class="n">sub_force_field2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">recarray</span><span class="p">((</span><span class="n">num_coeffs</span><span class="p">),</span>
+                                                        <span class="n">formats</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;float&#39;</span><span class="p">,</span> <span class="s1">&#39;float&#39;</span><span class="p">],</span>
+                                                        <span class="n">names</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;acoef&#39;</span><span class="p">,</span> <span class="s1">&#39;bcoef&#39;</span><span class="p">])</span>
+                            <span class="n">sub_force_field2</span><span class="p">[</span><span class="s1">&#39;acoef&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">acoeffunc</span><span class="o">.</span><span class="n">getFunctionParameters</span><span class="p">()[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="c1">#skip xsize&amp;ysize, only grab values</span>
+                            <span class="n">sub_force_field2</span><span class="p">[</span><span class="s1">&#39;bcoef&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">bcoeffunc</span><span class="o">.</span><span class="n">getFunctionParameters</span><span class="p">()[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+                            <span class="k">if</span> <span class="s1">&#39;CustomNonbondedForce&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">extracted_ff</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">extracted_ff</span><span class="p">[</span><span class="s1">&#39;CustomNonbondedForce&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+                            <span class="bp">self</span><span class="o">.</span><span class="n">extracted_ff</span><span class="p">[</span><span class="s1">&#39;CustomNonbondedForce&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sub_force_field2</span><span class="p">)</span>
+
+                            <span class="bp">self</span><span class="o">.</span><span class="n">_extract_CustomNonbondedForce</span><span class="p">()</span>
+                        
+
+                <span class="k">if</span> <span class="n">force_key</span> <span class="o">==</span> <span class="s1">&#39;NBException&#39;</span><span class="p">:</span>
+
+                    <span class="c1"># create structured array to store ff special interaction term params</span>
+                    <span class="n">sub_force_field</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">recarray</span><span class="p">((</span><span class="n">ff_params</span><span class="o">.</span><span class="n">getNumExceptions</span><span class="p">()),</span>
+                                                  <span class="n">formats</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;int&#39;</span><span class="p">,</span> <span class="s1">&#39;int&#39;</span><span class="p">,</span> <span class="s1">&#39;float&#39;</span><span class="p">,</span> <span class="s1">&#39;float&#39;</span><span class="p">,</span> <span class="s1">&#39;float&#39;</span><span class="p">],</span>
+                                                  <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;atom1&#39;</span><span class="p">,</span> <span class="s1">&#39;atom2&#39;</span><span class="p">,</span> <span class="s1">&#39;chargeProd&#39;</span><span class="p">,</span> <span class="s1">&#39;sigma&#39;</span><span class="p">,</span>
+                                                         <span class="s1">&#39;epsilon&#39;</span><span class="p">])</span>
+                    <span class="c1"># do for every special interaction</span>
+                    <span class="k">for</span> <span class="n">interaction_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ff_params</span><span class="o">.</span><span class="n">getNumExceptions</span><span class="p">()):</span>
+
+                        <span class="c1"># extract atom indices, charge /elementary charge**2, LJ sigma /nm, and LJ epsilon /kJ/mol</span>
+                        <span class="c1"># &amp; put &#39;em into the storage array</span>
+                        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">ff_params</span><span class="o">.</span><span class="n">getExceptionParameters</span><span class="p">(</span><span class="n">interaction_index</span><span class="p">)):</span>
+                            <span class="c1"># omm returns value directly</span>
+                            <span class="k">if</span> <span class="n">i</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]:</span>
+                                <span class="n">sub_force_field</span><span class="p">[</span><span class="n">interaction_index</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+                            <span class="c1"># omm returns value via _value method to strip off unit</span>
+                            <span class="k">elif</span> <span class="n">i</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">]:</span>
+                                <span class="n">sub_force_field</span><span class="p">[</span><span class="n">interaction_index</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">_value</span>
+
+                    <span class="c1"># Append sub_force_field to extracted_ff[force_key]</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">extracted_ff</span><span class="p">[</span><span class="n">force_key</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sub_force_field</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="OpenMM_system.write_extracted_ff"><a class="viewcode-back" href="../../The_Phorce.OMM_interface.html#OMM_interface.openmm.OpenMM_system.write_extracted_ff">[docs]</a>    <span class="k">def</span> <span class="nf">write_extracted_ff</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_path</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        writes the extracted force field parameters from the OpenMM system to file</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        output_path : str, optional, default=None</span>
+<span class="sd">            path where the .ff files containing the force field parameters are written</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">output_path</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+
+            <span class="k">assert</span> <span class="n">Path</span><span class="p">(</span><span class="n">output_path</span><span class="p">)</span><span class="o">.</span><span class="n">is_dir</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;output directory does not exist&#39;</span>
+
+            <span class="k">if</span> <span class="n">output_path</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;/&#39;</span><span class="p">:</span>
+                <span class="n">output_path</span> <span class="o">+=</span> <span class="s1">&#39;/&#39;</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">output_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span><span class="o">+</span><span class="s1">&#39;/&#39;</span>
+
+        <span class="k">for</span> <span class="n">force_type</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">extracted_ff</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+
+            <span class="k">if</span> <span class="n">force_type</span> <span class="o">==</span> <span class="s1">&#39;HarmonicBondForce&#39;</span><span class="p">:</span>
+
+                <span class="n">column_fmt</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;</span><span class="si">%i</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">%i</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">%.5f</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">%.1f</span><span class="s1">&#39;</span><span class="p">]</span>
+
+            <span class="k">elif</span> <span class="n">force_type</span> <span class="o">==</span> <span class="s1">&#39;HarmonicAngleForce&#39;</span><span class="p">:</span>
+
+                <span class="n">column_fmt</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;</span><span class="si">%i</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">%i</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">%i</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">%.8f</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">%.4f</span><span class="s1">&#39;</span><span class="p">]</span>
+
+            <span class="k">elif</span> <span class="n">force_type</span> <span class="o">==</span> <span class="s1">&#39;PeriodicTorsionForce&#39;</span><span class="p">:</span>
+
+                <span class="n">column_fmt</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;</span><span class="si">%i</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">%i</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">%i</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">%i</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">%i</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">%.8f</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">%.4f</span><span class="s1">&#39;</span><span class="p">]</span>
+
+            <span class="k">elif</span> <span class="n">force_type</span> <span class="o">==</span> <span class="s1">&#39;NonbondedForce&#39;</span><span class="p">:</span>
+
+                <span class="n">column_fmt</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;</span><span class="si">%.3f</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">%.8f</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">%.8f</span><span class="s1">&#39;</span><span class="p">]</span>
+
+            <span class="k">elif</span> <span class="n">force_type</span> <span class="o">==</span> <span class="s1">&#39;NBException&#39;</span><span class="p">:</span>
+
+                <span class="n">column_fmt</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;</span><span class="si">%i</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">%i</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">%.6f</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">%.8f</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">%.8f</span><span class="s1">&#39;</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">extracted_ff</span><span class="p">[</span><span class="n">force_type</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+
+                <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">array</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">extracted_ff</span><span class="p">[</span><span class="n">force_type</span><span class="p">]):</span>
+
+                    <span class="n">fname</span> <span class="o">=</span> <span class="n">output_path</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">force_type</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;.ff&#39;</span>
+
+                    <span class="n">header_fmtd</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">force_type</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">force_groups</span><span class="p">[</span><span class="n">force_type</span><span class="p">][</span><span class="n">i</span><span class="p">])</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
+
+                    <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">names</span><span class="p">):</span>
+                        <span class="k">if</span> <span class="n">n</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">names</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+                            <span class="n">header_fmtd</span> <span class="o">+=</span> <span class="nb">str</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span>
+                        <span class="k">elif</span> <span class="n">n</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">names</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+                            <span class="n">header_fmtd</span> <span class="o">+=</span> <span class="nb">str</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+
+                    <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">array</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="n">newline</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="n">column_fmt</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="n">header_fmtd</span><span class="p">)</span>
+
+            <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">extracted_ff</span><span class="p">[</span><span class="n">force_type</span><span class="p">])</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+
+                <span class="n">array</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">extracted_ff</span><span class="p">[</span><span class="n">force_type</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+
+                <span class="n">fname</span> <span class="o">=</span> <span class="n">output_path</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">force_type</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;.ff&#39;</span>
+
+                <span class="n">header_fmtd</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">force_type</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">force_groups</span><span class="p">[</span><span class="n">force_type</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
+
+                <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">names</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">n</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">names</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+                        <span class="n">header_fmtd</span> <span class="o">+=</span> <span class="nb">str</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span>
+                    <span class="k">elif</span> <span class="n">n</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">names</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+                        <span class="n">header_fmtd</span> <span class="o">+=</span> <span class="nb">str</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+
+                <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">array</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="n">newline</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="n">column_fmt</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="n">header_fmtd</span><span class="p">)</span>
+
+        <span class="n">filenames</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">fnmatch</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">output_path</span><span class="p">),</span> <span class="s2">&quot;*.ff&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="s1">&#39;*opt*&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">x</span> <span class="p">]</span>
+        <span class="n">filenames</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+
+        <span class="k">assert</span> <span class="s1">&#39;extracted.ff&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">filenames</span><span class="p">,</span> <span class="s1">&#39;extracted.ff already exists&#39;</span>
+
+        <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">filenames</span><span class="p">:</span>
+
+            <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;cat &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39; &gt;&gt; extracted.ff&#39;</span><span class="p">)</span>
+
+        <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;echo \# END &gt;&gt; extracted.ff&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="OpenMM_system.write_ff_optimizable"><a class="viewcode-back" href="../../The_Phorce.OMM_interface.html#OMM_interface.openmm.OpenMM_system.write_ff_optimizable">[docs]</a>    <span class="k">def</span> <span class="nf">write_ff_optimizable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">file_name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span> 
+
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        writes the optimized force field parameters from the OpenMM system to file</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        output_path : str, optional, default=None</span>
+<span class="sd">            path where the .ff files containing the force field parameters are written </span>
+<span class="sd">        file_name : str, optional, default=None</span>
+<span class="sd">            filename of ...._opt.ff       </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">output_path</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+
+            <span class="k">assert</span> <span class="n">Path</span><span class="p">(</span><span class="n">output_path</span><span class="p">)</span><span class="o">.</span><span class="n">is_dir</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;output directory does not exist&#39;</span>
+
+            <span class="k">if</span> <span class="n">output_path</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;/&#39;</span><span class="p">:</span>
+                <span class="n">output_path</span> <span class="o">+=</span> <span class="s1">&#39;/&#39;</span>
+        
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">output_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span><span class="o">+</span><span class="s1">&#39;/&#39;</span>
+
+        <span class="k">if</span> <span class="n">file_name</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+
+            <span class="n">file_name</span> <span class="o">=</span> <span class="s1">&#39;ff_optimizable.ff&#39;</span>
+
+        <span class="k">for</span> <span class="n">force_type</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ff_optimizable</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+
+            <span class="k">if</span> <span class="n">force_type</span> <span class="o">==</span> <span class="s1">&#39;HarmonicBondForce&#39;</span><span class="p">:</span>
+
+                <span class="n">column_fmt</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;</span><span class="si">%i</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">%i</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">%.5f</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">%.1f</span><span class="s1">&#39;</span><span class="p">]</span>
+
+            <span class="k">elif</span> <span class="n">force_type</span> <span class="o">==</span> <span class="s1">&#39;HarmonicAngleForce&#39;</span><span class="p">:</span>
+
+                <span class="n">column_fmt</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;</span><span class="si">%i</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">%i</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">%i</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">%.8f</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">%.4f</span><span class="s1">&#39;</span><span class="p">]</span>
+
+            <span class="k">elif</span> <span class="n">force_type</span> <span class="o">==</span> <span class="s1">&#39;PeriodicTorsionForce&#39;</span><span class="p">:</span>
+
+                <span class="n">column_fmt</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;</span><span class="si">%i</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">%i</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">%i</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">%i</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">%i</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">%.8f</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">%.4f</span><span class="s1">&#39;</span><span class="p">]</span>
+
+            <span class="k">elif</span> <span class="n">force_type</span> <span class="o">==</span> <span class="s1">&#39;NonbondedForce&#39;</span><span class="p">:</span>
+
+                <span class="n">column_fmt</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;</span><span class="si">%.3f</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">%.8f</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">%.8f</span><span class="s1">&#39;</span><span class="p">]</span>
+
+            <span class="k">elif</span> <span class="n">force_type</span> <span class="o">==</span> <span class="s1">&#39;NBException&#39;</span><span class="p">:</span>
+
+                <span class="n">column_fmt</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;</span><span class="si">%i</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">%i</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">%.6f</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">%.8f</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">%.8f</span><span class="s1">&#39;</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ff_optimizable</span><span class="p">[</span><span class="n">force_type</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+
+                <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">array</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">extracted_ff</span><span class="p">[</span><span class="n">force_type</span><span class="p">]):</span>
+
+                    <span class="n">fname</span> <span class="o">=</span> <span class="n">output_path</span> <span class="o">+</span> <span class="n">file_name</span> <span class="o">+</span><span class="s1">&#39;_&#39;</span><span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">force_type</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;_opt.ff&#39;</span>
+
+                    <span class="n">header_fmtd</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">force_type</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">force_groups</span><span class="p">[</span><span class="n">force_type</span><span class="p">][</span><span class="n">i</span><span class="p">])</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
+
+                    <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">names</span><span class="p">):</span>
+                        <span class="k">if</span> <span class="n">n</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">names</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+                            <span class="n">header_fmtd</span> <span class="o">+=</span> <span class="nb">str</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span>
+                        <span class="k">elif</span> <span class="n">n</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">names</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+                            <span class="n">header_fmtd</span> <span class="o">+=</span> <span class="nb">str</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+
+                    <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">array</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="n">newline</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="n">column_fmt</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="n">header_fmtd</span><span class="p">)</span>
+
+            <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ff_optimizable</span><span class="p">[</span><span class="n">force_type</span><span class="p">])</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+
+                <span class="n">array</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ff_optimizable</span><span class="p">[</span><span class="n">force_type</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+
+                <span class="n">fname</span> <span class="o">=</span> <span class="n">output_path</span> <span class="o">+</span> <span class="n">file_name</span> <span class="o">+</span><span class="s1">&#39;_&#39;</span><span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">force_type</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;_opt.ff&#39;</span>
+
+                <span class="n">header_fmtd</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">force_type</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">force_groups</span><span class="p">[</span><span class="n">force_type</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
+
+                <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">names</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">n</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">names</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+                        <span class="n">header_fmtd</span> <span class="o">+=</span> <span class="nb">str</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span>
+                    <span class="k">elif</span> <span class="n">n</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">array</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">names</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+                        <span class="n">header_fmtd</span> <span class="o">+=</span> <span class="nb">str</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+
+                <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">array</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="n">newline</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="n">column_fmt</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="n">header_fmtd</span><span class="p">)</span>
+
+        <span class="n">filenames</span> <span class="o">=</span> <span class="n">fnmatch</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">output_path</span><span class="p">),</span> <span class="s1">&#39;*_opt.ff&#39;</span><span class="p">)</span>
+        <span class="n">filenames</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+
+        <span class="k">assert</span> <span class="n">file_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">filenames</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> already exists&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">file_name</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">filenames</span><span class="p">:</span>
+
+            <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;cat &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39; &gt;&gt; &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">file_name</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;_ff_optimizable.ff&#39;</span><span class="p">)</span>
+
+        <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;echo \# END &gt;&gt; &#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">file_name</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;_ff_optimizable.ff&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="OpenMM_system.read_extracted_ff"><a class="viewcode-back" href="../../The_Phorce.OMM_interface.html#OMM_interface.openmm.OpenMM_system.read_extracted_ff">[docs]</a>    <span class="k">def</span> <span class="nf">read_extracted_ff</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_path</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Read in an already existing/previously extracted extracted.ff file</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        input_path : str, optional, default=None</span>
+<span class="sd">            path where the extracted.ff file containing previously extracted force field parameters is stored</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">input_path</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+
+            <span class="k">assert</span> <span class="n">Path</span><span class="p">(</span><span class="n">input_path</span><span class="p">)</span><span class="o">.</span><span class="n">is_dir</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;input directory does not exist&#39;</span>
+
+            <span class="k">if</span> <span class="n">input_path</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;/&#39;</span><span class="p">:</span>
+                <span class="n">input_path</span> <span class="o">+=</span> <span class="s1">&#39;/&#39;</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">input_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span><span class="o">+</span><span class="s1">&#39;/&#39;</span>
+
+        <span class="n">extracted_ff_file</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">input_path</span><span class="o">+</span><span class="s1">&#39;extracted.ff&#39;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
+
+        <span class="n">_extracted_ff</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">line_nr</span><span class="p">,</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">extracted_ff_file</span><span class="o">.</span><span class="n">readlines</span><span class="p">()):</span>
+
+            <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+            <span class="n">_extracted_ff</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+
+        <span class="n">extracted_ff_file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+        <span class="n">comment_line_nrs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">comment_lines</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">line_nr</span><span class="p">,</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">_extracted_ff</span><span class="p">):</span>
+            <span class="k">if</span> <span class="s1">&#39;#&#39;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
+                <span class="n">comment_line_nrs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line_nr</span><span class="p">)</span>
+                <span class="n">comment_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">read_in_ff</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">force_type</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">force_groups_dict</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">comment_lines</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">force_type</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">read_in_ff</span><span class="p">[</span><span class="n">force_type</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">force_groups_read</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">read_in_ff</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">force_groups_read</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">comment_lines</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">force_groups_read</span><span class="p">[</span><span class="n">group</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">line</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
+
+        <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">force_groups_read</span><span class="p">:</span>
+            <span class="n">force_group_occurrence</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argwhere</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">char</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">comment_lines</span><span class="p">,</span> <span class="n">group</span><span class="p">))</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">occurrence</span> <span class="ow">in</span> <span class="n">force_group_occurrence</span><span class="p">:</span>
+                <span class="n">header</span> <span class="o">=</span> <span class="n">comment_line_nrs</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">occurrence</span><span class="p">)]</span><span class="o">+</span><span class="mi">2</span>
+                <span class="n">footer</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">_extracted_ff</span><span class="p">)</span><span class="o">-</span><span class="n">header</span><span class="o">-</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">_extracted_ff</span><span class="p">)</span><span class="o">-</span><span class="n">comment_line_nrs</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">occurrence</span><span class="p">)</span><span class="o">+</span><span class="mi">2</span><span class="p">])</span>
+
+                <span class="k">if</span> <span class="n">group</span> <span class="o">==</span> <span class="s1">&#39;HarmonicBondForce&#39;</span><span class="p">:</span>
+                    <span class="n">array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="n">input_path</span><span class="o">+</span><span class="s1">&#39;extracted.ff&#39;</span><span class="p">,</span> <span class="n">skiprows</span><span class="o">=</span><span class="n">header</span><span class="p">,</span> <span class="n">max_rows</span><span class="o">=</span><span class="n">footer</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;names&#39;</span><span class="p">:</span>
+                                                            <span class="p">(</span><span class="s1">&#39;atom1&#39;</span><span class="p">,</span> <span class="s1">&#39;atom2&#39;</span><span class="p">,</span> <span class="s1">&#39;bond_length&#39;</span><span class="p">,</span> <span class="s1">&#39;force_constant&#39;</span><span class="p">),</span>
+                                                                                                <span class="s1">&#39;formats&#39;</span><span class="p">:</span>
+                                                            <span class="p">(</span><span class="s1">&#39;int&#39;</span><span class="p">,</span> <span class="s1">&#39;int&#39;</span><span class="p">,</span> <span class="s1">&#39;float&#39;</span><span class="p">,</span> <span class="s1">&#39;float&#39;</span><span class="p">)})</span>
+
+                <span class="k">elif</span> <span class="n">group</span> <span class="o">==</span> <span class="s1">&#39;HarmonicAngleForce&#39;</span><span class="p">:</span>
+                    <span class="n">array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="n">input_path</span><span class="o">+</span><span class="s1">&#39;extracted.ff&#39;</span><span class="p">,</span> <span class="n">skiprows</span><span class="o">=</span><span class="n">header</span><span class="p">,</span> <span class="n">max_rows</span><span class="o">=</span><span class="n">footer</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;names&#39;</span><span class="p">:</span>
+                                            <span class="p">(</span><span class="s1">&#39;atom1&#39;</span><span class="p">,</span> <span class="s1">&#39;atom2&#39;</span><span class="p">,</span> <span class="s1">&#39;atom3&#39;</span><span class="p">,</span> <span class="s1">&#39;angle&#39;</span><span class="p">,</span> <span class="s1">&#39;force_constant&#39;</span><span class="p">),</span>
+                                                                                                <span class="s1">&#39;formats&#39;</span><span class="p">:</span>
+                                            <span class="p">(</span><span class="s1">&#39;int&#39;</span><span class="p">,</span> <span class="s1">&#39;int&#39;</span><span class="p">,</span> <span class="s1">&#39;int&#39;</span><span class="p">,</span> <span class="s1">&#39;float&#39;</span><span class="p">,</span> <span class="s1">&#39;float&#39;</span><span class="p">)})</span>
+
+                <span class="k">elif</span> <span class="n">group</span> <span class="o">==</span> <span class="s1">&#39;PeriodicTorsionForce&#39;</span><span class="p">:</span>
+                    <span class="n">array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="n">input_path</span><span class="o">+</span><span class="s1">&#39;extracted.ff&#39;</span><span class="p">,</span> <span class="n">skiprows</span><span class="o">=</span><span class="n">header</span><span class="p">,</span> <span class="n">max_rows</span><span class="o">=</span><span class="n">footer</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;names&#39;</span><span class="p">:</span>
+                                            <span class="p">(</span><span class="s1">&#39;atom1&#39;</span><span class="p">,</span> <span class="s1">&#39;atom2&#39;</span><span class="p">,</span> <span class="s1">&#39;atom3&#39;</span><span class="p">,</span> <span class="s1">&#39;atom4&#39;</span><span class="p">,</span> <span class="s1">&#39;periodicity&#39;</span><span class="p">,</span> <span class="s1">&#39;phase&#39;</span><span class="p">,</span>
+                                            <span class="s1">&#39;force_constant&#39;</span><span class="p">),</span>
+                                                                                                <span class="s1">&#39;formats&#39;</span><span class="p">:</span>
+                                            <span class="p">(</span><span class="s1">&#39;int&#39;</span><span class="p">,</span> <span class="s1">&#39;int&#39;</span><span class="p">,</span> <span class="s1">&#39;int&#39;</span><span class="p">,</span> <span class="s1">&#39;int&#39;</span><span class="p">,</span> <span class="s1">&#39;int&#39;</span><span class="p">,</span> <span class="s1">&#39;float&#39;</span><span class="p">,</span> <span class="s1">&#39;float&#39;</span><span class="p">)})</span>
+
+                <span class="k">elif</span> <span class="n">group</span> <span class="o">==</span> <span class="s1">&#39;NBException&#39;</span><span class="p">:</span>
+                    <span class="n">array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="n">input_path</span><span class="o">+</span><span class="s1">&#39;extracted.ff&#39;</span><span class="p">,</span> <span class="n">skiprows</span><span class="o">=</span><span class="n">header</span><span class="p">,</span> <span class="n">max_rows</span><span class="o">=</span><span class="n">footer</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;names&#39;</span><span class="p">:</span>
+                                            <span class="p">(</span><span class="s1">&#39;atom1&#39;</span><span class="p">,</span> <span class="s1">&#39;atom2&#39;</span><span class="p">,</span> <span class="s1">&#39;chargeProd&#39;</span><span class="p">,</span> <span class="s1">&#39;sigma&#39;</span><span class="p">,</span> <span class="s1">&#39;epsilon&#39;</span><span class="p">),</span>
+                                                                                                <span class="s1">&#39;formats&#39;</span><span class="p">:</span>
+                                            <span class="p">(</span><span class="s1">&#39;int&#39;</span><span class="p">,</span> <span class="s1">&#39;int&#39;</span><span class="p">,</span> <span class="s1">&#39;float&#39;</span><span class="p">,</span> <span class="s1">&#39;float&#39;</span><span class="p">,</span> <span class="s1">&#39;float&#39;</span><span class="p">)})</span>
+
+                <span class="k">elif</span> <span class="n">group</span> <span class="o">==</span> <span class="s1">&#39;NonbondedForce&#39;</span><span class="p">:</span>
+                    <span class="n">array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="n">input_path</span><span class="o">+</span><span class="s1">&#39;extracted.ff&#39;</span><span class="p">,</span> <span class="n">skiprows</span><span class="o">=</span><span class="n">header</span><span class="p">,</span> <span class="n">max_rows</span><span class="o">=</span><span class="n">footer</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;names&#39;</span><span class="p">:</span>
+                                                                        <span class="p">(</span><span class="s1">&#39;charge&#39;</span><span class="p">,</span> <span class="s1">&#39;lj_sigma&#39;</span><span class="p">,</span> <span class="s1">&#39;lj_eps&#39;</span><span class="p">),</span>
+                                                                                                <span class="s1">&#39;formats&#39;</span><span class="p">:</span>
+                                                                        <span class="p">(</span><span class="s1">&#39;float&#39;</span><span class="p">,</span> <span class="s1">&#39;float&#39;</span><span class="p">,</span> <span class="s1">&#39;float&#39;</span><span class="p">)})</span>
+                                                                        <span class="c1"># GMX/OMM units: nm and kJ/mol</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">read_in_ff</span><span class="p">[</span><span class="n">group</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">array</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="OpenMM_system.get_charges"><a class="viewcode-back" href="../../The_Phorce.OMM_interface.html#OMM_interface.openmm.OpenMM_system.get_charges">[docs]</a>    <span class="k">def</span> <span class="nf">get_charges</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        extracts the classical charges from the OpenMM system</span>
+
+<span class="sd">        Attributes</span>
+<span class="sd">        ----------</span>
+<span class="sd">        extracted_ff</span>
+<span class="sd">        charges</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">extracted_ff</span><span class="p">[</span><span class="s1">&#39;NonbondedForce&#39;</span><span class="p">])</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">charges</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">extracted_ff</span><span class="p">[</span><span class="s1">&#39;NonbondedForce&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;charge&#39;</span><span class="p">]</span>
+
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">extracted_ff</span><span class="p">[</span><span class="s1">&#39;NonbondedForce&#39;</span><span class="p">])</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">read_in_ff</span><span class="p">[</span><span class="s1">&#39;NonbondedForce&#39;</span><span class="p">])</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;No force field present. &#39;</span> \
+                                                                <span class="s1">&#39;Use method extract_forcefield or method &#39;</span> \
+                                                                <span class="s1">&#39;read_extracted_ff first.&#39;</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">charges</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_in_ff</span><span class="p">[</span><span class="s1">&#39;NonbondedForce&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;charge&#39;</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="OpenMM_system.write_ommsys2xml"><a class="viewcode-back" href="../../The_Phorce.OMM_interface.html#OMM_interface.openmm.OpenMM_system.write_ommsys2xml">[docs]</a>    <span class="k">def</span> <span class="nf">write_ommsys2xml</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_path</span><span class="o">=</span><span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="n">fname</span><span class="o">=</span><span class="s1">&#39;omm_system&#39;</span><span class="p">):</span>
+<span class="w">    </span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        Method that writes the OpenMM system stored in self.system to an XML file.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        output_path : str, optional, default=&#39;.&#39;</span>
+<span class="sd">            path where the .xml file containing the system is written</span>
+<span class="sd">        fname : str, optional, default=&#39;omm_system&#39;</span>
+<span class="sd">            filename of the .xml file</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        &#39;True&#39; if file was closed successfully. &#39;False&#39; otherwise.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="kn">from</span> <span class="nn">simtk.openmm</span> <span class="kn">import</span> <span class="n">XmlSerializer</span>
+
+        <span class="k">if</span> <span class="n">output_path</span> <span class="o">!=</span> <span class="s1">&#39;.&#39;</span><span class="p">:</span>
+
+            <span class="k">assert</span> <span class="n">Path</span><span class="p">(</span><span class="n">output_path</span><span class="p">)</span><span class="o">.</span><span class="n">is_dir</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;output directory does not exist&#39;</span>
+
+            <span class="k">if</span> <span class="n">output_path</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;/&#39;</span><span class="p">:</span>
+                <span class="n">output_path</span> <span class="o">+=</span> <span class="s1">&#39;/&#39;</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">output_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span><span class="o">+</span><span class="s1">&#39;/&#39;</span>
+
+        <span class="n">outfile</span> <span class="o">=</span> <span class="n">output_path</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;.xml&#39;</span>
+
+        <span class="n">serialized_system</span> <span class="o">=</span> <span class="n">XmlSerializer</span><span class="o">.</span><span class="n">serializeSystem</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="p">)</span>
+        <span class="n">file</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">outfile</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
+        <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">serialized_system</span><span class="p">)</span>
+        <span class="n">file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="OpenMM_system.create_force_field_optimizable"><a class="viewcode-back" href="../../The_Phorce.OMM_interface.html#OMM_interface.openmm.OpenMM_system.create_force_field_optimizable">[docs]</a>    <span class="k">def</span> <span class="nf">create_force_field_optimizable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">opt_bonds</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">opt_angles</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">opt_torsions</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">opt_charges</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                       <span class="n">opt_lj</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        creates a writable dictionary to store the parameters that are to be optimized</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        opt_bonds : bool</span>
+<span class="sd">            Flag that signals whether the bond parameters will be optimized.</span>
+<span class="sd">        opt_angles : bool</span>
+<span class="sd">             Flag that signals whether the angle parameters will be optimized.</span>
+<span class="sd">        opt_torsions : bool</span>
+<span class="sd">            Flag that signals whether the dihedral parameters will be optimized.</span>
+<span class="sd">        opt_charges : bool</span>
+<span class="sd">            Flag that signals whether the charges will be optimized.</span>
+<span class="sd">        opt_lj : bool</span>
+<span class="sd">            Flag that signals whether the Lennard-Jones parameter will be optimized.</span>
+
+<span class="sd">        Attributes</span>
+<span class="sd">        ----------</span>
+<span class="sd">        ff_optimizable</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">extracted_ff</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\t</span><span class="s2"> * ff_extracted dictionary was not created yet.&quot;</span> \
+                                              <span class="s2">&quot;Run OpenMM_system.extract_forcefield method before.&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">ff_optimizable</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">for</span> <span class="n">force_type</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">extracted_ff</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+
+            <span class="c1"># check if force type is optimizable and copy if so</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">force_type</span> <span class="o">==</span> <span class="s1">&#39;HarmonicBondForce&#39;</span> <span class="ow">and</span> <span class="n">opt_bonds</span> <span class="o">==</span> <span class="kc">True</span><span class="p">)</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">ff_optimizable</span><span class="p">[</span><span class="n">force_type</span><span class="p">]</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">extracted_ff</span><span class="p">[</span><span class="n">force_type</span><span class="p">])</span>
+
+            <span class="k">elif</span> <span class="p">(</span><span class="n">force_type</span> <span class="o">==</span> <span class="s1">&#39;HarmonicAngleForce&#39;</span> <span class="ow">and</span> <span class="n">opt_angles</span> <span class="o">==</span><span class="kc">True</span><span class="p">)</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">ff_optimizable</span><span class="p">[</span><span class="n">force_type</span><span class="p">]</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">extracted_ff</span><span class="p">[</span><span class="n">force_type</span><span class="p">])</span>
+
+            <span class="k">elif</span> <span class="p">(</span><span class="n">force_type</span> <span class="o">==</span> <span class="s1">&#39;PeriodicTorsionForce&#39;</span> <span class="ow">and</span> <span class="n">opt_torsions</span><span class="p">)</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">ff_optimizable</span><span class="p">[</span><span class="n">force_type</span><span class="p">]</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">extracted_ff</span><span class="p">[</span><span class="n">force_type</span><span class="p">])</span>
+
+            <span class="k">elif</span> <span class="n">force_type</span> <span class="o">==</span> <span class="s1">&#39;NonbondedForce&#39;</span><span class="p">:</span>
+
+                <span class="k">if</span> <span class="p">(</span><span class="n">opt_charges</span> <span class="o">==</span> <span class="kc">True</span> <span class="ow">and</span> <span class="n">opt_lj</span> <span class="o">==</span> <span class="kc">True</span><span class="p">)</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+
+                    <span class="k">if</span> <span class="s1">&#39;CustomNonbondedForce&#39;</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">extracted_ff</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span> <span class="c1">#NBFIX check</span>
+
+                        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">extracted_ff</span><span class="p">[</span><span class="s1">&#39;CustomNonbondedForce&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="p">[],</span> <span class="s1">&#39;NBFIX may be present but has not been extracted, check ff parameters&#39;</span>
+                        
+                        <span class="bp">self</span><span class="o">.</span><span class="n">ff_optimizable</span><span class="p">[</span><span class="s1">&#39;CustomNonbondedForce&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">extracted_ff</span><span class="p">[</span><span class="s1">&#39;CustomNonbondedForce&#39;</span><span class="p">])</span>
+                    
+                    <span class="bp">self</span><span class="o">.</span><span class="n">ff_optimizable</span><span class="p">[</span><span class="n">force_type</span><span class="p">]</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">extracted_ff</span><span class="p">[</span><span class="n">force_type</span><span class="p">])</span>
+
+                <span class="k">elif</span> <span class="p">(</span><span class="n">opt_charges</span> <span class="o">==</span> <span class="kc">True</span> <span class="ow">and</span> <span class="n">opt_lj</span> <span class="o">==</span> <span class="kc">False</span><span class="p">)</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+
+                    <span class="n">optimizable_charges</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">extracted_ff</span><span class="p">[</span><span class="n">force_type</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">charge</span><span class="p">)</span>
+
+                    <span class="n">nonbond_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">rec</span><span class="o">.</span><span class="n">fromarrays</span><span class="p">([</span><span class="n">optimizable_charges</span><span class="p">],</span>
+                                    <span class="n">shape</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">optimizable_charges</span><span class="p">),</span>
+                                                <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">((</span><span class="s1">&#39;charge&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float</span><span class="p">)),</span>
+                                                <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;charge&#39;</span><span class="p">])</span>
+
+                    <span class="bp">self</span><span class="o">.</span><span class="n">ff_optimizable</span><span class="p">[</span><span class="n">force_type</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">ff_optimizable</span><span class="p">[</span><span class="n">force_type</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">nonbond_array</span><span class="p">))</span>
+
+                <span class="k">elif</span> <span class="p">(</span><span class="n">opt_charges</span> <span class="o">==</span> <span class="kc">False</span> <span class="ow">and</span> <span class="n">opt_lj</span> <span class="o">==</span> <span class="kc">True</span><span class="p">)</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+
+                    <span class="n">optimizable_sigma</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">extracted_ff</span><span class="p">[</span><span class="n">force_type</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">lj_sigma</span><span class="p">)</span>
+                    <span class="n">optimizable_eps</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">extracted_ff</span><span class="p">[</span><span class="n">force_type</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">lj_eps</span><span class="p">)</span>
+
+                    <span class="c1">#optimizable_charges = copy.deepcopy(self.extracted_ff[force_type][0].charge)</span>
+                    <span class="n">nonbond_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">rec</span><span class="o">.</span><span class="n">fromarrays</span><span class="p">([</span><span class="n">optimizable_sigma</span><span class="p">,</span> <span class="n">optimizable_eps</span><span class="p">],</span>
+                                                           <span class="n">shape</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">optimizable_sigma</span><span class="p">),</span>
+                                                <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">([(</span><span class="s1">&#39;lj_sigma&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">),(</span><span class="s1">&#39;lj_eps&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)]),</span>
+                                                <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;lj_sigma&#39;</span><span class="p">,</span> <span class="s1">&#39;lj_eps&#39;</span><span class="p">])</span>
+
+                    <span class="bp">self</span><span class="o">.</span><span class="n">ff_optimizable</span><span class="p">[</span><span class="n">force_type</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">ff_optimizable</span><span class="p">[</span><span class="n">force_type</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">nonbond_array</span><span class="p">))</span>
+
+            <span class="k">elif</span> <span class="n">force_type</span> <span class="o">==</span> <span class="s1">&#39;NBException&#39;</span><span class="p">:</span>
+
+                <span class="k">if</span> <span class="p">(</span><span class="n">opt_charges</span> <span class="o">==</span> <span class="kc">True</span> <span class="ow">and</span> <span class="n">opt_lj</span> <span class="o">==</span> <span class="kc">True</span><span class="p">)</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">ff_optimizable</span><span class="p">[</span><span class="n">force_type</span><span class="p">]</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">extracted_ff</span><span class="p">[</span><span class="n">force_type</span><span class="p">])</span>
+
+                <span class="k">elif</span> <span class="p">(</span><span class="n">opt_charges</span> <span class="o">==</span> <span class="kc">True</span> <span class="ow">and</span> <span class="n">opt_lj</span> <span class="o">==</span> <span class="kc">False</span><span class="p">)</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+                    <span class="n">optimizable_chargeProd</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">extracted_ff</span><span class="p">[</span><span class="n">force_type</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">chargeProd</span><span class="p">)</span>
+                    <span class="n">nb_exc_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">rec</span><span class="o">.</span><span class="n">fromarrays</span><span class="p">([</span><span class="n">optimizable_chargeProd</span><span class="p">],</span>
+                                                           <span class="n">shape</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">optimizable_chargeProd</span><span class="p">),</span>
+                                                           <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">((</span><span class="s1">&#39;chargeProd&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float</span><span class="p">)),</span>
+                                                           <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;chargeProd&#39;</span><span class="p">])</span>
+
+                    <span class="bp">self</span><span class="o">.</span><span class="n">ff_optimizable</span><span class="p">[</span><span class="n">force_type</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">ff_optimizable</span><span class="p">[</span><span class="n">force_type</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">nb_exc_array</span><span class="p">))</span>
+
+                <span class="k">elif</span> <span class="p">(</span><span class="n">opt_charges</span> <span class="o">==</span> <span class="kc">False</span> <span class="ow">and</span> <span class="n">opt_lj</span> <span class="o">==</span> <span class="kc">True</span><span class="p">)</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+
+                    <span class="n">optimizable_exc_sigma</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">extracted_ff</span><span class="p">[</span><span class="n">force_type</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">sigma</span><span class="p">)</span>
+                    <span class="n">optimizable_exc_eps</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">extracted_ff</span><span class="p">[</span><span class="n">force_type</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">epsilon</span><span class="p">)</span>
+
+                    <span class="n">nb_exc_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">rec</span><span class="o">.</span><span class="n">fromarrays</span><span class="p">([</span><span class="n">optimizable_exc_sigma</span><span class="p">,</span> <span class="n">optimizable_exc_eps</span><span class="p">],</span>
+                                                           <span class="n">shape</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">optimizable_exc_sigma</span><span class="p">),</span>
+                                                <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">([(</span><span class="s1">&#39;sigma&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">),(</span><span class="s1">&#39;epsilon&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)]),</span>
+                                                <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;sigma&#39;</span><span class="p">,</span> <span class="s1">&#39;epsilon&#39;</span><span class="p">])</span>
+
+                    <span class="bp">self</span><span class="o">.</span><span class="n">ff_optimizable</span><span class="p">[</span><span class="n">force_type</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">ff_optimizable</span><span class="p">[</span><span class="n">force_type</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">nb_exc_array</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="OpenMM_system.set_parameters"><a class="viewcode-back" href="../../The_Phorce.OMM_interface.html#OMM_interface.openmm.OpenMM_system.set_parameters">[docs]</a>    <span class="k">def</span> <span class="nf">set_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        writes the optimized parameters to the OpenMM system</span>
+
+<span class="sd">        Attributes</span>
+<span class="sd">        ----------</span>
+<span class="sd">        ff_optimizable : dict</span>
+<span class="sd">            dictionary containing the optimizable force field parameters</span>
+<span class="sd">        system  </span>
+<span class="sd">            OpenMM system object</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ff_optimizable</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;ff_optimizable does not exist, please create it first.&#39;</span>
+
+        <span class="k">for</span> <span class="n">force_key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ff_optimizable</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+
+            <span class="n">parameter_array_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ff_optimizable</span><span class="p">[</span><span class="n">force_key</span><span class="p">]</span>
+
+            <span class="c1"># loop needed in case of tuple index for force group</span>
+            <span class="k">for</span> <span class="n">index_no</span><span class="p">,</span> <span class="n">omm_force_index</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">force_groups</span><span class="p">[</span><span class="n">force_key</span><span class="p">]):</span>
+                <span class="n">force</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">system</span><span class="o">.</span><span class="n">getForce</span><span class="p">(</span><span class="n">omm_force_index</span><span class="p">)</span> <span class="c1"># this is the openmm force object</span>
+
+                <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">parameters</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">parameter_array_list</span><span class="p">[</span><span class="n">index_no</span><span class="p">]):</span>
+
+                    <span class="k">if</span> <span class="n">force_key</span> <span class="o">==</span> <span class="s1">&#39;NonbondedForce&#39;</span><span class="p">:</span>
+                        <span class="n">force</span><span class="o">.</span><span class="n">setParticleParameters</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;charge&quot;</span><span class="p">],</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;lj_sigma&quot;</span><span class="p">],</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;lj_eps&quot;</span><span class="p">])</span>
+                        <span class="n">force</span><span class="o">.</span><span class="n">updateParametersInContext</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="p">)</span>
+
+                    <span class="k">elif</span> <span class="n">force_key</span> <span class="o">==</span> <span class="s1">&#39;HarmonicBondForce&#39;</span><span class="p">:</span>
+                        <span class="n">force</span><span class="o">.</span><span class="n">setBondParameters</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;atom1&quot;</span><span class="p">],</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;atom2&quot;</span><span class="p">],</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;bond_length&quot;</span><span class="p">],</span>
+                                                <span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;force_constant&#39;</span><span class="p">])</span>
+                        <span class="n">force</span><span class="o">.</span><span class="n">updateParametersInContext</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="p">)</span>
+
+                    <span class="k">elif</span> <span class="n">force_key</span> <span class="o">==</span> <span class="s1">&#39;HarmonicAngleForce&#39;</span><span class="p">:</span>
+                        <span class="n">force</span><span class="o">.</span><span class="n">setAngleParameters</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;atom1&quot;</span><span class="p">],</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;atom2&quot;</span><span class="p">],</span> <span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;atom3&#39;</span><span class="p">],</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;angle&quot;</span><span class="p">],</span>
+                                                <span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;force_constant&#39;</span><span class="p">])</span>
+                        <span class="n">force</span><span class="o">.</span><span class="n">updateParametersInContext</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="p">)</span>
+
+                    <span class="k">elif</span> <span class="n">force_key</span> <span class="o">==</span> <span class="s1">&#39;PeriodicTorsionForce&#39;</span><span class="p">:</span>
+                        <span class="n">force</span><span class="o">.</span><span class="n">setTorsionParameters</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;atom1&quot;</span><span class="p">],</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;atom2&quot;</span><span class="p">],</span> <span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;atom3&#39;</span><span class="p">],</span> <span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;atom4&#39;</span><span class="p">],</span>
+                                                <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;periodicity&quot;</span><span class="p">],</span> <span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;phase&#39;</span><span class="p">],</span> <span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;force_constant&#39;</span><span class="p">])</span>
+                        <span class="n">force</span><span class="o">.</span><span class="n">updateParametersInContext</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="p">)</span>
+
+                    <span class="k">elif</span> <span class="n">force_key</span> <span class="o">==</span> <span class="s1">&#39;NBException&#39;</span><span class="p">:</span>
+
+                        <span class="n">force</span><span class="o">.</span><span class="n">setExceptionParameters</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;atom1&quot;</span><span class="p">],</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;atom2&quot;</span><span class="p">],</span> <span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;chargeProd&quot;</span><span class="p">],</span> <span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;sigma&#39;</span><span class="p">],</span>
+                                                    <span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;epsilon&#39;</span><span class="p">])</span>
+                        <span class="n">force</span><span class="o">.</span><span class="n">updateParametersInContext</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="p">)</span>
+                
+                <span class="k">if</span> <span class="n">force_key</span> <span class="o">==</span> <span class="s1">&#39;CustomNonbondedForce&#39;</span><span class="p">:</span>
+
+                    <span class="n">acoeffunc</span> <span class="o">=</span> <span class="n">force</span><span class="o">.</span><span class="n">getTabulatedFunction</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                    <span class="n">bcoeffunc</span> <span class="o">=</span> <span class="n">force</span><span class="o">.</span><span class="n">getTabulatedFunction</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+                    <span class="n">xsize</span><span class="p">,</span> <span class="n">ysize</span> <span class="o">=</span> <span class="n">acoeffunc</span><span class="o">.</span><span class="n">getFunctionParameters</span><span class="p">()[:</span><span class="mi">2</span><span class="p">]</span>
+
+                    <span class="n">acoeffunc</span><span class="o">.</span><span class="n">setFunctionParameters</span><span class="p">(</span><span class="n">xsize</span><span class="p">,</span> <span class="n">ysize</span><span class="p">,</span> <span class="n">parameter_array_list</span><span class="p">[</span><span class="n">index_no</span><span class="p">][</span><span class="s1">&#39;acoef&#39;</span><span class="p">])</span> <span class="c1">#TODO: we got a dtype issue</span>
+                    <span class="n">bcoeffunc</span><span class="o">.</span><span class="n">setFunctionParameters</span><span class="p">(</span><span class="n">xsize</span><span class="p">,</span> <span class="n">ysize</span><span class="p">,</span> <span class="n">parameter_array_list</span><span class="p">[</span><span class="n">index_no</span><span class="p">][</span><span class="s1">&#39;bcoef&#39;</span><span class="p">])</span>
+
+                    <span class="n">force</span><span class="o">.</span><span class="n">updateParametersInContext</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="p">)</span></div></div>
+                
+
+
+
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Viktoria Korn.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
