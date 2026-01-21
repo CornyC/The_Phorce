@@ -122,12 +122,6 @@ class Direct_Calculator:
 
         energy_line = [index for index, string in enumerate(read_lines) if 'ENERGY| Total FORCE_EVAL ( QS ) energy [a.u.]:'
                        in string]
-        """
-        print(energy_line[-1])
-        print(type(energy_line[-1]))
-        print(read[energy_line[-1]])
-        print(type([energy_line[-1]]))
-        """
 
         self.energy = float(re.findall(r"[-+]?(?:\d*\.*\d+)", read_lines[energy_line[-1]])[0]) # Hartree 
 
