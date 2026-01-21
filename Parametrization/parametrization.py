@@ -24,11 +24,21 @@ class Parametrization:
         Applies manual 'man' or automatic 'auto' bounds directly or indirectly to the optimization
         sets self.bounds
     
-    other (internal) parameters:
-        self.parameters : 1d array
-            contains optimized, scaled & vectorized parameters
-        self.bounds : list of tuples
+    Attributes
+    -----------
+    parameters : 1d array
+        contains optimized, scaled & vectorized parameters
+    bounds : list of tuples
             upper and lower limit for parameters if the optimization is constrained.
+
+    Raises
+    ------
+    ValueError
+        If parameter_type not supported
+    NotImplementedError
+        If automatic bounds for a certain atom's charge are not implemented
+        If automatic constraints are chsoen for force groups other than NonbondedForce and CustomNonbondedForce
+
     """
     def __init__(self, molecular_system=None, term_type=None, optimizer=None, constraints=None):
 
@@ -185,14 +195,15 @@ class Parametrization:
         """
         calculates all classical energies and forces using OpenMM for the molecular_system
 
-        sets :
-            self.emm
+        Attributes
+        ----------
+            emm : np.array
+                calssical energies of ['all'] system
         """
 
         for omm_system_name in self.molecular_system.openmm_systems.keys():
             if self.molecular_system.openmm_systems[omm_system_name] != None:
                 self.molecular_system.generate_mm_energies_forces(omm_system_name)
-                #print('mm_energies_forces generated')
 
         self.emm = self.molecular_system.mm_energies['all']
 
@@ -200,12 +211,13 @@ class Parametrization:
         """
         calculates classical net forces (if more than one molecule/ molecule is solvated)
 
-        sets :
-            self.fmm
+        Attributes
+        ----------
+            fmm : np.array
+                calssical forces (net)
         """
 
         self.molecular_system.calculate_mm_net_forces()
-        #print('mm_net_forces calculated')
 
         self.fmm = self.molecular_system.mm_net_forces
 
@@ -216,8 +228,15 @@ class Parametrization:
         O =   Σ  ω_{conf} ------------
              conf         Var(E^{QM})
 
-        returns :
+        Returns
+        -------
+        obj_f_e
             value of the objective function in the format of the selected optimizer
+        
+        Raises
+        ------
+        ValueError
+            If Optimizer of type {} not implemented
         """
 
         for sys_type in self.molecular_system.openmm_systems.keys():
@@ -253,29 +272,39 @@ class Parametrization:
 
 
         else:
-            raise ValueError('ERROR: Optimizer of type {} not implemented'.format(self.optimizer.opt_method.lower()))
+            raise ValueError('Optimizer of type {} not implemented'.format(self.optimizer.opt_method.lower()))
 
         return obj_f_e
 
-    def evaluate_obj_func_force(self, method=None): #TODO: Use another metric?
+    def evaluate_obj_func_force(self, method='const_variance'): 
         """
         calculates the value of the objective function using the format required by the selected optimizer
                  1            n_atoms n_conf              |ΔF|²
         O = ----------------     Σ     Σ     ω_{conf} ------------
             3n_atoms n_confs   atom   conf             Var(F^{QM})
 
-        returns :
+        Parameters
+        ----------
+        method : str, default='const_variance'
+            "const_variance", or "indiv_variance". "const_variance" computes the variance over the ntire qm dataset, 
+            "indiv_variance" does so over each conformation (introduces a kind of weight)
+        
+        Returns
+        -------
+        obj_f_f
             value of the objective function in the format of the selected optimizer
+
+        Raises
+        ------
+        ValueError
+            If Optimizer of type {} not implemented
         """
 
-        assert method in [None, "const_variance", "indiv_variance"], "Force property term for method {} is not implemented.".format(method)
+        assert method in ["const_variance", "indiv_variance"], "Force property term for method {} is not implemented.".format(method)
 
         for sys_type in self.molecular_system.openmm_systems.keys():
 
-            if self.molecular_system.openmm_systems[sys_type] != None:
-
                 self.molecular_system.openmm_systems[sys_type].set_parameters()
-                #print('params set for '+str(sys_type))
 
         if isinstance(self.weights, np.ndarray) == False:
 
@@ -291,21 +320,16 @@ class Parametrization:
 
         self.calculate_classical_energies_forces()
         self.calculate_classical_net_forces()
-        #print('net forces calculated')
 
         if self.optimizer.opt_method in ["scipy_local", "scipy_global", "bayesian", "cma","pso"]:
 
             delta_F = self.fmm - self.fqm
             enumerator = np.power(np.abs(delta_F), 2)
 
-            if method is None:
-                method = "const_variance"
-
             if method == "const_variance":
 
                 denominator = np.var(np.linalg.norm(self.fqm, axis=2)) # one var over all confs
                 frac_weighted = weights * (enumerator / denominator)
-                #frac_weighted = weights * enumerator # testing
                 obj_f_f = np.sum(frac_weighted) / (3 * self.n_atoms['all'])
                 #     1            n_atoms n_conf              |ΔF|²
                 # ----------------     Σ     Σ     ω_{conf} ------------
@@ -319,7 +343,6 @@ class Parametrization:
                 variance = np.var(norm, axis=1)
                 denominator = np.swapaxes(np.atleast_3d(variance),0,1) # individual var per conf
                 frac_weighted = weights * (enumerator / denominator)
-                #frac_weighted = weights * enumerator # testing
                 obj_f_f = np.sum(frac_weighted) / (3 * self.n_atoms['all'])
                 #     1            n_atoms n_conf              |ΔF|²
                 # ----------------     Σ     Σ     ω_{conf} ------------
@@ -327,7 +350,7 @@ class Parametrization:
 
 
         else:
-            raise ValueError('ERROR: Optimizer of type {} not implemented'.format(self.optimizer.opt_method.lower()))
+            raise ValueError('Optimizer of type {} not implemented'.format(self.optimizer.opt_method.lower()))
         
         return obj_f_f
     
@@ -335,6 +358,10 @@ class Parametrization:
     def calc_force_std_dev(self):
         """
         calculates the standard deviation of forces
+
+        Returns
+        -------
+        force_std_dev
 
         """
         delta_F = self.fmm - self.fqm
@@ -351,11 +378,15 @@ class Parametrization:
         ----------
         parameters : 1d array
             Selected scaled and vectorized parameters from molecular_system.scaled_parameters
-        other (internal) parameters:
-            self.molecular_system : system.Molecular_system object
-            self.term_type : str
 
-        returns :
+        Arguments
+        ----------
+        molecular_system : system.Molecular_system object
+        term_type : str
+
+        Returns 
+        --------
+        obj_f_value : float
             value of objective funtion as float
         """
         self.molecular_system.scaled_parameters = parameters
@@ -407,9 +438,15 @@ class Parametrization:
         parameters : 1d array
             Selected scaled and vectorized parameters from molecular_system.scaled_parameters
         
-        sets: 
-            self.parameters : 1d array
-                optimized scaled & vectorized parameters
+        Arguments
+        ---------- 
+        parameters : 1d array
+            optimized scaled & vectorized parameters
+
+        Raises
+        ------
+        KeyError
+            If the optimizer does not support constraints but constraints have been selected by the user
         """
 
         assert self.optimizer is not None, 'optimizer not set'

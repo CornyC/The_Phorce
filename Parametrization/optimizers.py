@@ -32,7 +32,7 @@ class Optimizer:
     scipy_optimization : scipy.optimize object
         specific optimizer, sometimes handy to check status & output
     cma_optimization : pycma object
-        -"- 
+        specific optimizer, sometimes handy to check status & output
     """
 
     optimizers = ["scipy_local",
@@ -90,21 +90,23 @@ class Optimizer:
         Nelder-Mead is recommended, Powell or COBYLA could work, too. Set the specific optimizer thru 
         Opti = Optimizer('scipy_local', {'method': 'Nelder-Mead'}) during initialization of the Optimizer object.
 
-        (internal) parameters :
-
-        self.parameters : np.array
+        Attributes
+        ----------
+        parameters : np.array
             parameters that go into the function
-        self.opt_settings : dict
+        opt_settings : dict
             optimizer-speific settings
-        self.constraints : np.array
+        constraints : np.array
             idk yet
-        self.tolerance : float
+        tolerance : float
             optimizer tolerance
-        self.f : parametrization.Parametrization.wrap_objective_function
+        f : parametrization.Parametrization.wrap_objective_function
             Objective function wrapper
 
-        returns:
-            optimized_params : np.array containing the optimized force field params
+        Returns
+        -------
+        optimized_params, value 
+            np.array containing the optimized force field params, objective function value
         """
 
         from scipy.optimize import minimize as scmin
@@ -163,15 +165,16 @@ class Optimizer:
         """
         see https://docs.scipy.org/doc/scipy/reference/optimize.html
 
-        (internal) parameters :
+        Attributes
+        -----------
 
-        self.parameters : np.array
+        parameters : np.array
             parameters that go into the function
-        self.opt_settings : dict
+        opt_settings : dict
             nested dict of optimizer-speific settings, see above url
-        self.tolerance : float
+        tolerance : float
             optimizer tolerance
-        self.f : parametrization.Parametrization.wrap_objective_function
+        f : parametrization.Parametrization.wrap_objective_function
             Objective function wrapper
 
         """
@@ -261,11 +264,11 @@ class Optimizer:
         CMA-ES is a stochastic optimizer for robust non-linear non-convex derivative- and function-value-free numerical optimization.
         It is terribly slow but might offer a last resort solution.
 
-        (internal) parameters : 
-
-        self.parameters : np.array
+        Attributes
+        -----------
+        parameters : np.array
             parameters that go into the function
-        self.opt_settings : dict
+        opt_settings : dict
             optimizer-speific settings, if you want to use fancy settings, add them to the 'pycma settings' routine down below.
         """
 
@@ -316,11 +319,11 @@ class Optimizer:
         Bayesian optimizer. See https://cest-group.gitlab.io/boss/index.html.
         Bounds are created automatically based on self.parameters.  
 
-        (internal) parameters:
-
-        self.parameters : np.array
+        Attributes
+        ----------
+        parameters : np.array
             parameters that go into the function
-        self.opt_settings : dict
+        opt_settings : dict
             optimizer-speific settings, {'options': {'bo_output': outputpath}} needs to be set. 
             Most BOMain keywords can be passed through the options dictionary. If yours is missing, implement it 
             down below like the others.
@@ -412,14 +415,23 @@ class Optimizer:
         n_particles : int
             number of swarm particles to be generated, default = 50
 
-        self.parameters : parameters that go into the function
-        self.f : input function (wrapped objective function)
-        self.max_iterations
-        self.tolerance
+        Attributes
+        ----------
+        parameters : np.array
+            parameters that go into the function
+        f : 
+            input function (wrapped objective function)
+        max_iterations : int
+            limits the number of iterations
+        tolerance 
+            below which change the optimization is defined as converged
 
-        returns:
-            optimized_params : np.array containing the optimized force field params
-            value : float value of the input function self.f
+        Returns
+        -------
+        optimized_params : np.array 
+            contains the optimized force field params
+        value : float
+            value of the input function self.f
         """
         assert ['c1', 'c2', 'w', 'n_particles'] == list(self.opt_settings.keys()), 'pso optimizer needs c1, c2, w, n_particles as opt_settings'
 
@@ -519,14 +531,17 @@ class Optimizer:
         ----------
         f : Parametrization.parametrization.Parametrization object
             Objective function
-        parameters : numpy array / tensorflow Variable / torch tensor
+        parameters : numpy array 
             Parameters that are going to be optimized (extracted from ff_optimizable)
         constraints :
             Optimization constraints, default = None
 
-        returns:
-            optimized_params : np.array containing the optimized force field params
-            value : float value of self.f
+        Returns
+        -------
+        optimized_params : np.array 
+            contains the optimized force field params
+        value : float 
+            value of self.f
         """
 
         self.f = f
