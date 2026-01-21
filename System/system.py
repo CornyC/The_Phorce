@@ -14,7 +14,6 @@ from math import sqrt
 
 
 class Molecular_system: 
-    os.environ['OMP_NUM_THREADS'] = '6'
     """
     Contains properties of molecular system that is to be parametrized.
 
@@ -25,7 +24,8 @@ class Molecular_system:
     parametrization_method : str
         'energy', 'forces', or 'energy&forces'
 
-    other parameters:
+    Attributes
+    ----------
     openmm_systems : OMM_interface.openmm object
         OpenMM system instance
     ini_coords: numpy array of shape (n_conformations, n_atoms, 3)
@@ -169,11 +169,12 @@ class Molecular_system:
         MDA_reader_object: Coord_Toolz.mdanalysis.MDA_reader object
             Contains MDA Universe and atomgroups
 
-        sets:
-            self.MDA_reader_object
-            self.n_conformations
-            self.n_atoms
-            self.ini_coords
+        Attributes
+        ----------
+        MDA_reader_object
+        n_conformations : int
+        n_atoms : int
+        ini_coords : np.array
         """
 
         self.MDA_reader_object = MDA_reader_object
@@ -242,14 +243,20 @@ class Molecular_system:
             default = None. If charges should be read, supply one of the following: 
             'Mulliken', 'Hirshfeld', 'RESP'
 
-        self.ini_coords : unoptimized coordinates of conformations
-        self.n_conformations : number of conformations
-        
-        sets:
-            self.opt_coords : geometry-optimized coordinates of conformations
-            self.qm_forces : quantum forces
-            self.qm_energies : quantum energies
-            self.qm_charges : quantum charges
+        Attributes
+        -----------
+        ini_coords : np.array
+            unoptimized coordinates of conformations
+        n_conformations : int
+            number of conformations
+        opt_coords : np.array 
+            geometry-optimized coordinates of conformations
+        qm_forces : np.array
+            quantum forces
+        qm_energies : np.array 
+            quantum energies
+        qm_charges : np.array
+            quantum charges
         """
 
         if path[-1] != '/':
@@ -306,12 +313,17 @@ class Molecular_system:
             path to externally optimized structures
         atomgroup_name : str
             e.g. 'mol1' or 'nosol'
-        self.ini_coords : unoptimized coordinates of conformations
-        self.n_conformations : number of conformations
-        
-        sets:
-            self.qm_forces : quantum forces
-            self.qm_energies : quantum energies
+
+        Attributes
+        -----------
+        ini_coords : np.array
+            unoptimized coordinates of conformations
+        n_conformations : int
+            number of conformations
+        qm_forces : np.array
+            quantum forces
+        qm_energies : np.array
+            quantum energies
         """
 
         if path[-1] != '/':
@@ -381,12 +393,21 @@ class Molecular_system:
         sys_type : str
             'all' or 'nosol' or 'mol1' or 'mol2' 
 
-        internal parameters : self.n_threads, self.ase_cell_dims, self.ase_pbc, self.ase_input_control, self.ase_run_type
-
-        sets:
-            self.qm_forces[sys_type] : quantum forces of atomgroup after geometry opt
-            self.qm_energies[sys_type] : quantum energies of atomgroup after geom opt
-            (self.opt_coords[sys_type] : coordinates after DFT geometry optimization)
+        Attributes
+        ----------
+        n_threads : int
+        ase_cell_dims : np.array of floats
+        ase_pbc : np.array of booleans
+        ase_input_control : str
+            sets the input commands to the ASE calculator (e.g. like a cp2k.inp file)
+        ase_run_type : str
+            'single_point' or 'optimization'
+        qm_forces[sys_type] : np.array
+            quantum forces of atomgroup after geometry opt
+        qm_energies[sys_type] : np.array
+            quantum energies of atomgroup after geom opt
+        opt_coords[sys_type] : np.array
+            coordinates after DFT geometry optimization 
         """
         for setting in [self.ase_cell_dims, self.ase_pbc, self.ase_input_control, self.n_threads, self.ase_run_type]:
             try: 
@@ -632,13 +653,13 @@ class Molecular_system:
         verbose : bool
             default=False, prints info if set True
 
-        other (internal) params:
-            
-        self.openmm_systems : OpenMM system object
-
-        sets:
-            self.mm_energies : classical energies
-            self.mm_forces : classical forces
+        Attributes
+        -----------
+        openmm_systems : OpenMM system object
+        mm_energies : np.array
+            classical energies
+        mm_forces : np.array
+            classical forces
         """
 
         assert self.openmm_systems[sys_type] is not None, 'Please set up an OpenMM system first and register it in openmm_systems.'
@@ -735,10 +756,12 @@ class Molecular_system:
         sys_type : str
             'all' or 'nosol' or 'mol1' or 'mol2' 
 
-        self.n_conformations : number of conformations
-
-        sets:
-            self.eqm_bsse : float, basis set superposition error
+        Attributes
+        ----------
+        n_conformations : int
+            number of conformations
+        eqm_bsse : float
+            basis set superposition error
         """
 
         from ..Direct_cp2k_calculation.direct_cp2k import Direct_Calculator as cc
@@ -796,8 +819,10 @@ class Molecular_system:
         sys_type : str
             'all' or 'nosol' or 'mol1' or 'mol2' 
 
-        self.mm_charges : dict containing charges from current force field
-
+        Attributes    
+        -----------
+        mm_charges : dict 
+            containing charges from current force field
         """
         real_charge = sum(self.openmm_systems[sys_type].extracted_ff['NonbondedForce'][0].charge)
 
@@ -821,8 +846,10 @@ class Molecular_system:
         """
         For now weighs all conformations equally. Can be modified tho.
 
-        sets:
-            self.weights
+        Attributes
+        ----------- 
+        weights : np.array
+            weights for each conformation
         """
 
         self.weights = np.ones((self.n_conformations))
@@ -836,11 +863,14 @@ class Molecular_system:
         This function sets a flag (self.hybrid) that triggers hybrid parameter processing during the pushback of the parameters from the optimizer back into the 
         OpenMM Context for computing net properties. 
 
-        (internal) parameters:
-            self.openmm_systems
-        sets:
-            self.hybrid
-            self.hybrid_sys_types
+        Attributes
+        -----------
+        openmm_systems : dict
+            dictionary of openmm systems
+        hybrid : bool
+            True = at least one, but not all openmm systems have a NBFIX, False = all openmm systems have or don't have a NBFIX 
+        hybrid_sys_types : dict
+            Lists which openmm system has/doesn't have a NBFIX
         """
         print('performing hybrid check...')
 
@@ -904,7 +934,10 @@ class Molecular_system:
         """
         extracts force field atom types from psf topology file
 
-        returns array of [int,str] with ff_atom_types (column1) and their atom indices (column0)
+        Returns
+        --------
+        all_atom_types_indices : np.array
+            array of [int,str] with ff_atom_types (column1) and their atom indices (column0)
         """
         all_atom_types_indices = {k: [] for k in set(self.openmm_systems.keys())}
 
@@ -966,14 +999,14 @@ class Molecular_system:
         Then, acoef = wdij^(1/2) * rij^6 and bcoef = 2 * wdij * rij^6
         WARNING: Static implementation for only one CustomNonbondedForce in the OpenMM system. If there are more, this will not work.
         
-        internal parameters:
-        self.openmm_systems[sys_type].custom_nb_params : np.array
+        Attributes
+        ----------
+        openmm_systems[sys_type].custom_nb_params : np.array
             contains sigma, epsilon, atom type (in GMX/OMM units)
-        self.openmm_systems[sys_type].nbfix : np.array
+        openmm_systems[sys_type].nbfix : np.array
             contains NBFIX rij and wdij, atom type 1, atom type 2 (in GMX/OMM units)
-
-        sets:
-            self.openmm_systems[sys_type].ff_optimizable['CustomNonbondedForce']
+        openmm_systems[sys_type].ff_optimizable['CustomNonbondedForce'] : list of np.arrays
+            OpenMM's acoef & bcoef
         """
         for sys_type in self.openmm_systems.keys():
 
@@ -1065,17 +1098,21 @@ class Molecular_system:
         ff_atom_types_indices : np.array of [int,str]
             ff_atom_types (column1) and their atom indices (column0)
 
-
-        other (internal) parameters : 
-        self.to_be_removed : dict of lists of ints
+        Attributes 
+        -----------
+        to_be_removed : dict of lists of ints
             Contains indices of atoms within the user-based selection that are duplicates regardimg their atom type
-        self.dupes : dict of lists of ints
+        dupes : dict of lists of ints
             Contains atom types and indices of duplicate atom types
-        self.interaction_dupes : nested dict
+        interaction_dupes : nested dict
             Contains atom type combinations and their indices (where to find them in ff_optimizable)
 
-        returns : reduced_indexed_ff_opt (np.array, contains atom indices, atom types, and parameters ('NonbondedForce') or an atom types tuple and the parameters (all other force groups))
-          and reduced_ff_opt_values (np.array, contains parameters only) 
+        Returns
+        --------
+        reduced_indexed_ff_opt : np.array
+            contains atom indices, atom types, and parameters ('NonbondedForce') or an atom types tuple and the parameters (all other force groups))
+        reduced_ff_opt_values : np.array
+            contains parameters only
         """
 
         if force_group == 'NonbondedForce':
@@ -1150,7 +1187,7 @@ class Molecular_system:
         return reduced_indexed_ff_opt, reduced_ff_opt_values
     
 
-    def reduce_ff_optimizable(self, slice_list): #TODO: needs to know if nb processing is hybrid! -> if true, compare cnb & nb & reduce
+    def reduce_ff_optimizable(self, slice_list):
         """
         extracts force field parameters from ff_optimizable based on an atom selection broadcasted through slice_list. 
         Also eliminates 'duplicates' of the same atom type.
@@ -1165,18 +1202,26 @@ class Molecular_system:
                                                             'mol2': [np.r_[1,3:6]],
                                                             }
 
-        other (internal) parameters:
-            self.openmm_systems[sys_type].ff_optimizable
-            self.openmm_systems[sys_type].custom_nb_params
-            self.openmm_systems[sys_type].nbfix
-        
-        sets:
-            self.reduced_indexed_ff_optimizable[sys_type][force_group] : dict of dict of np.arrays containing atom indices, atom types, and ff term values (nonbonded)
-                or line indices, atom indices, and ff term values (bonded); not mutable
-            self.reduced_ff_optimizable_values[sys_type][force_group] : dict of dict of np.arrays containing only the ff term values (nonbonded or bonded); mutable
-                units: sigma in nm, epsilon in kJ/mol. NBFIX: rmin in nm, epsilon in kJ/mol
-            self.dupes : dict of dict of atom types (str) and their inidces (-> marks duplicate atom types)
-            self.nbfix_dupes : dict of list of indices indicating same atom pair/same NBFIX
+        Attributes
+        ----------
+        openmm_systems[sys_type].ff_optimizable : dict
+        openmm_systems[sys_type].custom_nb_params : np.array
+        openmm_systems[sys_type].nbfix : np.array
+        reduced_indexed_ff_optimizable[sys_type][force_group] : dict of dict of np.arrays 
+            contains atom indices, atom types, and ff term values (nonbonded)
+            or line indices, atom indices, and ff term values (bonded); not mutable
+        reduced_ff_optimizable_values[sys_type][force_group] : dict of dict of np.arrays 
+            contains only the ff term values (nonbonded or bonded); mutable
+            units: sigma in nm, epsilon in kJ/mol. NBFIX: rmin in nm, epsilon in kJ/mol
+        dupes : dict of dicts
+            of atom types (str) and their inidces (-> marks duplicate atom types)
+        nbfix_dupes : dict of lists
+            of indices indicating same atom pair/same NBFIX
+
+        Raises
+        ------
+        ValueError
+            If there is something wrong with the slice list
         """
 
         reshape_column_indices = {'HarmonicBondForce': 4,
@@ -1383,26 +1428,22 @@ class Molecular_system:
                         raise ValueError('Sliced atoms in CustomNonbondedForce do not match. Check slice_list.')
 
                     
-    def expand_reduced_parameters(self): #TODO patch the hybrid type
+    def expand_reduced_parameters(self): 
         """
         puts parameter values from reduced_ff_optimizable_values['all'] back into ff_optimizable[sys_type] (and custom_nb_params, nbfix if required)
 
-        internal parameters:
-            self.reduced_ff_optimizable_values['all']
-            self.reduced_indexed_ff_optimizable[sys_type]
-            self.dupes['all']
-            self.nbfix_dupes
-            self.interaction_dupes
-            self.openmm_systems[sys_type].ff_optimizable
-            (self.openmm_systems[sys_type].custom_nb_params)
-            (self.openmm_systems[sys_type].nbfix)
-            self.hybrid
-            (self.hybrid_sys_types)
-
-        sets:
-            self.openmm_systems[sys_type].ff_optimizable
-            self.openmm_systems[sys_type].custom_nb_params
-            self.openmm_systems[sys_type].nbfix
+        Attributes
+        ----------
+        reduced_ff_optimizable_values['all'] : np.array
+        reduced_indexed_ff_optimizable[sys_type] : np.array
+        dupes['all'] : np.array
+        nbfix_dupes : np.array
+        interaction_dupes : np.array
+        openmm_systems[sys_type].ff_optimizable : dict
+        openmm_systems[sys_type].custom_nb_params : np.array
+        openmm_systems[sys_type].nbfix : np.array
+        hybrid : bool
+        hybrid_sys_types : dict
         """
 
         for force_group in self.reduced_ff_optimizable_values['all'].keys():
@@ -1536,14 +1577,6 @@ class Molecular_system:
                             if atype_tuple == parameter_line[0]:
 
                                 for parameter_index in self.interaction_dupes['all'][force_group][atype_tuple]:
-                                    """
-                                    print(atype_tuple)
-                                    print(force_group)
-                                    print(array_no)
-                                    print(field_names[force_group])
-                                    print(parameter_index)
-                                    print(self.openmm_systems['all'].ff_optimizable[force_group][array_no][field_names[force_group]][parameter_index])
-                                    """
                                                                                                                     
                                     self.openmm_systems['all'].ff_optimizable[force_group][array_no][field_names[force_group]][parameter_index] = \
                                         tuple(self.reduced_ff_optimizable_values['all'][force_group][array_no][line_no])
@@ -1553,15 +1586,6 @@ class Molecular_system:
                                     if atype_tuple in list(self.interaction_dupes[sys_type][force_group].keys()):
 
                                         for parameter_idx in self.interaction_dupes[sys_type][force_group][atype_tuple]:
-                                            """
-                                            print(atype_tuple)
-                                            print(sys_type)
-                                            print(force_group)
-                                            print(array_no)
-                                            print(field_names[force_group])
-                                            print(parameter_idx)
-                                            print(self.reduced_ff_optimizable_values['all'][force_group][array_no][line_no])
-                                            """
 
                                             self.openmm_systems[sys_type].ff_optimizable[force_group][array_no][field_names[force_group]][parameter_idx] = \
                                                 tuple(self.reduced_ff_optimizable_values['all'][force_group][array_no][line_no]) 
@@ -1571,11 +1595,10 @@ class Molecular_system:
         """
         flattens nd np.arrays of parameters to 1d np.arrays of parameters
 
-        internal parameters:
-            self.reduced_ff_optimizable_values['all']
-
-        sets:
-            self.vectorized_reduced_ff_optimizable_values
+        Attributes
+        -----------
+        reduced_ff_optimizable_values['all'] : np.array
+        vectorized_reduced_ff_optimizable_values : np.array
         """
         # define and init dictionaries
         self.vectorized_reduced_ff_optimizable_values = {k: [] for k in sorted(set(self.openmm_systems['all'].ff_optimizable.keys()))}
@@ -1592,12 +1615,11 @@ class Molecular_system:
         """
         reshapes flattened 1d np.arrays to the original nd np.array dimensions.
 
-        internal parameters:
-            self.vectorized_reduced_ff_optimizable_values
-            self.reduced_ff_optimizable_values
-
-        sets:
-            self.reduced_ff_optimizable_values['all']
+        Attributes
+        -----------
+        vectorized_reduced_ff_optimizable_values : np.array
+        reduced_ff_optimizable_values : dict
+        reduced_ff_optimizable_values['all'] : np.array
         """
 
         for force_group in self.vectorized_reduced_ff_optimizable_values.keys():
@@ -1612,11 +1634,10 @@ class Molecular_system:
         'flattens' the dictionary of vectorized parameters of all selected force groups
         into one long vector
 
-        internal parameters:
-            self.vectorized_reduced_ff_optimizable_values (dict of arrays)
-
-        sets:
-            self.vectorized_parameters
+        Attributes
+        ----------
+        vectorized_reduced_ff_optimizable_values : dict of arrays
+        vectorized_parameters : np.array
         """
         vectorized_parameters = []
 
@@ -1634,12 +1655,11 @@ class Molecular_system:
         """
         puts the optimized parameters back into a dictionary of individual vectors
 
-        internal parameters:
-            self.vectorized_parameters (array)
-            self.vectorized_reduced_ff_optimizable_values (dict of arrays)
-
-        sets: 
-            self.vectorized_reduced_ff_optimizable_values (dict of arrays)
+        Attributes
+        ----------
+        vectorized_parameters : array
+        vectorized_reduced_ff_optimizable_values : dict of arrays
+        vectorized_reduced_ff_optimizable_values : dict of arrays
         """
 
         slice_start = 0
@@ -1659,12 +1679,13 @@ class Molecular_system:
         Scales the magnitude of the parameters extracted from ff_optimizable using the z-score. This function 
         is run once before the parametrization loop to set constant scaling factors (self.scaling_factors).
 
-        internal parameters:
-            self.vectorized_parameters : np.array
-
-        sets:
-            self.scaling_factors, not mutable
-            self.scaled_parameters, mutable
+        Attributes
+        ----------
+        vectorized_parameters : np.array
+        scaling_factors : np.array
+            not mutable
+        scaled_parameters : np.array 
+            mutable
         """
 
         individual_mean = np.mean(self.vectorized_parameters)
@@ -1679,12 +1700,12 @@ class Molecular_system:
         """
         Scales the magnitude of the parameters extracted from ff_optimizable using the z-score. 
 
-        internal parameters:
-            self.vectorized_parameters : np.array
-            self.scaling_factors : np.array
-
-        sets:
-            self.scaled_parameters, mutable
+        Attributes
+        -----------
+        vectorized_parameters : np.array
+        scaling_factors : np.array
+        scaled_parameters : np.array
+            mutable
         """
 
         scaled_parameters = self.vectorized_parameters * self.scaling_factors
@@ -1694,12 +1715,11 @@ class Molecular_system:
         """
         Transforms optimized parameters (scaled) back to their original magnitude
 
-        internal parameters:
-            self.scaled_parameters
-            self.scaling_factors
-        
-        sets: 
-            self.vectorized_parameters
+        Attributes
+        ----------
+        scaled_parameters : np.array
+        scaling_factors : np.array
+        vectorized_parameters : np.array
         """
 
         self.vectorized_parameters = self.scaled_parameters / self.scaling_factors
@@ -1717,7 +1737,9 @@ def read_external_file(path: str, filename: str):
     filename : str
         name of the file including extension
 
-    returns:
+    Returns
+    --------
+    read : list of str 
         the lines of the file in str format
     """
 
@@ -1742,7 +1764,9 @@ def find_same_type(ff_atom_types_indices):
     ff_atom_types_indices : array of [int,str]
         ff atom types (column1) extracted from topology file with their respective atom indices (column0)
 
-    returns:
+    Returns
+    -------
+    dupes : dict
         dictionary with non-unique atom types and their indices
         dict{'atom_type1':[1,12],
              'atom_type3':[3,4,14,15],
@@ -1780,7 +1804,9 @@ def read_qm_charges(read_lines, charge_type, path, n, cp2k_outfilename, ini_coor
     ini_coords : np.array
         unoptimized coordinates of conformations
 
-    returns: 
+    Returns
+    -------
+    charges : np.array
         charges (qm charges) as numpy arrary   
     """
 
@@ -1827,8 +1853,12 @@ def read_qm_energy_forces(read, n, cp2k_outfilename, path, ini_coords):
     ini_coords : np.array
         unoptimized coordinates of conformations
     
-    returns:
-        energy, forces : quantum energy & forces as float & np.array
+    Returns
+    --------
+    energy : float
+        quantum energy
+    forces : np.array
+        quantum forces 
     """
 
     energy_line = [index for index, string in enumerate(read) if

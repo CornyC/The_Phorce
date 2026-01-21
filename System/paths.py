@@ -2,6 +2,19 @@ from pathlib import Path
 import os
 
 def check_path(path: str):
+    """
+    Checks if filesystem path is valid
+
+    Parameters
+    ----------
+    path : str
+        Path to some directory
+
+    Returns
+    --------
+    path : str
+        a tested path
+    """
 
     if path != None:
 
@@ -18,6 +31,14 @@ def check_path(path: str):
         return path
     
 def check_if_file_exists(path: str):
+    """
+    checks if file exists
+
+    Parameters
+    ----------
+    path : str
+        filesystem path to a file
+    """
 
     if path != None:
 
