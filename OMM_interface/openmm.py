@@ -56,41 +56,42 @@ class OpenMM_system:
     create_system_params : dict
         Keyword arguments passed to the top.createSystem instance
 
-    other (internal) parameters :
-        self.top : openmm object
-            either AmberPrmtopFile, GromacsTopFile, CharmmPsfFile, or openmm native ForceField
-        self.top_params : openmm object
-            CharmmParameterSet
-        self.crd : openmm object
-            one of AmberInpcrdFile, GromacsGroFile, CharmmCrdFile, PDBFile
-        self.platform : openmm.openmm.Platform
-        self.system : openmm.openmm.System
-        self.context : openmm.openmm.Context
-        self.force_groups : dict
-            keys see self.force_groups_dict, values are lists of openmm's force group indices
-        self.extracted_ff : dict
-            keys see self.force_groups, values are lists of np.recarrays containing the force field params
-        self.ff_optimizable : dict
-            contains force groups and their parameters that should be optimized
-        self.custom_nb_params : np.array
-            triggered if NBFIX present. Contains rmin(=r/sigma; nm), epsilon (kJ/mol)(in GMX/OMM units), and atom type (str)
-        self.nbfix : np.array
-            triggered if NBFIX is present. Contains r_min (nm) and epsilon (kJ/mol) (GMX/OMM units), 
-            atom type 1, atom type 2 (str), and index 
-        self.force_groups_dict : dict
-                                 {'HarmonicBondForce': [],
-                                  'HarmonicAngleForce': [],
-                                  'PeriodicTorsionForce': [],
-                                  'NonbondedForce': [],
-                                  'CustomBondForce': [],
-                                  'CustomAngleForce': [],
-                                  'CustomTorsionForce': []
-                                  'CustomNonbondedForce': [],
-                                  "CMAPTorsionForce": [],
-                                  "NBException": [],
-                                  "CMMotionremover": []}
-        self.charges : np.array
-            mm charges of all atoms in the openmm system
+    Attributes
+    ----------
+    top : openmm object
+        either AmberPrmtopFile, GromacsTopFile, CharmmPsfFile, or openmm native ForceField
+    top_params : openmm object
+        CharmmParameterSet
+    crd : openmm object
+        one of AmberInpcrdFile, GromacsGroFile, CharmmCrdFile, PDBFile
+    platform : openmm.openmm.Platform
+    system : openmm.openmm.System
+    context : openmm.openmm.Context
+    force_groups : dict
+        keys see self.force_groups_dict, values are lists of openmm's force group indices
+    extracted_ff : dict
+        keys see self.force_groups, values are lists of np.recarrays containing the force field params
+    ff_optimizable : dict
+        contains force groups and their parameters that should be optimized
+    custom_nb_params : np.array
+        triggered if NBFIX present. Contains rmin(=r/sigma; nm), epsilon (kJ/mol)(in GMX/OMM units), and atom type (str)
+    nbfix : np.array
+        triggered if NBFIX is present. Contains r_min (nm) and epsilon (kJ/mol) (GMX/OMM units), 
+        atom type 1, atom type 2 (str), and index 
+    force_groups_dict : dict
+                                {'HarmonicBondForce': [],
+                                'HarmonicAngleForce': [],
+                                'PeriodicTorsionForce': [],
+                                'NonbondedForce': [],
+                                'CustomBondForce': [],
+                                'CustomAngleForce': [],
+                                'CustomTorsionForce': []
+                                'CustomNonbondedForce': [],
+                                "CMAPTorsionForce": [],
+                                "NBException": [],
+                                "CMMotionremover": []}
+    charges : np.array
+        mm charges of all atoms in the openmm system
     """
 
 
@@ -152,20 +153,20 @@ class OpenMM_system:
         """
         reads in coords and topology
 
-        Parameters
-        ----------
-        self.topology_format : str
+        Attributes
+        -----------
+        topology_format : str
             type of topology file, each MD software has its own :(
-        self.top_file : str
+        top_file : str
             path to the topol file
-        self.pbc : bool
+        pbc : bool
             whether to use periodic boundary conditions
-        self.crd_format : str
+        crd_format : str
             .pdb is kind of a standard, nonetheless GROMACS also has .gro and CHARMM and AMBER have .crd
-
-        sets:
-            self.topology which is an OpenMM topology object
-            self.crd which is the OpenMM coordinates object
+        topology 
+            OpenMM topology object
+        crd 
+            OpenMM coordinates object
         """
 
         if self.topology_format.upper() == "AMBER":
@@ -226,9 +227,9 @@ class OpenMM_system:
         """
         sets the OpenMM MD integrator object
 
-        Parameters
+        Attributes
         ----------
-        self.integrator_params
+        integrator_params
             "settings" to be used with the integrator
         """
 
@@ -247,9 +248,9 @@ class OpenMM_system:
         """
         creates the OpenMM system object
 
-        Parameters
+        Attributes
         ----------
-        self.topology_format :
+        topology_format :
             necessary bc OpenMM calls different functions to build the system based on the input formats
         """
 
@@ -275,13 +276,13 @@ class OpenMM_system:
         sets the OpenMM context object by checking constraints, reading the initial coordinates and bundling it all
         up w/ the integrator and platform (a.k.a. prepares the mdrun/classical calculation)
 
-        Parameters
-        ---------
-        self.system : openmm.openmm.System object
-        self.integrator : openmm.openmm.Integrator object
-        self.platform : openmm.openmm.Platform object
-        self.platform_properties : openmm.openmm.Platform settings of type dict
-        self.crd : OpenMM coordinates object
+        Attributes
+        ----------
+        system : openmm.openmm.System object
+        integrator : openmm.openmm.Integrator object
+        platform : openmm.openmm.Platform object
+        platform_properties : openmm.openmm.Platform settings of type dict
+        crd : OpenMM coordinates object
         """
 
         print('Number of constraints: '+str(self.system.getNumConstraints())+'\nconstraints settings: '
@@ -300,26 +301,7 @@ class OpenMM_system:
             self.context.setPositions(self.crd.positions)
 
         if self.create_system_params['constraints'] == app.HBonds:
-            """
-            for n in range(0,30,1):
-                print(str(self.system.getConstraintParameters(n)))
-            for n in range(0,30,1):
-                print(str(self.topology._bonds[n]))
-            yes_choices = ['yes', 'y']
-            no_choices = ['no', 'n']
-            while True:
-                constrain_correct = str(input('Are these constraints correct? (yes/no)\n'))
-                if constrain_correct.lower() in yes_choices:
-                    self.context = openmm.Context(self.system, self.integrator, self.platform, self.platform_properties)
-                    self.context.setPositions(self.crd.positions)
-                    break
-                elif constrain_correct.lower() in no_choices:
-                    print('please fix constraints using omm_sys.system.removeConstraint(index)')
-                    break
-                else:
-                    print('Type yes or no')
-                    continue
-            """
+
             self.context = openmm.Context(self.system, self.integrator, self.platform, self.platform_properties)
             self.context.setPositions(self.crd.positions)
 
@@ -329,11 +311,17 @@ class OpenMM_system:
 
         Parameters
         ----------
-        positions : OpenMM coordinates object (OMM <Vec3> format) or numpy array, in nanometers
+        positions  
+            OpenMM coordinates object (OMM <Vec3> format) or numpy array, in nanometers
 
-        self.context : OpenMM system context object
+        Attributes
+        ----------
+        context  
+            OpenMM system context object
 
-        returns:
+        Returns
+        -------
+        epot, forces
             potential energies and forces (both numpy arrays)
         """
 
@@ -454,15 +442,14 @@ class OpenMM_system:
         WARNING: Static implementation for only one CustomNonbondedForce in the OpenMM system. If there are more, this will not work.
 
 
-        Parameters
+        Attributes
         ----------
-        self.system : OpenMM system object
-
-        sets:
-            self.force_group_idx_omm : list
-                stores openmm force group number
-            self.forces_indices : dict
-                force group dict that lists the omm force groups and indices
+        system  
+            OpenMM system object
+        force_group_idx_omm : list
+            stores openmm force group number
+        forces_indices : dict
+            force group dict that lists the omm force groups and indices
         """
 
         assert self.system is not None, 'OpenMM system not set.'
@@ -912,12 +899,10 @@ class OpenMM_system:
         """
         extracts the classical charges from the OpenMM system
 
-        Parameters
+        Attributes
         ----------
-        self.extracted_ff
-
-        sets:
-            self.charges
+        extracted_ff
+        charges
         """
 
         if len(self.extracted_ff['NonbondedForce']) != 0:
@@ -941,13 +926,13 @@ class OpenMM_system:
         Parameters
         ----------
         output_path : str, optional, default='.'
-        path where the .xml file containing the system is written
+            path where the .xml file containing the system is written
         fname : str, optional, default='omm_system'
-        filename of the .xml file
+            filename of the .xml file
 
         Returns
         -------
-        `True` if file was closed successfully. `False` otherwise.
+        'True' if file was closed successfully. 'False' otherwise.
 
         """
 
@@ -991,7 +976,9 @@ class OpenMM_system:
         opt_lj : bool
             Flag that signals whether the Lennard-Jones parameter will be optimized.
 
-        sets: self.ff_optimizable
+        Attributes
+        ----------
+        ff_optimizable
         """
 
         assert self.extracted_ff is not None, "\t * ff_extracted dictionary was not created yet." \
@@ -1085,10 +1072,12 @@ class OpenMM_system:
         """
         writes the optimized parameters to the OpenMM system
 
-        Parameters
+        Attributes
         ----------
-        self.ff_optimizable : dictionary containing the optimizable force field parameters
-        self.system : OpenMM system object
+        ff_optimizable : dict
+            dictionary containing the optimizable force field parameters
+        system  
+            OpenMM system object
 
         """
 
