@@ -43,15 +43,17 @@ class MDA_reader:
         """
         Calls the MDAnalysis trajectory reader and creates the mda.Universe from it.
 
-         Parameters
-         ----------
-         top : str
-            path to topology file, can also be a .pdb
-         traj : str
-            path to trajectory file
+        Parameters
+        ----------
+        top : str
+           path to topology file, can also be a .pdb
+        traj : str
+           path to trajectory file
 
-        sets :
-            self.universes['all']
+        Attributes
+        ----------
+        universes['all'] : MDAnalysis.core.universe.Universe object
+            Contains all atoms and their names & identifiers, positions, forces...(check MDAnalysis doc)
         """
 
         if top == None:
@@ -74,9 +76,12 @@ class MDA_reader:
         ----------
         crd_input : str
             path to coordinate file
+        
+        Attributes
+        ----------
+        universes['all'] : MDAnalysis.core.universe.Universe object
+            Contains all atoms and their names & identifiers, positions, forces...(check MDAnalysis doc)
 
-        sets :
-            self.universes['all']
         """
 
         if crd_input == None:
@@ -95,7 +100,11 @@ class MDA_reader:
         atomgroup : MDAnalysis.core.groups.AtomGroup
              Should contain all atoms of universe
 
-        sets : self.universes['nosol']
+        Attributes
+        ----------
+        universes['nosol'] : MDAnalysis.core.groups.AtomGroup
+            Contains atom selection of universe that represents the molecule to parametrize w/o solvent or ions. Enables 
+            calculation of forces between molecule and solvent.
         """
 
         water_resnames={'TIP3': False,
@@ -170,7 +179,9 @@ class MDA_reader:
         selection : str
             e.g. 'resname not MP0' or 'resid not 2' (inverse selection to remove in these examples residue MP0/2)
         
-        returns :
+        Returns
+        -------
+        remaining_molecules : mda.Universe
             mda.Universe of selected atoms
         """
 
@@ -247,7 +258,9 @@ def get_coords(atomgroup):
     atomgroup : MDAnalysis.core.groups.AtomGroup
          Contains atom selection of universe
 
-    returns : 
+    Returns
+    -------
+    trajcoords : np.array
         np.array (3d) of selected atom coordinates  
     """
 
@@ -265,10 +278,12 @@ def merge_atoms_positions(coords, *atomgroups):
     coords : 3D numpy array
         Position coordinates of a trajectory
 
-    returns :
+    Returns
+    -------
+    u : mda.Universe
         mda.Universe of atoms and their coords
     """
-    u = Merge(*atomgroups)
+    u = mda.Merge(*atomgroups)
 
     u.load_new(coords)
     
