@@ -39,6 +39,8 @@ class ASE_system:
     opt_traj_prefix : str, default="traj_"
         Prefix given to the pickle file used to store the trajectory during optimization.
 
+    Attributes
+    ----------
     atoms : ASE atoms object
         contains symbols, positions, cell, pbc, calculator (see ASE doc)
     energy : float
@@ -47,9 +49,9 @@ class ASE_system:
         forces an each atom as obtained from DFT calculation in kJ/mol/nm
     opt_coords : numpy array
         positions of atoms after DFT geometry optimization in nm
-    energy_gp :
+    energy_gp : np.array
         single-point energy of molecule in gas phase obtained from DFT calculation in kJ/mol
-    forces_gp :
+    forces_gp : np.array
         forces an each atom of gas-phase molecule as obtained from DFT calculation in kJ/mol/nm
     """
 
@@ -107,15 +109,18 @@ class ASE_system:
             options are 'single-point' (no geometry optimization), 'optimization' (runs a geometry optimization),
             or 'gas_phase' (single-point w/o water)
 
-        sets:
-            self.energies : np.array, quantum energies
-            self.forces : np.array, quantum forces
-            and optionally
-            self.opt_coords (if 'optimization' is chosen)
-            or
-            self.energy_gp
-            self.forces_gp
-            if 'gas_phase' is chosen
+        Attributes
+        ----------
+            energies : np.array
+                quantum energies
+            forces : np.array
+                quantum forces
+            opt_coords : np.array
+                if 'optimization' is chosen
+            energy_gp : np.array
+                if 'gas_phase' is chosen
+            forces_gp : np.array
+                if 'gas_phase' is chosen
         """
 
         assert run_type in [systype for systype in ['single_point', 'optmization']], "Run type {} is" \
