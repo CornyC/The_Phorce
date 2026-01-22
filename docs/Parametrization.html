@@ -6,11 +6,12 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Parametrization &mdash; The Phorce 0.1 documentation</title>
+  <title>The_Phorce.Parametrization &mdash; The Phorce 0.1 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=92fd9be5" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
 
   
+    <link rel="canonical" href="./Parametrization.html" />
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
       <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=e031e9a9"></script>
@@ -18,9 +19,7 @@
       <script src="_static/sphinx_highlight.js?v=4825356b"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="System" href="System.html" />
-    <link rel="prev" title="OMM_interface" href="OMM_interface.html" /> 
+    <link rel="search" title="Search" href="search.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -42,31 +41,64 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
-<ul class="current">
-<li class="toctree-l1 current"><a class="reference internal" href="modules.html">The_Phorce</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="ASE_interface.html">ASE_interface</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Coord_Toolz.html">Coord_Toolz</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Direct_cp2k_calculation.html">Direct_cp2k_calculation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="OMM_interface.html">OMM_interface</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Parametrization</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#submodules">Submodules</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#module-Parametrization.optimizers">Parametrization.optimizers module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#Parametrization.optimizers.Optimizer"><code class="docutils literal notranslate"><span class="pre">Optimizer</span></code></a></li>
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">Parametrization</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-Parametrization.optimizers">Parametrization.optimizers module</a><ul>
+<li><a class="reference internal" href="#Parametrization.optimizers.Optimizer"><code class="docutils literal notranslate"><span class="pre">Optimizer</span></code></a><ul>
+<li><a class="reference internal" href="#Parametrization.optimizers.Optimizer.constraints_func"><code class="docutils literal notranslate"><span class="pre">Optimizer.constraints_func()</span></code></a></li>
+<li><a class="reference internal" href="#Parametrization.optimizers.Optimizer.optimize_with_boss"><code class="docutils literal notranslate"><span class="pre">Optimizer.optimize_with_boss()</span></code></a></li>
+<li><a class="reference internal" href="#Parametrization.optimizers.Optimizer.parameters"><code class="docutils literal notranslate"><span class="pre">Optimizer.parameters</span></code></a></li>
+<li><a class="reference internal" href="#Parametrization.optimizers.Optimizer.opt_settings"><code class="docutils literal notranslate"><span class="pre">Optimizer.opt_settings</span></code></a></li>
+<li><a class="reference internal" href="#Parametrization.optimizers.Optimizer.optimize_with_cma"><code class="docutils literal notranslate"><span class="pre">Optimizer.optimize_with_cma()</span></code></a></li>
+<li><a class="reference internal" href="#id0"><code class="docutils literal notranslate"><span class="pre">Optimizer.parameters</span></code></a></li>
+<li><a class="reference internal" href="#id1"><code class="docutils literal notranslate"><span class="pre">Optimizer.opt_settings</span></code></a></li>
+<li><a class="reference internal" href="#Parametrization.optimizers.Optimizer.optimize_with_pso"><code class="docutils literal notranslate"><span class="pre">Optimizer.optimize_with_pso()</span></code></a></li>
+<li><a class="reference internal" href="#id2"><code class="docutils literal notranslate"><span class="pre">Optimizer.parameters</span></code></a></li>
+<li><a class="reference internal" href="#Parametrization.optimizers.Optimizer.f"><code class="docutils literal notranslate"><span class="pre">Optimizer.f</span></code></a></li>
+<li><a class="reference internal" href="#Parametrization.optimizers.Optimizer.max_iterations"><code class="docutils literal notranslate"><span class="pre">Optimizer.max_iterations</span></code></a></li>
+<li><a class="reference internal" href="#Parametrization.optimizers.Optimizer.tolerance"><code class="docutils literal notranslate"><span class="pre">Optimizer.tolerance</span></code></a></li>
+<li><a class="reference internal" href="#Parametrization.optimizers.Optimizer.optimize_with_scipy_global"><code class="docutils literal notranslate"><span class="pre">Optimizer.optimize_with_scipy_global()</span></code></a></li>
+<li><a class="reference internal" href="#id3"><code class="docutils literal notranslate"><span class="pre">Optimizer.parameters</span></code></a></li>
+<li><a class="reference internal" href="#id4"><code class="docutils literal notranslate"><span class="pre">Optimizer.opt_settings</span></code></a></li>
+<li><a class="reference internal" href="#id5"><code class="docutils literal notranslate"><span class="pre">Optimizer.tolerance</span></code></a></li>
+<li><a class="reference internal" href="#id6"><code class="docutils literal notranslate"><span class="pre">Optimizer.f</span></code></a></li>
+<li><a class="reference internal" href="#Parametrization.optimizers.Optimizer.optimize_with_scipy_local"><code class="docutils literal notranslate"><span class="pre">Optimizer.optimize_with_scipy_local()</span></code></a></li>
+<li><a class="reference internal" href="#id7"><code class="docutils literal notranslate"><span class="pre">Optimizer.parameters</span></code></a></li>
+<li><a class="reference internal" href="#id8"><code class="docutils literal notranslate"><span class="pre">Optimizer.opt_settings</span></code></a></li>
+<li><a class="reference internal" href="#Parametrization.optimizers.Optimizer.constraints"><code class="docutils literal notranslate"><span class="pre">Optimizer.constraints</span></code></a></li>
+<li><a class="reference internal" href="#id9"><code class="docutils literal notranslate"><span class="pre">Optimizer.tolerance</span></code></a></li>
+<li><a class="reference internal" href="#id10"><code class="docutils literal notranslate"><span class="pre">Optimizer.f</span></code></a></li>
+<li><a class="reference internal" href="#Parametrization.optimizers.Optimizer.optimizers"><code class="docutils literal notranslate"><span class="pre">Optimizer.optimizers</span></code></a></li>
+<li><a class="reference internal" href="#Parametrization.optimizers.Optimizer.penalize_objective_function"><code class="docutils literal notranslate"><span class="pre">Optimizer.penalize_objective_function()</span></code></a></li>
+<li><a class="reference internal" href="#Parametrization.optimizers.Optimizer.run_optimizer"><code class="docutils literal notranslate"><span class="pre">Optimizer.run_optimizer()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#module-Parametrization.parametrization">Parametrization.parametrization module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#Parametrization.parametrization.Parametrization"><code class="docutils literal notranslate"><span class="pre">Parametrization</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#module-Parametrization">Module contents</a></li>
+<li><a class="reference internal" href="#module-Parametrization.parametrization">Parametrization.parametrization module</a><ul>
+<li><a class="reference internal" href="#Parametrization.parametrization.Parametrization"><code class="docutils literal notranslate"><span class="pre">Parametrization</span></code></a><ul>
+<li><a class="reference internal" href="#Parametrization.parametrization.Parametrization.parameters"><code class="docutils literal notranslate"><span class="pre">Parametrization.parameters</span></code></a></li>
+<li><a class="reference internal" href="#Parametrization.parametrization.Parametrization.bounds"><code class="docutils literal notranslate"><span class="pre">Parametrization.bounds</span></code></a></li>
+<li><a class="reference internal" href="#Parametrization.parametrization.Parametrization.calc_force_std_dev"><code class="docutils literal notranslate"><span class="pre">Parametrization.calc_force_std_dev()</span></code></a></li>
+<li><a class="reference internal" href="#Parametrization.parametrization.Parametrization.calculate_classical_energies_forces"><code class="docutils literal notranslate"><span class="pre">Parametrization.calculate_classical_energies_forces()</span></code></a></li>
+<li><a class="reference internal" href="#Parametrization.parametrization.Parametrization.emm"><code class="docutils literal notranslate"><span class="pre">Parametrization.emm</span></code></a></li>
+<li><a class="reference internal" href="#Parametrization.parametrization.Parametrization.calculate_classical_net_forces"><code class="docutils literal notranslate"><span class="pre">Parametrization.calculate_classical_net_forces()</span></code></a></li>
+<li><a class="reference internal" href="#Parametrization.parametrization.Parametrization.fmm"><code class="docutils literal notranslate"><span class="pre">Parametrization.fmm</span></code></a></li>
+<li><a class="reference internal" href="#Parametrization.parametrization.Parametrization.evaluate_obj_func_energy"><code class="docutils literal notranslate"><span class="pre">Parametrization.evaluate_obj_func_energy()</span></code></a></li>
+<li><a class="reference internal" href="#Parametrization.parametrization.Parametrization.evaluate_obj_func_force"><code class="docutils literal notranslate"><span class="pre">Parametrization.evaluate_obj_func_force()</span></code></a></li>
+<li><a class="reference internal" href="#Parametrization.parametrization.Parametrization.parametrize"><code class="docutils literal notranslate"><span class="pre">Parametrization.parametrize()</span></code></a></li>
+<li><a class="reference internal" href="#Parametrization.parametrization.Parametrization.wrap_objective_function"><code class="docutils literal notranslate"><span class="pre">Parametrization.wrap_objective_function()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="System.html">System</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-Parametrization">Module contents</a></li>
 </ul>
 </li>
 </ul>
-
+</div>
         </div>
       </div>
     </nav>
@@ -81,7 +113,6 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
-          <li class="breadcrumb-item"><a href="modules.html">The_Phorce</a></li>
       <li class="breadcrumb-item active">Parametrization</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/Parametrization.rst.txt" rel="nofollow"> View page source</a>
@@ -108,7 +139,7 @@
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>opt_method</strong> (<em>str</em>) – Name of the optimizer to be created. Available optimizers are “scipy_local” (as in all local scipy optimizers),
-“scipy_global” (as in all global scipy optimizers), “bayesian” (ML-informed from the boss),
+“scipy_global” (as in all global scipy optimizers), “bayesian” (ML-informed from the boss package),
 “cma” (CMA-ES (Covariance Matrix Adaptation Evolution Strategy)), and “pso” (Particle swarm optimization).</p></li>
 <li><p><strong>opt_settings</strong> (<em>dict</em>) – dictionary containing the optimizer-specific settings. See the respective docs for info.</p></li>
 <li><p><strong>max_iterations</strong> (<em>int</em>) – maximum optimization steps the optimizer should take, default = 10000</p></li>
@@ -656,10 +687,7 @@ If automatic constraints are chsoen for force groups other than NonbondedForce a
 
            </div>
           </div>
-          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="OMM_interface.html" class="btn btn-neutral float-left" title="OMM_interface" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="System.html" class="btn btn-neutral float-right" title="System" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-    </div>
+          <footer>
 
   <hr/>
 

@@ -11,6 +11,7 @@
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
 
   
+    <link rel="canonical" href="./ASE_interface.html" />
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
       <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=e031e9a9"></script>
@@ -18,9 +19,7 @@
       <script src="_static/sphinx_highlight.js?v=4825356b"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Coord_Toolz" href="Coord_Toolz.html" />
-    <link rel="prev" title="The_Phorce" href="modules.html" /> 
+    <link rel="search" title="Search" href="search.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -42,27 +41,34 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
-<ul class="current">
-<li class="toctree-l1 current"><a class="reference internal" href="modules.html">The_Phorce</a><ul class="current">
-<li class="toctree-l2 current"><a class="current reference internal" href="#">ASE_interface</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#submodules">Submodules</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#module-ASE_interface.ase_calculation">ASE_interface.ase_calculation module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#ASE_interface.ase_calculation.ASE_system"><code class="docutils literal notranslate"><span class="pre">ASE_system</span></code></a></li>
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">ASE_interface </a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-ASE_interface.ase_calculation">ASE_interface.ase_calculation module</a><ul>
+<li><a class="reference internal" href="#ASE_interface.ase_calculation.ASE_system"><code class="docutils literal notranslate"><span class="pre">ASE_system</span></code></a><ul>
+<li><a class="reference internal" href="#ASE_interface.ase_calculation.ASE_system.atoms"><code class="docutils literal notranslate"><span class="pre">ASE_system.atoms</span></code></a></li>
+<li><a class="reference internal" href="#ASE_interface.ase_calculation.ASE_system.energy"><code class="docutils literal notranslate"><span class="pre">ASE_system.energy</span></code></a></li>
+<li><a class="reference internal" href="#ASE_interface.ase_calculation.ASE_system.forces"><code class="docutils literal notranslate"><span class="pre">ASE_system.forces</span></code></a></li>
+<li><a class="reference internal" href="#ASE_interface.ase_calculation.ASE_system.opt_coords"><code class="docutils literal notranslate"><span class="pre">ASE_system.opt_coords</span></code></a></li>
+<li><a class="reference internal" href="#ASE_interface.ase_calculation.ASE_system.energy_gp"><code class="docutils literal notranslate"><span class="pre">ASE_system.energy_gp</span></code></a></li>
+<li><a class="reference internal" href="#ASE_interface.ase_calculation.ASE_system.forces_gp"><code class="docutils literal notranslate"><span class="pre">ASE_system.forces_gp</span></code></a></li>
+<li><a class="reference internal" href="#ASE_interface.ase_calculation.ASE_system.construct_atoms_object"><code class="docutils literal notranslate"><span class="pre">ASE_system.construct_atoms_object()</span></code></a></li>
+<li><a class="reference internal" href="#ASE_interface.ase_calculation.ASE_system.run_calculation"><code class="docutils literal notranslate"><span class="pre">ASE_system.run_calculation()</span></code></a></li>
+<li><a class="reference internal" href="#ASE_interface.ase_calculation.ASE_system.energies"><code class="docutils literal notranslate"><span class="pre">ASE_system.energies</span></code></a></li>
+<li><a class="reference internal" href="#id0"><code class="docutils literal notranslate"><span class="pre">ASE_system.forces</span></code></a></li>
+<li><a class="reference internal" href="#id1"><code class="docutils literal notranslate"><span class="pre">ASE_system.opt_coords</span></code></a></li>
+<li><a class="reference internal" href="#id2"><code class="docutils literal notranslate"><span class="pre">ASE_system.energy_gp</span></code></a></li>
+<li><a class="reference internal" href="#id3"><code class="docutils literal notranslate"><span class="pre">ASE_system.forces_gp</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#module-ASE_interface">Module contents</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="Coord_Toolz.html">Coord_Toolz</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Direct_cp2k_calculation.html">Direct_cp2k_calculation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="OMM_interface.html">OMM_interface</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Parametrization.html">Parametrization</a></li>
-<li class="toctree-l2"><a class="reference internal" href="System.html">System</a></li>
+<li><a class="reference internal" href="#module-ASE_interface">Module contents</a></li>
 </ul>
 </li>
 </ul>
-
+</div>
         </div>
       </div>
     </nav>
@@ -77,7 +83,6 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
-          <li class="breadcrumb-item"><a href="modules.html">The_Phorce</a></li>
       <li class="breadcrumb-item active">ASE_interface</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/ASE_interface.rst.txt" rel="nofollow"> View page source</a>
@@ -281,10 +286,7 @@ or ‘gas_phase’ (single-point w/o water)</p>
 
            </div>
           </div>
-          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="modules.html" class="btn btn-neutral float-left" title="The_Phorce" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="Coord_Toolz.html" class="btn btn-neutral float-right" title="Coord_Toolz" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-    </div>
+          <footer>
 
   <hr/>
 

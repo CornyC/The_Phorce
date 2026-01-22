@@ -11,6 +11,7 @@
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
 
   
+    <link rel="canonical" href="./System.html" />
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
       <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=e031e9a9"></script>
@@ -18,8 +19,7 @@
       <script src="_static/sphinx_highlight.js?v=4825356b"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" />
-    <link rel="prev" title="Parametrization" href="Parametrization.html" /> 
+    <link rel="search" title="Search" href="search.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -41,25 +41,139 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
-<ul class="current">
-<li class="toctree-l1 current"><a class="reference internal" href="modules.html">The_Phorce</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="ASE_interface.html">ASE_interface</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Coord_Toolz.html">Coord_Toolz</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Direct_cp2k_calculation.html">Direct_cp2k_calculation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="OMM_interface.html">OMM_interface</a></li>
-<li class="toctree-l2"><a class="reference internal" href="Parametrization.html">Parametrization</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">System</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#submodules">Submodules</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#the-phorce-system-paths-module">System.paths module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#the-phorce-system-system-module">System.system module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#module-contents">Module contents</a></li>
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">System</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-System.paths">System.paths module</a><ul>
+<li><a class="reference internal" href="#System.paths.Paths"><code class="docutils literal notranslate"><span class="pre">Paths</span></code></a><ul>
+<li><a class="reference internal" href="#System.paths.Paths.set"><code class="docutils literal notranslate"><span class="pre">Paths.set()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#System.paths.check_if_file_exists"><code class="docutils literal notranslate"><span class="pre">check_if_file_exists()</span></code></a></li>
+<li><a class="reference internal" href="#System.paths.check_path"><code class="docutils literal notranslate"><span class="pre">check_path()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-System.system">System.system module</a><ul>
+<li><a class="reference internal" href="#System.system.Molecular_system"><code class="docutils literal notranslate"><span class="pre">Molecular_system</span></code></a><ul>
+<li><a class="reference internal" href="#System.system.Molecular_system.openmm_systems"><code class="docutils literal notranslate"><span class="pre">Molecular_system.openmm_systems</span></code></a></li>
+<li><a class="reference internal" href="#System.system.Molecular_system.ini_coords"><code class="docutils literal notranslate"><span class="pre">Molecular_system.ini_coords</span></code></a></li>
+<li><a class="reference internal" href="#System.system.Molecular_system.MDA_reader_object"><code class="docutils literal notranslate"><span class="pre">Molecular_system.MDA_reader_object</span></code></a></li>
+<li><a class="reference internal" href="#System.system.Molecular_system.n_atoms"><code class="docutils literal notranslate"><span class="pre">Molecular_system.n_atoms</span></code></a></li>
+<li><a class="reference internal" href="#System.system.Molecular_system.n_conformations"><code class="docutils literal notranslate"><span class="pre">Molecular_system.n_conformations</span></code></a></li>
+<li><a class="reference internal" href="#System.system.Molecular_system.ase_sys"><code class="docutils literal notranslate"><span class="pre">Molecular_system.ase_sys</span></code></a></li>
+<li><a class="reference internal" href="#System.system.Molecular_system.opt_coords"><code class="docutils literal notranslate"><span class="pre">Molecular_system.opt_coords</span></code></a></li>
+<li><a class="reference internal" href="#System.system.Molecular_system.qm_charges"><code class="docutils literal notranslate"><span class="pre">Molecular_system.qm_charges</span></code></a></li>
+<li><a class="reference internal" href="#System.system.Molecular_system.mm_charges"><code class="docutils literal notranslate"><span class="pre">Molecular_system.mm_charges</span></code></a></li>
+<li><a class="reference internal" href="#System.system.Molecular_system.qm_forces"><code class="docutils literal notranslate"><span class="pre">Molecular_system.qm_forces</span></code></a></li>
+<li><a class="reference internal" href="#System.system.Molecular_system.qm_energies"><code class="docutils literal notranslate"><span class="pre">Molecular_system.qm_energies</span></code></a></li>
+<li><a class="reference internal" href="#System.system.Molecular_system.mm_forces"><code class="docutils literal notranslate"><span class="pre">Molecular_system.mm_forces</span></code></a></li>
+<li><a class="reference internal" href="#System.system.Molecular_system.mm_energies"><code class="docutils literal notranslate"><span class="pre">Molecular_system.mm_energies</span></code></a></li>
+<li><a class="reference internal" href="#System.system.Molecular_system.eqm_bsse"><code class="docutils literal notranslate"><span class="pre">Molecular_system.eqm_bsse</span></code></a></li>
+<li><a class="reference internal" href="#System.system.Molecular_system.weights"><code class="docutils literal notranslate"><span class="pre">Molecular_system.weights</span></code></a></li>
+<li><a class="reference internal" href="#System.system.Molecular_system.dupes"><code class="docutils literal notranslate"><span class="pre">Molecular_system.dupes</span></code></a></li>
+<li><a class="reference internal" href="#System.system.Molecular_system.nbfix_dupes"><code class="docutils literal notranslate"><span class="pre">Molecular_system.nbfix_dupes</span></code></a></li>
+<li><a class="reference internal" href="#System.system.Molecular_system.interaction_dupes"><code class="docutils literal notranslate"><span class="pre">Molecular_system.interaction_dupes</span></code></a></li>
+<li><a class="reference internal" href="#System.system.Molecular_system.hybrid"><code class="docutils literal notranslate"><span class="pre">Molecular_system.hybrid</span></code></a></li>
+<li><a class="reference internal" href="#System.system.Molecular_system.hybrid_sys_types"><code class="docutils literal notranslate"><span class="pre">Molecular_system.hybrid_sys_types</span></code></a></li>
+<li><a class="reference internal" href="#System.system.Molecular_system.hybrid_check_performed"><code class="docutils literal notranslate"><span class="pre">Molecular_system.hybrid_check_performed</span></code></a></li>
+<li><a class="reference internal" href="#System.system.Molecular_system.slice_list"><code class="docutils literal notranslate"><span class="pre">Molecular_system.slice_list</span></code></a></li>
+<li><a class="reference internal" href="#System.system.Molecular_system.reduced_indexed_ff_optimizable"><code class="docutils literal notranslate"><span class="pre">Molecular_system.reduced_indexed_ff_optimizable</span></code></a></li>
+<li><a class="reference internal" href="#System.system.Molecular_system.reduced_ff_otimizable_values"><code class="docutils literal notranslate"><span class="pre">Molecular_system.reduced_ff_otimizable_values</span></code></a></li>
+<li><a class="reference internal" href="#System.system.Molecular_system.vectorized_reduced_ff_optimizable_values"><code class="docutils literal notranslate"><span class="pre">Molecular_system.vectorized_reduced_ff_optimizable_values</span></code></a></li>
+<li><a class="reference internal" href="#System.system.Molecular_system.vectorized_parameters"><code class="docutils literal notranslate"><span class="pre">Molecular_system.vectorized_parameters</span></code></a></li>
+<li><a class="reference internal" href="#System.system.Molecular_system.scaling_factors"><code class="docutils literal notranslate"><span class="pre">Molecular_system.scaling_factors</span></code></a></li>
+<li><a class="reference internal" href="#System.system.Molecular_system.scaled_parameters"><code class="docutils literal notranslate"><span class="pre">Molecular_system.scaled_parameters</span></code></a></li>
+<li><a class="reference internal" href="#System.system.Molecular_system.calculate_acoef_bcoef"><code class="docutils literal notranslate"><span class="pre">Molecular_system.calculate_acoef_bcoef()</span></code></a></li>
+<li><a class="reference internal" href="#id0"><code class="docutils literal notranslate"><span class="pre">Molecular_system.openmm_systems</span></code></a></li>
+<li><a class="reference internal" href="#System.system.Molecular_system.calculate_mm_net_forces"><code class="docutils literal notranslate"><span class="pre">Molecular_system.calculate_mm_net_forces()</span></code></a></li>
+<li><a class="reference internal" href="#System.system.Molecular_system.calculate_qm_net_forces"><code class="docutils literal notranslate"><span class="pre">Molecular_system.calculate_qm_net_forces()</span></code></a></li>
+<li><a class="reference internal" href="#System.system.Molecular_system.collect_ase_settings"><code class="docutils literal notranslate"><span class="pre">Molecular_system.collect_ase_settings()</span></code></a></li>
+<li><a class="reference internal" href="#System.system.Molecular_system.collect_cp2k_settings"><code class="docutils literal notranslate"><span class="pre">Molecular_system.collect_cp2k_settings()</span></code></a></li>
+<li><a class="reference internal" href="#System.system.Molecular_system.correct_charges"><code class="docutils literal notranslate"><span class="pre">Molecular_system.correct_charges()</span></code></a></li>
+<li><a class="reference internal" href="#id1"><code class="docutils literal notranslate"><span class="pre">Molecular_system.mm_charges</span></code></a></li>
+<li><a class="reference internal" href="#System.system.Molecular_system.expand_reduced_parameters"><code class="docutils literal notranslate"><span class="pre">Molecular_system.expand_reduced_parameters()</span></code></a></li>
+<li><a class="reference internal" href="#System.system.Molecular_system.reduced_ff_optimizable_values"><code class="docutils literal notranslate"><span class="pre">Molecular_system.reduced_ff_optimizable_values</span></code></a></li>
+<li><a class="reference internal" href="#id2"><code class="docutils literal notranslate"><span class="pre">Molecular_system.reduced_indexed_ff_optimizable</span></code></a></li>
+<li><a class="reference internal" href="#id3"><code class="docutils literal notranslate"><span class="pre">Molecular_system.dupes</span></code></a></li>
+<li><a class="reference internal" href="#id4"><code class="docutils literal notranslate"><span class="pre">Molecular_system.nbfix_dupes</span></code></a></li>
+<li><a class="reference internal" href="#id5"><code class="docutils literal notranslate"><span class="pre">Molecular_system.interaction_dupes</span></code></a></li>
+<li><a class="reference internal" href="#id6"><code class="docutils literal notranslate"><span class="pre">Molecular_system.hybrid</span></code></a></li>
+<li><a class="reference internal" href="#id7"><code class="docutils literal notranslate"><span class="pre">Molecular_system.hybrid_sys_types</span></code></a></li>
+<li><a class="reference internal" href="#System.system.Molecular_system.generate_mm_energies_forces"><code class="docutils literal notranslate"><span class="pre">Molecular_system.generate_mm_energies_forces()</span></code></a></li>
+<li><a class="reference internal" href="#id8"><code class="docutils literal notranslate"><span class="pre">Molecular_system.openmm_systems</span></code></a></li>
+<li><a class="reference internal" href="#id9"><code class="docutils literal notranslate"><span class="pre">Molecular_system.mm_energies</span></code></a></li>
+<li><a class="reference internal" href="#id10"><code class="docutils literal notranslate"><span class="pre">Molecular_system.mm_forces</span></code></a></li>
+<li><a class="reference internal" href="#System.system.Molecular_system.generate_qm_data_w_ase"><code class="docutils literal notranslate"><span class="pre">Molecular_system.generate_qm_data_w_ase()</span></code></a></li>
+<li><a class="reference internal" href="#System.system.Molecular_system.generate_qm_data_w_cp2k"><code class="docutils literal notranslate"><span class="pre">Molecular_system.generate_qm_data_w_cp2k()</span></code></a></li>
+<li><a class="reference internal" href="#System.system.Molecular_system.generate_weights"><code class="docutils literal notranslate"><span class="pre">Molecular_system.generate_weights()</span></code></a></li>
+<li><a class="reference internal" href="#id11"><code class="docutils literal notranslate"><span class="pre">Molecular_system.weights</span></code></a></li>
+<li><a class="reference internal" href="#System.system.Molecular_system.get_bsse"><code class="docutils literal notranslate"><span class="pre">Molecular_system.get_bsse()</span></code></a></li>
+<li><a class="reference internal" href="#id12"><code class="docutils literal notranslate"><span class="pre">Molecular_system.n_conformations</span></code></a></li>
+<li><a class="reference internal" href="#id13"><code class="docutils literal notranslate"><span class="pre">Molecular_system.eqm_bsse</span></code></a></li>
+<li><a class="reference internal" href="#System.system.Molecular_system.get_mm_charges"><code class="docutils literal notranslate"><span class="pre">Molecular_system.get_mm_charges()</span></code></a></li>
+<li><a class="reference internal" href="#System.system.Molecular_system.get_types_from_psf_topology_file"><code class="docutils literal notranslate"><span class="pre">Molecular_system.get_types_from_psf_topology_file()</span></code></a></li>
+<li><a class="reference internal" href="#System.system.Molecular_system.merge_vectorized_parameters"><code class="docutils literal notranslate"><span class="pre">Molecular_system.merge_vectorized_parameters()</span></code></a></li>
+<li><a class="reference internal" href="#id14"><code class="docutils literal notranslate"><span class="pre">Molecular_system.vectorized_reduced_ff_optimizable_values</span></code></a></li>
+<li><a class="reference internal" href="#id15"><code class="docutils literal notranslate"><span class="pre">Molecular_system.vectorized_parameters</span></code></a></li>
+<li><a class="reference internal" href="#System.system.Molecular_system.read_ase_energy_forces"><code class="docutils literal notranslate"><span class="pre">Molecular_system.read_ase_energy_forces()</span></code></a></li>
+<li><a class="reference internal" href="#id16"><code class="docutils literal notranslate"><span class="pre">Molecular_system.ini_coords</span></code></a></li>
+<li><a class="reference internal" href="#id17"><code class="docutils literal notranslate"><span class="pre">Molecular_system.n_conformations</span></code></a></li>
+<li><a class="reference internal" href="#id18"><code class="docutils literal notranslate"><span class="pre">Molecular_system.qm_forces</span></code></a></li>
+<li><a class="reference internal" href="#id19"><code class="docutils literal notranslate"><span class="pre">Molecular_system.qm_energies</span></code></a></li>
+<li><a class="reference internal" href="#System.system.Molecular_system.read_qm_charges_energies_forces_optcoords"><code class="docutils literal notranslate"><span class="pre">Molecular_system.read_qm_charges_energies_forces_optcoords()</span></code></a></li>
+<li><a class="reference internal" href="#id20"><code class="docutils literal notranslate"><span class="pre">Molecular_system.ini_coords</span></code></a></li>
+<li><a class="reference internal" href="#id21"><code class="docutils literal notranslate"><span class="pre">Molecular_system.n_conformations</span></code></a></li>
+<li><a class="reference internal" href="#id22"><code class="docutils literal notranslate"><span class="pre">Molecular_system.opt_coords</span></code></a></li>
+<li><a class="reference internal" href="#id23"><code class="docutils literal notranslate"><span class="pre">Molecular_system.qm_forces</span></code></a></li>
+<li><a class="reference internal" href="#id24"><code class="docutils literal notranslate"><span class="pre">Molecular_system.qm_energies</span></code></a></li>
+<li><a class="reference internal" href="#id25"><code class="docutils literal notranslate"><span class="pre">Molecular_system.qm_charges</span></code></a></li>
+<li><a class="reference internal" href="#System.system.Molecular_system.redistribute_vectorized_parameters"><code class="docutils literal notranslate"><span class="pre">Molecular_system.redistribute_vectorized_parameters()</span></code></a></li>
+<li><a class="reference internal" href="#id26"><code class="docutils literal notranslate"><span class="pre">Molecular_system.vectorized_parameters</span></code></a></li>
+<li><a class="reference internal" href="#id27"><code class="docutils literal notranslate"><span class="pre">Molecular_system.vectorized_reduced_ff_optimizable_values</span></code></a></li>
+<li><a class="reference internal" href="#id28"><code class="docutils literal notranslate"><span class="pre">Molecular_system.vectorized_reduced_ff_optimizable_values</span></code></a></li>
+<li><a class="reference internal" href="#System.system.Molecular_system.reduce_ff_optimizable"><code class="docutils literal notranslate"><span class="pre">Molecular_system.reduce_ff_optimizable()</span></code></a></li>
+<li><a class="reference internal" href="#id29"><code class="docutils literal notranslate"><span class="pre">Molecular_system.reduced_indexed_ff_optimizable</span></code></a></li>
+<li><a class="reference internal" href="#id30"><code class="docutils literal notranslate"><span class="pre">Molecular_system.reduced_ff_optimizable_values</span></code></a></li>
+<li><a class="reference internal" href="#id31"><code class="docutils literal notranslate"><span class="pre">Molecular_system.dupes</span></code></a></li>
+<li><a class="reference internal" href="#id32"><code class="docutils literal notranslate"><span class="pre">Molecular_system.nbfix_dupes</span></code></a></li>
+<li><a class="reference internal" href="#System.system.Molecular_system.reshape_vectorized_parameters"><code class="docutils literal notranslate"><span class="pre">Molecular_system.reshape_vectorized_parameters()</span></code></a></li>
+<li><a class="reference internal" href="#id33"><code class="docutils literal notranslate"><span class="pre">Molecular_system.vectorized_reduced_ff_optimizable_values</span></code></a></li>
+<li><a class="reference internal" href="#id34"><code class="docutils literal notranslate"><span class="pre">Molecular_system.reduced_ff_optimizable_values</span></code></a></li>
+<li><a class="reference internal" href="#id35"><code class="docutils literal notranslate"><span class="pre">Molecular_system.reduced_ff_optimizable_values</span></code></a></li>
+<li><a class="reference internal" href="#System.system.Molecular_system.scale_initial_parameters"><code class="docutils literal notranslate"><span class="pre">Molecular_system.scale_initial_parameters()</span></code></a></li>
+<li><a class="reference internal" href="#id36"><code class="docutils literal notranslate"><span class="pre">Molecular_system.vectorized_parameters</span></code></a></li>
+<li><a class="reference internal" href="#id37"><code class="docutils literal notranslate"><span class="pre">Molecular_system.scaling_factors</span></code></a></li>
+<li><a class="reference internal" href="#id38"><code class="docutils literal notranslate"><span class="pre">Molecular_system.scaled_parameters</span></code></a></li>
+<li><a class="reference internal" href="#System.system.Molecular_system.scale_parameters"><code class="docutils literal notranslate"><span class="pre">Molecular_system.scale_parameters()</span></code></a></li>
+<li><a class="reference internal" href="#id39"><code class="docutils literal notranslate"><span class="pre">Molecular_system.vectorized_parameters</span></code></a></li>
+<li><a class="reference internal" href="#id40"><code class="docutils literal notranslate"><span class="pre">Molecular_system.scaling_factors</span></code></a></li>
+<li><a class="reference internal" href="#id41"><code class="docutils literal notranslate"><span class="pre">Molecular_system.scaled_parameters</span></code></a></li>
+<li><a class="reference internal" href="#System.system.Molecular_system.set_ini_coords"><code class="docutils literal notranslate"><span class="pre">Molecular_system.set_ini_coords()</span></code></a></li>
+<li><a class="reference internal" href="#id42"><code class="docutils literal notranslate"><span class="pre">Molecular_system.MDA_reader_object</span></code></a></li>
+<li><a class="reference internal" href="#id43"><code class="docutils literal notranslate"><span class="pre">Molecular_system.n_conformations</span></code></a></li>
+<li><a class="reference internal" href="#id44"><code class="docutils literal notranslate"><span class="pre">Molecular_system.n_atoms</span></code></a></li>
+<li><a class="reference internal" href="#id45"><code class="docutils literal notranslate"><span class="pre">Molecular_system.ini_coords</span></code></a></li>
+<li><a class="reference internal" href="#System.system.Molecular_system.unscale_parameters"><code class="docutils literal notranslate"><span class="pre">Molecular_system.unscale_parameters()</span></code></a></li>
+<li><a class="reference internal" href="#id46"><code class="docutils literal notranslate"><span class="pre">Molecular_system.scaled_parameters</span></code></a></li>
+<li><a class="reference internal" href="#id47"><code class="docutils literal notranslate"><span class="pre">Molecular_system.scaling_factors</span></code></a></li>
+<li><a class="reference internal" href="#id48"><code class="docutils literal notranslate"><span class="pre">Molecular_system.vectorized_parameters</span></code></a></li>
+<li><a class="reference internal" href="#System.system.Molecular_system.vectorize_reduced_parameters"><code class="docutils literal notranslate"><span class="pre">Molecular_system.vectorize_reduced_parameters()</span></code></a></li>
+<li><a class="reference internal" href="#id49"><code class="docutils literal notranslate"><span class="pre">Molecular_system.reduced_ff_optimizable_values</span></code></a></li>
+<li><a class="reference internal" href="#id50"><code class="docutils literal notranslate"><span class="pre">Molecular_system.vectorized_reduced_ff_optimizable_values</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#System.system.find_same_type"><code class="docutils literal notranslate"><span class="pre">find_same_type()</span></code></a></li>
+<li><a class="reference internal" href="#System.system.read_external_file"><code class="docutils literal notranslate"><span class="pre">read_external_file()</span></code></a></li>
+<li><a class="reference internal" href="#System.system.read_qm_charges"><code class="docutils literal notranslate"><span class="pre">read_qm_charges()</span></code></a></li>
+<li><a class="reference internal" href="#System.system.read_qm_energy_forces"><code class="docutils literal notranslate"><span class="pre">read_qm_energy_forces()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-System">Module contents</a></li>
 </ul>
 </li>
 </ul>
-</li>
-</ul>
-
+</div>
         </div>
       </div>
     </nav>
@@ -74,7 +188,6 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
-          <li class="breadcrumb-item"><a href="modules.html">The_Phorce</a></li>
       <li class="breadcrumb-item active">System</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/System.rst.txt" rel="nofollow"> View page source</a>
@@ -90,23 +203,1545 @@
 <section id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading"></a></h2>
 </section>
-<section id="the-phorce-system-paths-module">
-<h2>System.paths module<a class="headerlink" href="#the-phorce-system-paths-module" title="Permalink to this heading"></a></h2>
+<section id="module-System.paths">
+<span id="the-phorce-system-paths-module"></span><h2>System.paths module<a class="headerlink" href="#module-System.paths" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="System.paths.Paths">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">System.paths.</span></span><span class="sig-name descname"><span class="pre">Paths</span></span><a class="reference internal" href="_modules/System/paths.html#Paths"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#System.paths.Paths" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Stores paths and filenames to external input files. Parameters can also be set manually by the user.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>working_dir</strong> (<em>str</em><em> (</em><em>path</em><em>)</em>) – working directory</p></li>
+<li><p><strong>project_name</strong> (<em>str</em>) – name of the project, e.g. ‘arginine’</p></li>
+<li><p><strong>mm_traj_file</strong> (<em>str</em>) – sampled trajectory filename w/ extension (any format that MDAnalysis can read), e.g. ‘coords.xyz’</p></li>
+<li><p><strong>mm_traj_file_path</strong> (<em>str</em><em> (</em><em>path</em><em>)</em>) – path to trajectory containing sampled coordinates</p></li>
+<li><p><strong>mm_crd_file</strong> (<em>str</em>) – coordinate file name</p></li>
+<li><p><strong>mm_crd_file_path</strong> (<em>str</em><em> (</em><em>path</em><em>)</em>) – path to coordinate file</p></li>
+<li><p><strong>mm_top_file</strong> (<em>str</em>) – e.g. charmm psf file name</p></li>
+<li><p><strong>mm_top_file_path</strong> (<em>str</em><em> (</em><em>path</em><em>)</em>) – path to the psf file</p></li>
+<li><p><strong>mm_str_file</strong> (<em>str</em>) – charmm parameter stream file name</p></li>
+<li><p><strong>mm_str_file_path</strong> (<em>str</em><em> (</em><em>path</em><em>)</em>) – path to parameter stream file</p></li>
+<li><p><strong>-&quot;-nosol-&quot;-</strong> – if System.system.Molecular_system.system_type == ‘1_solvent’: The molecule w/o the sol-
+vent</p></li>
+<li><p><strong>-&quot;-mol1-&quot;-</strong> – if System.system.Molecular_system.system_type == ‘<a href="#id51"><span class="problematic" id="id52">2_</span></a>…’: The first molecule (w/o sol-
+vent)</p></li>
+<li><p><strong>-&quot;-mol2-&quot;-</strong> – if System.system.Molecular_system.system_type == ‘<a href="#id53"><span class="problematic" id="id54">2_</span></a>…’: The 2nd molecule (w/o solvent)</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#System.paths.Paths.set" title="System.paths.Paths.set"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set</span></code></a>()</p></td>
+<td><p>sets the remaining class attributes</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="System.paths.Paths.set">
+<span class="sig-name descname"><span class="pre">set</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/System/paths.html#Paths.set"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#System.paths.Paths.set" title="Permalink to this definition"></a></dt>
+<dd><p>sets the remaining class attributes</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="System.paths.check_if_file_exists">
+<span class="sig-prename descclassname"><span class="pre">System.paths.</span></span><span class="sig-name descname"><span class="pre">check_if_file_exists</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/System/paths.html#check_if_file_exists"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#System.paths.check_if_file_exists" title="Permalink to this definition"></a></dt>
+<dd><p>checks if file exists</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>path</strong> (<em>str</em>) – filesystem path to a file</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="System.paths.check_path">
+<span class="sig-prename descclassname"><span class="pre">System.paths.</span></span><span class="sig-name descname"><span class="pre">check_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/System/paths.html#check_path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#System.paths.check_path" title="Permalink to this definition"></a></dt>
+<dd><p>Checks if filesystem path is valid</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>path</strong> (<em>str</em>) – Path to some directory</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>path</strong> – a tested path</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
-<section id="the-phorce-system-system-module">
-<h2>System.system module<a class="headerlink" href="#the-phorce-system-system-module" title="Permalink to this heading"></a></h2>
+<section id="module-System.system">
+<span id="the-phorce-system-system-module"></span><h2>System.system module<a class="headerlink" href="#module-System.system" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="System.system.Molecular_system">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">System.system.</span></span><span class="sig-name descname"><span class="pre">Molecular_system</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parametrization_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parametrization_method</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/System/system.html#Molecular_system"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#System.system.Molecular_system" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Contains properties of molecular system that is to be parametrized.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>parametrization_type</strong> (<em>str</em>) – ‘total_properties’ or ‘net_properties’</p></li>
+<li><p><strong>parametrization_method</strong> (<em>str</em>) – ‘energy’, ‘forces’, or ‘energy&amp;forces’</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="System.system.Molecular_system.openmm_systems">
+<span class="sig-name descname"><span class="pre">openmm_systems</span></span><a class="headerlink" href="#System.system.Molecular_system.openmm_systems" title="Permalink to this definition"></a></dt>
+<dd><p>OpenMM system instance</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>OMM_interface.openmm object</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="System.system.Molecular_system.ini_coords">
+<span class="sig-name descname"><span class="pre">ini_coords</span></span><a class="headerlink" href="#System.system.Molecular_system.ini_coords" title="Permalink to this definition"></a></dt>
+<dd><p>coordinates of the sampled structures in Angström</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy array of shape (n_conformations, n_atoms, 3)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="System.system.Molecular_system.MDA_reader_object">
+<span class="sig-name descname"><span class="pre">MDA_reader_object</span></span><a class="headerlink" href="#System.system.Molecular_system.MDA_reader_object" title="Permalink to this definition"></a></dt>
+<dd><p>Contains atom and residue information</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Coord_Toolz.mdanalysis.MDA_reader object</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="System.system.Molecular_system.n_atoms">
+<span class="sig-name descname"><span class="pre">n_atoms</span></span><a class="headerlink" href="#System.system.Molecular_system.n_atoms" title="Permalink to this definition"></a></dt>
+<dd><p>number of atoms</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="System.system.Molecular_system.n_conformations">
+<span class="sig-name descname"><span class="pre">n_conformations</span></span><a class="headerlink" href="#System.system.Molecular_system.n_conformations" title="Permalink to this definition"></a></dt>
+<dd><p>number of conformations aka sampled structures</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="System.system.Molecular_system.ase_sys">
+<span class="sig-name descname"><span class="pre">ase_sys</span></span><a class="headerlink" href="#System.system.Molecular_system.ase_sys" title="Permalink to this definition"></a></dt>
+<dd><p>ASE calculation instance</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ASE_interface.ase_calculation object</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="System.system.Molecular_system.opt_coords">
+<span class="sig-name descname"><span class="pre">opt_coords</span></span><a class="headerlink" href="#System.system.Molecular_system.opt_coords" title="Permalink to this definition"></a></dt>
+<dd><p>coordinates of the sampled structures in Angström after QM geometry optimization</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy array of shape (n_conformations, n_atoms, 3)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="System.system.Molecular_system.qm_charges">
+<span class="sig-name descname"><span class="pre">qm_charges</span></span><a class="headerlink" href="#System.system.Molecular_system.qm_charges" title="Permalink to this definition"></a></dt>
+<dd><p>charges of each atom calculated by QM method</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="System.system.Molecular_system.mm_charges">
+<span class="sig-name descname"><span class="pre">mm_charges</span></span><a class="headerlink" href="#System.system.Molecular_system.mm_charges" title="Permalink to this definition"></a></dt>
+<dd><p>charges from the classical force field</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="System.system.Molecular_system.qm_forces">
+<span class="sig-name descname"><span class="pre">qm_forces</span></span><a class="headerlink" href="#System.system.Molecular_system.qm_forces" title="Permalink to this definition"></a></dt>
+<dd><p>forces on each atom of the ini_coords evaluated by the quantum chemical method for each sampled structure
+Unit: kJ/mol/nm</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="System.system.Molecular_system.qm_energies">
+<span class="sig-name descname"><span class="pre">qm_energies</span></span><a class="headerlink" href="#System.system.Molecular_system.qm_energies" title="Permalink to this definition"></a></dt>
+<dd><p>potential energies of each sampled structure evaluated by the quantum chemical method
+Unit: kJ/mol</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="System.system.Molecular_system.mm_forces">
+<span class="sig-name descname"><span class="pre">mm_forces</span></span><a class="headerlink" href="#System.system.Molecular_system.mm_forces" title="Permalink to this definition"></a></dt>
+<dd><p>forces on each atom of the ini_coords evaluated by the classical MD method for each sampled structure.
+Shape: (n_conformations, n_atoms, 3)
+Unit: kJ/mol/nm</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="System.system.Molecular_system.mm_energies">
+<span class="sig-name descname"><span class="pre">mm_energies</span></span><a class="headerlink" href="#System.system.Molecular_system.mm_energies" title="Permalink to this definition"></a></dt>
+<dd><p>potential energies of each sampled structure evaluated by the classical MD method. Shape: (n_conformations)
+Unit: kJ/mol</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="System.system.Molecular_system.eqm_bsse">
+<span class="sig-name descname"><span class="pre">eqm_bsse</span></span><a class="headerlink" href="#System.system.Molecular_system.eqm_bsse" title="Permalink to this definition"></a></dt>
+<dd><p>Basis set superposition error</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">...net...</span></span></dt>
+<dd><p>subtracted net property (e.g. between 2 molecules or molecule and solvent)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="System.system.Molecular_system.weights">
+<span class="sig-name descname"><span class="pre">weights</span></span><a class="headerlink" href="#System.system.Molecular_system.weights" title="Permalink to this definition"></a></dt>
+<dd><p>weights to weigh conformations</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="System.system.Molecular_system.dupes">
+<span class="sig-name descname"><span class="pre">dupes</span></span><a class="headerlink" href="#System.system.Molecular_system.dupes" title="Permalink to this definition"></a></dt>
+<dd><dl class="simple">
+<dt>e.g. {‘all’: {‘OG311’: [3, 4, 14, 15], ‘OG2P1’: [5], ‘OG303’: [1, 12]},</dt><dd><p>‘mol2’: {‘OG311’: [3, 4], ‘OG2P1’: [5], ‘OG303’: [1]},
+‘mol1’: {‘OG311’: [3, 4], ‘OG2P1’: [5], ‘OG303’: [1]}}</p>
+</dd>
+</dl>
+<p>containing duplicate atom types and their atom indices</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict of dict of list of ints</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="System.system.Molecular_system.nbfix_dupes">
+<span class="sig-name descname"><span class="pre">nbfix_dupes</span></span><a class="headerlink" href="#System.system.Molecular_system.nbfix_dupes" title="Permalink to this definition"></a></dt>
+<dd><p>e.g. {‘all’: [[0,1]], ‘nosol’: [[0,1]]}
+contains indices from openmm_systems[sys_type].nbfix where the same nbfix/ same atom pair is listed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict of list of lists</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="System.system.Molecular_system.interaction_dupes">
+<span class="sig-name descname"><span class="pre">interaction_dupes</span></span><a class="headerlink" href="#System.system.Molecular_system.interaction_dupes" title="Permalink to this definition"></a></dt>
+<dd><p>contains atom index combinations consisting of duplicate atom types only and their positions (indices) in ff_optimizable[sys_type][force_group]</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>nested dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">acoef/bcoef</span></span></dt>
+<dd><p>has same keys as openmm_systems; holds acoeffs and bcoeffs which are needed for OpenMM’s NBFIX handling as CustomNonbondedForce.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="System.system.Molecular_system.hybrid">
+<span class="sig-name descname"><span class="pre">hybrid</span></span><a class="headerlink" href="#System.system.Molecular_system.hybrid" title="Permalink to this definition"></a></dt>
+<dd><p>default = False, flag set True if one subsystem has a NBFIX and one doesn’t.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="System.system.Molecular_system.hybrid_sys_types">
+<span class="sig-name descname"><span class="pre">hybrid_sys_types</span></span><a class="headerlink" href="#System.system.Molecular_system.hybrid_sys_types" title="Permalink to this definition"></a></dt>
+<dd><dl>
+<dt>specifies which subsystems need which type of nonbonded parameter processing. e.g. {‘all’: True,</dt><dd><blockquote>
+<div><p>‘mol1’: False,
+‘mol2’: True}</p>
+</div></blockquote>
+<p>meaning True has NBFIX, False doesn’t.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="System.system.Molecular_system.hybrid_check_performed">
+<span class="sig-name descname"><span class="pre">hybrid_check_performed</span></span><a class="headerlink" href="#System.system.Molecular_system.hybrid_check_performed" title="Permalink to this definition"></a></dt>
+<dd><p>default = False, signals whether system has been checked for hybrid nonbonded parameter processing</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="System.system.Molecular_system.slice_list">
+<span class="sig-name descname"><span class="pre">slice_list</span></span><a class="headerlink" href="#System.system.Molecular_system.slice_list" title="Permalink to this definition"></a></dt>
+<dd><p>defines atoms of interest based on psf topology. Applied in reduce_ff_optimizable.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="System.system.Molecular_system.reduced_indexed_ff_optimizable">
+<span class="sig-name descname"><span class="pre">reduced_indexed_ff_optimizable</span></span><a class="headerlink" href="#System.system.Molecular_system.reduced_indexed_ff_optimizable" title="Permalink to this definition"></a></dt>
+<dd><p>parameters from ff_optimizable and their corresponding system atom indices (column 0) and atom types (column 1)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict of np.arrays</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="System.system.Molecular_system.reduced_ff_otimizable_values">
+<span class="sig-name descname"><span class="pre">reduced_ff_otimizable_values</span></span><a class="headerlink" href="#System.system.Molecular_system.reduced_ff_otimizable_values" title="Permalink to this definition"></a></dt>
+<dd><p>parameters from ff_optimizable. Arrays have the same length as the ones in reduced_indexed_ff_optimizable</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict of np.arrays</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="System.system.Molecular_system.vectorized_reduced_ff_optimizable_values">
+<span class="sig-name descname"><span class="pre">vectorized_reduced_ff_optimizable_values</span></span><a class="headerlink" href="#System.system.Molecular_system.vectorized_reduced_ff_optimizable_values" title="Permalink to this definition"></a></dt>
+<dd><p>dictionary of flattened parameters</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict of 1d np.arrays</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="System.system.Molecular_system.vectorized_parameters">
+<span class="sig-name descname"><span class="pre">vectorized_parameters</span></span><a class="headerlink" href="#System.system.Molecular_system.vectorized_parameters" title="Permalink to this definition"></a></dt>
+<dd><p>all selected parameters flattened into one long vector</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="System.system.Molecular_system.scaling_factors">
+<span class="sig-name descname"><span class="pre">scaling_factors</span></span><a class="headerlink" href="#System.system.Molecular_system.scaling_factors" title="Permalink to this definition"></a></dt>
+<dd><p>scale the parameters to roughly the same magnitude, array has same length as vectorized_parameters</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="System.system.Molecular_system.scaled_parameters">
+<span class="sig-name descname"><span class="pre">scaled_parameters</span></span><a class="headerlink" href="#System.system.Molecular_system.scaled_parameters" title="Permalink to this definition"></a></dt>
+<dd><p>vectorized parameters extracted from ff_optimizable scaled to the same magnitude by scaling_factors, same shape as vectorized_parameters</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#System.system.Molecular_system.calculate_acoef_bcoef" title="System.system.Molecular_system.calculate_acoef_bcoef"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calculate_acoef_bcoef</span></code></a>()</p></td>
+<td><p>OpenMM NBFIX handling: CustomNonbondedForce('(a/r6)^2-b/r6; r6=r^6;'</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#System.system.Molecular_system.calculate_mm_net_forces" title="System.system.Molecular_system.calculate_mm_net_forces"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calculate_mm_net_forces</span></code></a>()</p></td>
+<td><p>Computes the net forces between 2 molecules by subtracting the forces caused by interaction w/ surrounding water.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#System.system.Molecular_system.calculate_qm_net_forces" title="System.system.Molecular_system.calculate_qm_net_forces"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calculate_qm_net_forces</span></code></a>()</p></td>
+<td><p>Computes the net forces between 2 molecules by subtracting the forces caused by interaction w/ surrounding water.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#System.system.Molecular_system.collect_ase_settings" title="System.system.Molecular_system.collect_ase_settings"><code class="xref py py-obj docutils literal notranslate"><span class="pre">collect_ase_settings</span></code></a>(n_threads, ...)</p></td>
+<td><p>Stores ASE settings in system.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#System.system.Molecular_system.collect_cp2k_settings" title="System.system.Molecular_system.collect_cp2k_settings"><code class="xref py py-obj docutils literal notranslate"><span class="pre">collect_cp2k_settings</span></code></a>(cp2k_input, n_threads, ...)</p></td>
+<td><p>Stores cp2k settings in system.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#System.system.Molecular_system.correct_charges" title="System.system.Molecular_system.correct_charges"><code class="xref py py-obj docutils literal notranslate"><span class="pre">correct_charges</span></code></a>(sys_type)</p></td>
+<td><p>Use if the numerical total charge does not equal the real total charge (due to numerical errors)</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#System.system.Molecular_system.expand_reduced_parameters" title="System.system.Molecular_system.expand_reduced_parameters"><code class="xref py py-obj docutils literal notranslate"><span class="pre">expand_reduced_parameters</span></code></a>()</p></td>
+<td><p>puts parameter values from reduced_ff_optimizable_values['all'] back into ff_optimizable[sys_type] (and custom_nb_params, nbfix if required)</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#System.system.Molecular_system.generate_mm_energies_forces" title="System.system.Molecular_system.generate_mm_energies_forces"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_mm_energies_forces</span></code></a>(sys_type[, verbose])</p></td>
+<td><p>collects the OpenMM system's classical properties (charges,energies&amp;forces)</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#System.system.Molecular_system.generate_qm_data_w_ase" title="System.system.Molecular_system.generate_qm_data_w_ase"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_qm_data_w_ase</span></code></a>(sys_type, paths, ...)</p></td>
+<td><p>Uses ASE to generate QM data- Only energies, forces, and optimized coordinates are supported.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#System.system.Molecular_system.generate_qm_data_w_cp2k" title="System.system.Molecular_system.generate_qm_data_w_cp2k"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_qm_data_w_cp2k</span></code></a>(sys_type, paths, ...)</p></td>
+<td><p>Calculates QM energies, forces (and charges) using native cp2k.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#System.system.Molecular_system.generate_weights" title="System.system.Molecular_system.generate_weights"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_weights</span></code></a>()</p></td>
+<td><p>For now weighs all conformations equally.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#System.system.Molecular_system.get_bsse" title="System.system.Molecular_system.get_bsse"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_bsse</span></code></a>(paths, MDA_reader, cp2k_input, ...)</p></td>
+<td><p>calculate the basis set superposition error (BSSE) using native cp2k</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#System.system.Molecular_system.get_mm_charges" title="System.system.Molecular_system.get_mm_charges"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_mm_charges</span></code></a>(sys_type)</p></td>
+<td><p>Copies the charges from the current force field to Molecular_system</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#System.system.Molecular_system.get_types_from_psf_topology_file" title="System.system.Molecular_system.get_types_from_psf_topology_file"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_types_from_psf_topology_file</span></code></a>()</p></td>
+<td><p>extracts force field atom types from psf topology file</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#System.system.Molecular_system.merge_vectorized_parameters" title="System.system.Molecular_system.merge_vectorized_parameters"><code class="xref py py-obj docutils literal notranslate"><span class="pre">merge_vectorized_parameters</span></code></a>()</p></td>
+<td><p>'flattens' the dictionary of vectorized parameters of all selected force groups into one long vector</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#System.system.Molecular_system.read_ase_energy_forces" title="System.system.Molecular_system.read_ase_energy_forces"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_ase_energy_forces</span></code></a>(sys_type, path, ...)</p></td>
+<td><p>Useful if ASE-cp2k calculations have been run externally (e.g.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#System.system.Molecular_system.read_qm_charges_energies_forces_optcoords" title="System.system.Molecular_system.read_qm_charges_energies_forces_optcoords"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_qm_charges_energies_forces_optcoords</span></code></a>(...)</p></td>
+<td><p>Useful if cp2k calculations have been run externally (e.g.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#System.system.Molecular_system.redistribute_vectorized_parameters" title="System.system.Molecular_system.redistribute_vectorized_parameters"><code class="xref py py-obj docutils literal notranslate"><span class="pre">redistribute_vectorized_parameters</span></code></a>()</p></td>
+<td><p>puts the optimized parameters back into a dictionary of individual vectors</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#System.system.Molecular_system.reduce_ff_optimizable" title="System.system.Molecular_system.reduce_ff_optimizable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reduce_ff_optimizable</span></code></a>(slice_list)</p></td>
+<td><p>extracts force field parameters from ff_optimizable based on an atom selection broadcasted through slice_list.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#System.system.Molecular_system.reshape_vectorized_parameters" title="System.system.Molecular_system.reshape_vectorized_parameters"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reshape_vectorized_parameters</span></code></a>()</p></td>
+<td><p>reshapes flattened 1d np.arrays to the original nd np.array dimensions.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#System.system.Molecular_system.scale_initial_parameters" title="System.system.Molecular_system.scale_initial_parameters"><code class="xref py py-obj docutils literal notranslate"><span class="pre">scale_initial_parameters</span></code></a>()</p></td>
+<td><p>Scales the magnitude of the parameters extracted from ff_optimizable using the z-score.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#System.system.Molecular_system.scale_parameters" title="System.system.Molecular_system.scale_parameters"><code class="xref py py-obj docutils literal notranslate"><span class="pre">scale_parameters</span></code></a>()</p></td>
+<td><p>Scales the magnitude of the parameters extracted from ff_optimizable using the z-score.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#System.system.Molecular_system.set_ini_coords" title="System.system.Molecular_system.set_ini_coords"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_ini_coords</span></code></a>(MDA_reader_object)</p></td>
+<td><p>reads in the initial atoms &amp; coordinates from file(s) using the MDA_reader, stores them in Molecular_system, and acquires properties derived from them based on the settings in Molecular_system.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#System.system.Molecular_system.unscale_parameters" title="System.system.Molecular_system.unscale_parameters"><code class="xref py py-obj docutils literal notranslate"><span class="pre">unscale_parameters</span></code></a>()</p></td>
+<td><p>Transforms optimized parameters (scaled) back to their original magnitude</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#System.system.Molecular_system.vectorize_reduced_parameters" title="System.system.Molecular_system.vectorize_reduced_parameters"><code class="xref py py-obj docutils literal notranslate"><span class="pre">vectorize_reduced_parameters</span></code></a>()</p></td>
+<td><p>flattens nd np.arrays of parameters to 1d np.arrays of parameters</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="System.system.Molecular_system.calculate_acoef_bcoef">
+<span class="sig-name descname"><span class="pre">calculate_acoef_bcoef</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/System/system.html#Molecular_system.calculate_acoef_bcoef"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#System.system.Molecular_system.calculate_acoef_bcoef" title="Permalink to this definition"></a></dt>
+<dd><dl class="simple">
+<dt>OpenMM NBFIX handling: CustomNonbondedForce(‘(a/r6)^2-b/r6; r6=r^6;’</dt><dd><p>‘a=acoef(type1, type2);’
+‘b=bcoef(type1, type2)’)</p>
+</dd>
+</dl>
+<p>First, rij and wdij are calculated for the atom types: rij = sigma_i + sigma_j and wdij = epsilon_i^(1/2) * epsilon_j
+Then, acoef = wdij^(1/2) * rij^6 and bcoef = 2 * wdij * rij^6
+WARNING: Static implementation for only one CustomNonbondedForce in the OpenMM system. If there are more, this will not work.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">openmm_systems[sys_type].custom_nb_params</span></span></dt>
+<dd><p>contains sigma, epsilon, atom type (in GMX/OMM units)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">openmm_systems[sys_type].nbfix</span></span></dt>
+<dd><p>contains NBFIX rij and wdij, atom type 1, atom type 2 (in GMX/OMM units)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id0">
+<span class="sig-name descname"><span class="pre">openmm_systems</span></span><span class="sig-paren">[</span><em class="sig-param"><span class="n"><span class="pre">sys_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ff_optimizable</span></span></em><span class="sig-paren">]</span><a class="headerlink" href="#id0" title="Permalink to this definition"></a></dt>
+<dd><p>OpenMM’s acoef &amp; bcoef</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list of np.arrays</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="System.system.Molecular_system.calculate_mm_net_forces">
+<span class="sig-name descname"><span class="pre">calculate_mm_net_forces</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/System/system.html#Molecular_system.calculate_mm_net_forces"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#System.system.Molecular_system.calculate_mm_net_forces" title="Permalink to this definition"></a></dt>
+<dd><p>Computes the net forces between 2 molecules by subtracting the forces caused by interaction w/ surrounding
+water. (raw sys forces - mol1 with water forces - mol2 with water forces = net forces)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="System.system.Molecular_system.calculate_qm_net_forces">
+<span class="sig-name descname"><span class="pre">calculate_qm_net_forces</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/System/system.html#Molecular_system.calculate_qm_net_forces"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#System.system.Molecular_system.calculate_qm_net_forces" title="Permalink to this definition"></a></dt>
+<dd><p>Computes the net forces between 2 molecules by subtracting the forces caused by interaction w/ surrounding
+water. (raw sys forces - mol1 with water forces - mol2 with water forces = net forces)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="System.system.Molecular_system.collect_ase_settings">
+<span class="sig-name descname"><span class="pre">collect_ase_settings</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_threads</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cell_dimensions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pbc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_control</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">run_type</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/System/system.html#Molecular_system.collect_ase_settings"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#System.system.Molecular_system.collect_ase_settings" title="Permalink to this definition"></a></dt>
+<dd><p>Stores ASE settings in system.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n_threads</strong> (<em>int</em>) – number of OpenMP threads</p></li>
+<li><p><strong>cell_dimensions</strong> (<em>np.array</em>) – defines the unit cell vectors: ([x, y, z])</p></li>
+<li><p><strong>pbc</strong> (<em>np.array</em>) – defines which direction is supposed to be periodic, e.g. ([True, True, True]) for periodicity in all directions</p></li>
+<li><p><strong>input_control</strong> (<em>str</em>) – sets the input commands to the ASE calculator (e.g. like a cp2k.inp file)</p></li>
+<li><p><strong>run_type</strong> (<em>str</em>) – ‘single_point’ or ‘optimization’</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="System.system.Molecular_system.collect_cp2k_settings">
+<span class="sig-name descname"><span class="pre">collect_cp2k_settings</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cp2k_input</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_threads</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cp2k_binary_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cp2k_run_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/System/system.html#Molecular_system.collect_cp2k_settings"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#System.system.Molecular_system.collect_cp2k_settings" title="Permalink to this definition"></a></dt>
+<dd><p>Stores cp2k settings in system.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cp2k_input</strong> (<em>str</em>) – all the commands and strings that go into a cp2k .inp file (see cp2k doc). It is recommended to load the
+input into a separate variable beforehand</p></li>
+<li><p><strong>n_threads</strong> (<em>int</em>) – number of OpenMP threads to use for the parallel cp2k calculation</p></li>
+<li><p><strong>cp2k_binary_name</strong> (<em>str</em>) – name by which the cp2k binary is called on your machine</p></li>
+<li><p><strong>cp2k_run_type</strong> (<em>str</em>) – ‘single_point’ or ‘optimization’</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="System.system.Molecular_system.correct_charges">
+<span class="sig-name descname"><span class="pre">correct_charges</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sys_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/System/system.html#Molecular_system.correct_charges"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#System.system.Molecular_system.correct_charges" title="Permalink to this definition"></a></dt>
+<dd><p>Use if the numerical total charge does not equal the real total charge (due to numerical errors)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>sys_type</strong> (<em>str</em>) – ‘all’ or ‘nosol’ or ‘mol1’ or ‘mol2’</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id1">
+<span class="sig-name descname"><span class="pre">mm_charges</span></span><a class="headerlink" href="#id1" title="Permalink to this definition"></a></dt>
+<dd><p>containing charges from current force field</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="System.system.Molecular_system.expand_reduced_parameters">
+<span class="sig-name descname"><span class="pre">expand_reduced_parameters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/System/system.html#Molecular_system.expand_reduced_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#System.system.Molecular_system.expand_reduced_parameters" title="Permalink to this definition"></a></dt>
+<dd><p>puts parameter values from reduced_ff_optimizable_values[‘all’] back into ff_optimizable[sys_type] (and custom_nb_params, nbfix if required)</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="System.system.Molecular_system.reduced_ff_optimizable_values">
+<span class="sig-name descname"><span class="pre">reduced_ff_optimizable_values</span></span><span class="sig-paren">[</span><span class="sig-paren">]</span><a class="headerlink" href="#System.system.Molecular_system.reduced_ff_optimizable_values" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id2">
+<span class="sig-name descname"><span class="pre">reduced_indexed_ff_optimizable</span></span><span class="sig-paren">[</span><em class="sig-param"><span class="n"><span class="pre">sys_type</span></span></em><span class="sig-paren">]</span><a class="headerlink" href="#id2" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id3">
+<span class="sig-name descname"><span class="pre">dupes</span></span><span class="sig-paren">[</span><span class="sig-paren">]</span><a class="headerlink" href="#id3" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id4">
+<span class="sig-name descname"><span class="pre">nbfix_dupes</span></span><a class="headerlink" href="#id4" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id5">
+<span class="sig-name descname"><span class="pre">interaction_dupes</span></span><a class="headerlink" href="#id5" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">openmm_systems[sys_type].ff_optimizable</span></span></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">openmm_systems[sys_type].custom_nb_params</span></span></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">openmm_systems[sys_type].nbfix</span></span></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id6">
+<span class="sig-name descname"><span class="pre">hybrid</span></span><a class="headerlink" href="#id6" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id7">
+<span class="sig-name descname"><span class="pre">hybrid_sys_types</span></span><a class="headerlink" href="#id7" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="System.system.Molecular_system.generate_mm_energies_forces">
+<span class="sig-name descname"><span class="pre">generate_mm_energies_forces</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sys_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/System/system.html#Molecular_system.generate_mm_energies_forces"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#System.system.Molecular_system.generate_mm_energies_forces" title="Permalink to this definition"></a></dt>
+<dd><p>collects the OpenMM system’s classical properties (charges,energies&amp;forces)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sys_type</strong> (<em>str</em>) – ‘all’ or ‘nosol’ or ‘mol1’ or ‘mol2’</p></li>
+<li><p><strong>verbose</strong> (<em>bool</em>) – default=False, prints info if set True</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id8">
+<span class="sig-name descname"><span class="pre">openmm_systems</span></span><a class="headerlink" href="#id8" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>OpenMM system object</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id9">
+<span class="sig-name descname"><span class="pre">mm_energies</span></span><a class="headerlink" href="#id9" title="Permalink to this definition"></a></dt>
+<dd><p>classical energies</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id10">
+<span class="sig-name descname"><span class="pre">mm_forces</span></span><a class="headerlink" href="#id10" title="Permalink to this definition"></a></dt>
+<dd><p>classical forces</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="System.system.Molecular_system.generate_qm_data_w_ase">
+<span class="sig-name descname"><span class="pre">generate_qm_data_w_ase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sys_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">paths</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atomgroup</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atomgroup_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/System/system.html#Molecular_system.generate_qm_data_w_ase"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#System.system.Molecular_system.generate_qm_data_w_ase" title="Permalink to this definition"></a></dt>
+<dd><p>Uses ASE to generate QM data- Only energies, forces, and optimized coordinates are supported. If you want charges, use generate_qm_data_w_cp2k()</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sys_type</strong> (<em>str</em>) – ‘all’ or ‘nosol’ or ‘mol1’ or ‘mol2’</p></li>
+<li><p><strong>paths</strong> (<em>paths.Paths object</em>) – contains working dir n stuff</p></li>
+<li><p><strong>paths</strong> – contains working dir n stuff</p></li>
+<li><p><strong>atomgroup</strong> (<em>MDAnalysis AtomGroup object</em>) – e.g. mol1</p></li>
+<li><p><strong>atomgroup_name</strong> (<em>str</em>) – e.g. ‘mol1’, needed for output files</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="System.system.Molecular_system.generate_qm_data_w_cp2k">
+<span class="sig-name descname"><span class="pre">generate_qm_data_w_cp2k</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sys_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">paths</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">MDA_reader</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">charge_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/System/system.html#Molecular_system.generate_qm_data_w_cp2k"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#System.system.Molecular_system.generate_qm_data_w_cp2k" title="Permalink to this definition"></a></dt>
+<dd><p>Calculates QM energies, forces (and charges) using native cp2k.
+Requires topology file and starting coords as well as a valid cp2k input file (please check cp2k doc).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sys_type</strong> (<em>str</em>) – ‘all’ or ‘nosol’ or ‘mol1’ or ‘mol2’</p></li>
+<li><p><strong>paths</strong> (<em>paths.Paths object</em>) – contains paths and filenames etc</p></li>
+<li><p><strong>MDA_reader</strong> (<em>Coord_Toolz.mdanalysis.MDA_reader object</em>) – contains MDA universes w/ atom info, coords, …</p></li>
+<li><p><strong>charge_type</strong> (<em>str</em>) – Default=None, no charges will be computed.
+Charge options are ‘Mulliken’, ‘Hirshfeld’, ‘RESP’</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="System.system.Molecular_system.generate_weights">
+<span class="sig-name descname"><span class="pre">generate_weights</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/System/system.html#Molecular_system.generate_weights"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#System.system.Molecular_system.generate_weights" title="Permalink to this definition"></a></dt>
+<dd><p>For now weighs all conformations equally. Can be modified tho.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id11">
+<span class="sig-name descname"><span class="pre">weights</span></span><a class="headerlink" href="#id11" title="Permalink to this definition"></a></dt>
+<dd><p>weights for each conformation</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="System.system.Molecular_system.get_bsse">
+<span class="sig-name descname"><span class="pre">get_bsse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">paths</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">MDA_reader</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cp2k_input</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">omp_threads</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cp2k_binary_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sys_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/System/system.html#Molecular_system.get_bsse"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#System.system.Molecular_system.get_bsse" title="Permalink to this definition"></a></dt>
+<dd><p>calculate the basis set superposition error (BSSE) using native cp2k</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>paths</strong> (<em>paths.Paths object</em>) – contains paths and filenames etc</p></li>
+<li><p><strong>MDA_reader</strong> (<em>Coord_Toolz.mdanalysis.MDA_reader object</em>) – contains MDA universes w/ atom info, coords, …</p></li>
+<li><p><strong>cp2k_input</strong> (<em>str</em>) – all the commands and strings that go into a cp2k .inp file (see cp2k doc). It is recommended to load the
+input into a separate variable beforehand</p></li>
+<li><p><strong>omp_threads</strong> (<em>int</em>) – number of openMP threads to use for the parallel cp2k calculation</p></li>
+<li><p><strong>cp2k_binary_name</strong> (<em>str</em>) – name by which the cp2k binary is called on your machine</p></li>
+<li><p><strong>sys_type</strong> (<em>str</em>) – ‘all’ or ‘nosol’ or ‘mol1’ or ‘mol2’</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id12">
+<span class="sig-name descname"><span class="pre">n_conformations</span></span><a class="headerlink" href="#id12" title="Permalink to this definition"></a></dt>
+<dd><p>number of conformations</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id13">
+<span class="sig-name descname"><span class="pre">eqm_bsse</span></span><a class="headerlink" href="#id13" title="Permalink to this definition"></a></dt>
+<dd><p>basis set superposition error</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="System.system.Molecular_system.get_mm_charges">
+<span class="sig-name descname"><span class="pre">get_mm_charges</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sys_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/System/system.html#Molecular_system.get_mm_charges"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#System.system.Molecular_system.get_mm_charges" title="Permalink to this definition"></a></dt>
+<dd><p>Copies the charges from the current force field to Molecular_system</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>sys_type</strong> (<em>str</em>) – ‘all’ or ‘nosol’ or ‘mol1’ or ‘mol2’</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="System.system.Molecular_system.get_types_from_psf_topology_file">
+<span class="sig-name descname"><span class="pre">get_types_from_psf_topology_file</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/System/system.html#Molecular_system.get_types_from_psf_topology_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#System.system.Molecular_system.get_types_from_psf_topology_file" title="Permalink to this definition"></a></dt>
+<dd><p>extracts force field atom types from psf topology file</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>all_atom_types_indices</strong> – array of [int,str] with ff_atom_types (column1) and their atom indices (column0)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="System.system.Molecular_system.merge_vectorized_parameters">
+<span class="sig-name descname"><span class="pre">merge_vectorized_parameters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/System/system.html#Molecular_system.merge_vectorized_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#System.system.Molecular_system.merge_vectorized_parameters" title="Permalink to this definition"></a></dt>
+<dd><p>‘flattens’ the dictionary of vectorized parameters of all selected force groups
+into one long vector</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id14">
+<span class="sig-name descname"><span class="pre">vectorized_reduced_ff_optimizable_values</span></span><a class="headerlink" href="#id14" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict of arrays</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id15">
+<span class="sig-name descname"><span class="pre">vectorized_parameters</span></span><a class="headerlink" href="#id15" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="System.system.Molecular_system.read_ase_energy_forces">
+<span class="sig-name descname"><span class="pre">read_ase_energy_forces</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sys_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atomgroup_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/System/system.html#Molecular_system.read_ase_energy_forces"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#System.system.Molecular_system.read_ase_energy_forces" title="Permalink to this definition"></a></dt>
+<dd><p>Useful if ASE-cp2k calculations have been run externally (e.g. on a cluster).
+reads ASE-generated cp2k.out files and extracts energies and forces from it</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sys_type</strong> (<em>str</em>) – ‘all’ or ‘nosol’ or ‘mol1’ or ‘mol2’</p></li>
+<li><p><strong>path</strong> (<em>str</em>) – path to externally optimized structures</p></li>
+<li><p><strong>atomgroup_name</strong> (<em>str</em>) – e.g. ‘mol1’ or ‘nosol’</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id16">
+<span class="sig-name descname"><span class="pre">ini_coords</span></span><a class="headerlink" href="#id16" title="Permalink to this definition"></a></dt>
+<dd><p>unoptimized coordinates of conformations</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id17">
+<span class="sig-name descname"><span class="pre">n_conformations</span></span><a class="headerlink" href="#id17" title="Permalink to this definition"></a></dt>
+<dd><p>number of conformations</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id18">
+<span class="sig-name descname"><span class="pre">qm_forces</span></span><a class="headerlink" href="#id18" title="Permalink to this definition"></a></dt>
+<dd><p>quantum forces</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id19">
+<span class="sig-name descname"><span class="pre">qm_energies</span></span><a class="headerlink" href="#id19" title="Permalink to this definition"></a></dt>
+<dd><p>quantum energies</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="System.system.Molecular_system.read_qm_charges_energies_forces_optcoords">
+<span class="sig-name descname"><span class="pre">read_qm_charges_energies_forces_optcoords</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sys_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cp2k_outfilename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">charge_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/System/system.html#Molecular_system.read_qm_charges_energies_forces_optcoords"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#System.system.Molecular_system.read_qm_charges_energies_forces_optcoords" title="Permalink to this definition"></a></dt>
+<dd><p>Useful if cp2k calculations have been run externally (e.g. on a cluster).
+reads cp2k .out files and extracts charges, energies, and forces from it</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sys_type</strong> (<em>str</em>) – ‘all’ or ‘nosol’ or ‘mol1’ or ‘mol2’</p></li>
+<li><p><strong>path</strong> (<em>str</em>) – path to externally cp2k optimized structures</p></li>
+<li><p><strong>cp2k_outfilename</strong> (<em>str</em>) – equal to &lt;cp2k&gt;.out</p></li>
+<li><p><strong>filename</strong> (<em>str</em>) – default = None. Needed if sys_type = ‘all’
+equal to &amp;GLOBAL&gt;PROJECT str in cp2k.inp file. Required to read optimized coords.</p></li>
+<li><p><strong>charge_type</strong> (<em>str</em>) – default = None. If charges should be read, supply one of the following:
+‘Mulliken’, ‘Hirshfeld’, ‘RESP’</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id20">
+<span class="sig-name descname"><span class="pre">ini_coords</span></span><a class="headerlink" href="#id20" title="Permalink to this definition"></a></dt>
+<dd><p>unoptimized coordinates of conformations</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id21">
+<span class="sig-name descname"><span class="pre">n_conformations</span></span><a class="headerlink" href="#id21" title="Permalink to this definition"></a></dt>
+<dd><p>number of conformations</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id22">
+<span class="sig-name descname"><span class="pre">opt_coords</span></span><a class="headerlink" href="#id22" title="Permalink to this definition"></a></dt>
+<dd><p>geometry-optimized coordinates of conformations</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id23">
+<span class="sig-name descname"><span class="pre">qm_forces</span></span><a class="headerlink" href="#id23" title="Permalink to this definition"></a></dt>
+<dd><p>quantum forces</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id24">
+<span class="sig-name descname"><span class="pre">qm_energies</span></span><a class="headerlink" href="#id24" title="Permalink to this definition"></a></dt>
+<dd><p>quantum energies</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id25">
+<span class="sig-name descname"><span class="pre">qm_charges</span></span><a class="headerlink" href="#id25" title="Permalink to this definition"></a></dt>
+<dd><p>quantum charges</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="System.system.Molecular_system.redistribute_vectorized_parameters">
+<span class="sig-name descname"><span class="pre">redistribute_vectorized_parameters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/System/system.html#Molecular_system.redistribute_vectorized_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#System.system.Molecular_system.redistribute_vectorized_parameters" title="Permalink to this definition"></a></dt>
+<dd><p>puts the optimized parameters back into a dictionary of individual vectors</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id26">
+<span class="sig-name descname"><span class="pre">vectorized_parameters</span></span><a class="headerlink" href="#id26" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id27">
+<span class="sig-name descname"><span class="pre">vectorized_reduced_ff_optimizable_values</span></span><a class="headerlink" href="#id27" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict of arrays</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id28">
+<span class="sig-name descname"><span class="pre">vectorized_reduced_ff_optimizable_values</span></span><a class="headerlink" href="#id28" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict of arrays</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="System.system.Molecular_system.reduce_ff_optimizable">
+<span class="sig-name descname"><span class="pre">reduce_ff_optimizable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">slice_list</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/System/system.html#Molecular_system.reduce_ff_optimizable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#System.system.Molecular_system.reduce_ff_optimizable" title="Permalink to this definition"></a></dt>
+<dd><p>extracts force field parameters from ff_optimizable based on an atom selection broadcasted through slice_list.
+Also eliminates ‘duplicates’ of the same atom type.
+WARNING: Static implementation for only one CustomNonbondedForce in the OpenMM system. If there are more, this will not work.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>slice_list</strong> (<em>dict</em><em> of </em><em>lists</em><em> of </em><em>ints</em>) – <p>atom slices for the desired atoms of all systems. Can make use of <a href="#id55"><span class="problematic" id="id56">numpy.r_</span></a>, e.g. np.r_[1,3:6,12,14:16] for multiple,
+not connected slices at once. E.g slice_list = {‘all’: [np.r_[1,3:6,12,14:16]],</p>
+<blockquote>
+<div><p>’mol1’: [np.r_[1,3:6]],
+‘mol2’: [np.r_[1,3:6]],
+}</p>
+</div></blockquote>
+</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">openmm_systems[sys_type].ff_optimizable</span></span></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">openmm_systems[sys_type].custom_nb_params</span></span></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">openmm_systems[sys_type].nbfix</span></span></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id29">
+<span class="sig-name descname"><span class="pre">reduced_indexed_ff_optimizable</span></span><span class="sig-paren">[</span><em class="sig-param"><span class="n"><span class="pre">sys_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_group</span></span></em><span class="sig-paren">]</span><a class="headerlink" href="#id29" title="Permalink to this definition"></a></dt>
+<dd><p>contains atom indices, atom types, and ff term values (nonbonded)
+or line indices, atom indices, and ff term values (bonded); not mutable</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict of dict of np.arrays</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id30">
+<span class="sig-name descname"><span class="pre">reduced_ff_optimizable_values</span></span><span class="sig-paren">[</span><em class="sig-param"><span class="n"><span class="pre">sys_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_group</span></span></em><span class="sig-paren">]</span><a class="headerlink" href="#id30" title="Permalink to this definition"></a></dt>
+<dd><p>contains only the ff term values (nonbonded or bonded); mutable
+units: sigma in nm, epsilon in kJ/mol. NBFIX: rmin in nm, epsilon in kJ/mol</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict of dict of np.arrays</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id31">
+<span class="sig-name descname"><span class="pre">dupes</span></span><a class="headerlink" href="#id31" title="Permalink to this definition"></a></dt>
+<dd><p>of atom types (str) and their inidces (-&gt; marks duplicate atom types)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict of dicts</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id32">
+<span class="sig-name descname"><span class="pre">nbfix_dupes</span></span><a class="headerlink" href="#id32" title="Permalink to this definition"></a></dt>
+<dd><p>of indices indicating same atom pair/same NBFIX</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict of lists</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ValueError</strong> – If there is something wrong with the slice list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="System.system.Molecular_system.reshape_vectorized_parameters">
+<span class="sig-name descname"><span class="pre">reshape_vectorized_parameters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/System/system.html#Molecular_system.reshape_vectorized_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#System.system.Molecular_system.reshape_vectorized_parameters" title="Permalink to this definition"></a></dt>
+<dd><p>reshapes flattened 1d np.arrays to the original nd np.array dimensions.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id33">
+<span class="sig-name descname"><span class="pre">vectorized_reduced_ff_optimizable_values</span></span><a class="headerlink" href="#id33" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id34">
+<span class="sig-name descname"><span class="pre">reduced_ff_optimizable_values</span></span><a class="headerlink" href="#id34" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id35">
+<span class="sig-name descname"><span class="pre">reduced_ff_optimizable_values</span></span><span class="sig-paren">[</span><span class="sig-paren">]</span><a class="headerlink" href="#id35" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="System.system.Molecular_system.scale_initial_parameters">
+<span class="sig-name descname"><span class="pre">scale_initial_parameters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/System/system.html#Molecular_system.scale_initial_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#System.system.Molecular_system.scale_initial_parameters" title="Permalink to this definition"></a></dt>
+<dd><p>Scales the magnitude of the parameters extracted from ff_optimizable using the z-score. This function
+is run once before the parametrization loop to set constant scaling factors (self.scaling_factors).</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id36">
+<span class="sig-name descname"><span class="pre">vectorized_parameters</span></span><a class="headerlink" href="#id36" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id37">
+<span class="sig-name descname"><span class="pre">scaling_factors</span></span><a class="headerlink" href="#id37" title="Permalink to this definition"></a></dt>
+<dd><p>not mutable</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id38">
+<span class="sig-name descname"><span class="pre">scaled_parameters</span></span><a class="headerlink" href="#id38" title="Permalink to this definition"></a></dt>
+<dd><p>mutable</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="System.system.Molecular_system.scale_parameters">
+<span class="sig-name descname"><span class="pre">scale_parameters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/System/system.html#Molecular_system.scale_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#System.system.Molecular_system.scale_parameters" title="Permalink to this definition"></a></dt>
+<dd><p>Scales the magnitude of the parameters extracted from ff_optimizable using the z-score.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id39">
+<span class="sig-name descname"><span class="pre">vectorized_parameters</span></span><a class="headerlink" href="#id39" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id40">
+<span class="sig-name descname"><span class="pre">scaling_factors</span></span><a class="headerlink" href="#id40" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id41">
+<span class="sig-name descname"><span class="pre">scaled_parameters</span></span><a class="headerlink" href="#id41" title="Permalink to this definition"></a></dt>
+<dd><p>mutable</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="System.system.Molecular_system.set_ini_coords">
+<span class="sig-name descname"><span class="pre">set_ini_coords</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">MDA_reader_object</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/System/system.html#Molecular_system.set_ini_coords"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#System.system.Molecular_system.set_ini_coords" title="Permalink to this definition"></a></dt>
+<dd><p>reads in the initial atoms &amp; coordinates from file(s) using the MDA_reader, stores them in Molecular_system,
+and acquires properties derived from them based on the settings in Molecular_system.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>MDA_reader_object</strong> (<em>Coord_Toolz.mdanalysis.MDA_reader object</em>) – Contains MDA Universe and atomgroups</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id42">
+<span class="sig-name descname"><span class="pre">MDA_reader_object</span></span><a class="headerlink" href="#id42" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id43">
+<span class="sig-name descname"><span class="pre">n_conformations</span></span><a class="headerlink" href="#id43" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id44">
+<span class="sig-name descname"><span class="pre">n_atoms</span></span><a class="headerlink" href="#id44" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id45">
+<span class="sig-name descname"><span class="pre">ini_coords</span></span><a class="headerlink" href="#id45" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="System.system.Molecular_system.unscale_parameters">
+<span class="sig-name descname"><span class="pre">unscale_parameters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/System/system.html#Molecular_system.unscale_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#System.system.Molecular_system.unscale_parameters" title="Permalink to this definition"></a></dt>
+<dd><p>Transforms optimized parameters (scaled) back to their original magnitude</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id46">
+<span class="sig-name descname"><span class="pre">scaled_parameters</span></span><a class="headerlink" href="#id46" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id47">
+<span class="sig-name descname"><span class="pre">scaling_factors</span></span><a class="headerlink" href="#id47" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id48">
+<span class="sig-name descname"><span class="pre">vectorized_parameters</span></span><a class="headerlink" href="#id48" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="System.system.Molecular_system.vectorize_reduced_parameters">
+<span class="sig-name descname"><span class="pre">vectorize_reduced_parameters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/System/system.html#Molecular_system.vectorize_reduced_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#System.system.Molecular_system.vectorize_reduced_parameters" title="Permalink to this definition"></a></dt>
+<dd><p>flattens nd np.arrays of parameters to 1d np.arrays of parameters</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id49">
+<span class="sig-name descname"><span class="pre">reduced_ff_optimizable_values</span></span><span class="sig-paren">[</span><span class="sig-paren">]</span><a class="headerlink" href="#id49" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id50">
+<span class="sig-name descname"><span class="pre">vectorized_reduced_ff_optimizable_values</span></span><a class="headerlink" href="#id50" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="System.system.find_same_type">
+<span class="sig-prename descclassname"><span class="pre">System.system.</span></span><span class="sig-name descname"><span class="pre">find_same_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ff_atom_types_indices</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/System/system.html#find_same_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#System.system.find_same_type" title="Permalink to this definition"></a></dt>
+<dd><p>id atoms of the same ff atom type and return their indices and types</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ff_atom_types_indices</strong> (<em>array</em><em> of </em><em>[</em><em>int</em><em>,</em><em>str</em><em>]</em>) – ff atom types (column1) extracted from topology file with their respective atom indices (column0)</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><p><strong>dupes</strong> – dictionary with non-unique atom types and their indices
+dict{‘atom_type1’:[1,12],</p>
+<blockquote>
+<div><p>’atom_type3’:[3,4,14,15],
+‘atom_type6’:[5,16],
+…}</p>
+</div></blockquote>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="System.system.read_external_file">
+<span class="sig-prename descclassname"><span class="pre">System.system.</span></span><span class="sig-name descname"><span class="pre">read_external_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/System/system.html#read_external_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#System.system.read_external_file" title="Permalink to this definition"></a></dt>
+<dd><p>standard line-by-line reader for human readable files</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> (<em>str</em>) – path to the dirctory where the file can be found</p></li>
+<li><p><strong>filename</strong> (<em>str</em>) – name of the file including extension</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>read</strong> – the lines of the file in str format</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list of str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="System.system.read_qm_charges">
+<span class="sig-prename descclassname"><span class="pre">System.system.</span></span><span class="sig-name descname"><span class="pre">read_qm_charges</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">read_lines</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">charge_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cp2k_outfilename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ini_coords</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/System/system.html#read_qm_charges"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#System.system.read_qm_charges" title="Permalink to this definition"></a></dt>
+<dd><p>reads cp2k .out files and collects the calculated atom charges based on the type</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>read_lines</strong> (<em>list</em><em> of </em><em>str</em>) – read-in file content</p></li>
+<li><p><strong>charge_type</strong> (<em>str</em>) – one of the following: ‘Mulliken’, ‘Hirshfeld’, ‘RESP’</p></li>
+<li><p><strong>path</strong> (<em>str</em>) – path to externally cp2k optimized structures</p></li>
+<li><p><strong>n</strong> (<em>int</em>) – frame number or conformation number</p></li>
+<li><p><strong>cp2k_outfilename</strong> (<em>str</em>) – equal to &lt;cp2k&gt;.out</p></li>
+<li><p><strong>ini_coords</strong> (<em>np.array</em>) – unoptimized coordinates of conformations</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>charges</strong> – charges (qm charges) as numpy arrary</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="System.system.read_qm_energy_forces">
+<span class="sig-prename descclassname"><span class="pre">System.system.</span></span><span class="sig-name descname"><span class="pre">read_qm_energy_forces</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">read</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cp2k_outfilename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ini_coords</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/System/system.html#read_qm_energy_forces"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#System.system.read_qm_energy_forces" title="Permalink to this definition"></a></dt>
+<dd><p>Useful if cp2k calculations have been run externally (e.g. on a cluster).
+reads cp2k .out files and extracts energy and forces from it.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>read</strong> (<em>list</em><em> of </em><em>str</em>) – read-in file content</p></li>
+<li><p><strong>n</strong> (<em>int</em>) – frame number or conformation number</p></li>
+<li><p><strong>cp2k_outfilename</strong> (<em>str</em>) – equal to &lt;cp2k&gt;.out</p></li>
+<li><p><strong>path</strong> (<em>str</em>) – path to externally cp2k optimized structures</p></li>
+<li><p><strong>ini_coords</strong> (<em>np.array</em>) – unoptimized coordinates of conformations</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>energy</strong> (<em>float</em>) – quantum energy</p></li>
+<li><p><strong>forces</strong> (<em>np.array</em>) – quantum forces</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
-<section id="module-contents">
-<h2>Module contents<a class="headerlink" href="#module-contents" title="Permalink to this heading"></a></h2>
+<section id="module-System">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-System" title="Permalink to this heading"></a></h2>
+<p>System subpackage</p>
 </section>
 </section>
 
 
            </div>
           </div>
-          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="Parametrization.html" class="btn btn-neutral float-left" title="Parametrization" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-    </div>
+          <footer>
 
   <hr/>
 
