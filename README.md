@@ -31,7 +31,7 @@ Requires at least Python 3.8. Uses numpy, MDAnalysis, and OpenMM.
    ``` 
 3. Install
    ```sh
-   python setup.py
+   python setup.py install
    ```
 <!-- HOW TO USE IT -->
 ## How to use it
