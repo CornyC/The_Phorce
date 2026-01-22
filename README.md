@@ -19,7 +19,7 @@ some text here....
 
 <!-- INSTALLATION -->
 ## Installation
-Requires at least Python 3.8. Uses numpy, MDAnalysis, and OpenMM. 
+Requires at least Python 3.8. Uses numpy, scipy, MDAnalysis, and OpenMM. Optional are ASE, BoSS, and PyCMA. 
 
 1. Clone the repo
    ```sh
