@@ -37,7 +37,7 @@ Requires at least Python 3.8. Uses numpy, SciPy, MDAnalysis, and OpenMM. Optiona
 <!-- HOW TO USE IT -->
 ## How to use it
 
-The_Phorce_UI.ipynb will guide you through the process of parametrization using force matching in form of a jupyter notebook.
+The_Phorce_UI.ipynb will guide you through the process of parametrization using force matching in form of a jupyter notebook. All modules and functions are documented [here](https://cornyc.github.io/The_Phorce/index.html)
 
 <!-- LICENSE -->
 ## License
