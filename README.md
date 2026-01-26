@@ -32,7 +32,7 @@ Requires at least Python 3.8. Uses numpy, SciPy, MDAnalysis, and OpenMM. Optiona
    ``` 
 3. Install
    ```sh
-   python setup.py install
+   pip install setup.py
    ```
 <!-- HOW TO USE IT -->
 ## How to use it
