@@ -9,4 +9,4 @@ setup(name='The_Phorce',
       packages=['The_Phorce'],
       zip_safe=True,
       python_requires=">=3.8",
-      install_requires=["numpy>=1.23.5","openmm>=8.0.0","mdanalysis>=2.4.3","scipy>=1.9.3"])
+      install_requires=["numpy>=1.23.5","openmm>=8.0.0","mdanalysis>=2.4.3","scipy>=1.9.3","ase>=3.22.1"])
